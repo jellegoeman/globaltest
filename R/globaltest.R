@@ -1463,15 +1463,8 @@ regressionplot <- function(gt, geneset, sampleid,...)
     abline(lm(Rsub ~ Ssub), col = 2)
 
     # Some explanation
-
-    ## FIXME: justp utting in something to stop the error for
-    ## now, I think it is probably related due to the new
-    ## data packages - when getting called from the vignette
-    ## perhaps something is missing
-    if (exists(samplenr)) {
-        if ( ( !all(samples) ) & ( !is.null(names(Y)) ) )
-            cat("Samples investigated:\n", names(Y)[samplenr], "\n")
-    }
+    if ( ( !all(samples) ) & ( !is.null(names(Y)) ) )
+        cat("Samples investigated:\n", names(Y)[samplenr], "\n")
     # No output
     invisible(NULL)
 }
