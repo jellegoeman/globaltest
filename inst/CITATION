@@ -35,3 +35,21 @@ citEntry(entry="Article",
         "testing association with a clinical outcome.",
         "Bioinformatics 20, 93–99.")
 )
+
+citEntry(entry="Article",
+    title = "Testing association of a pathway with survival",
+    author = personList(as.person("J. J. Goeman"),
+        as.person("J. Oosting"),
+        as.person("A. Cleton-Jansen"),
+	as.person("J. K. Anninga"),
+        as.person("J. C. van Houwelingen")),
+    journal = "Bioinformatics",
+    number = 21,
+    pages = "to appear",
+    year = 2005,
+    textVersion =
+      paste("Jelle J. Goeman, Jan Oosting, Anne-Marie Cleton-Jansen,",
+        "Jakob, K. Anninga, Hans C. van Houwelingen (2005)",
+        "Testing association of a pathway with survival.",
+        "Bioinformatics 21, to appear.")
+)
