@@ -2,7 +2,7 @@
 
 \alias{regressionplot}
 
-\title{Regression plot for Global Test result}
+\title{Regression Plot for Global Test}
 
 \description{Produces a plot which can be used to visualize the
 effect of specific samples on the test result produced by
@@ -35,6 +35,9 @@ crosses.}
 
 \value{\code{NULL} (no output).}
 
+\note{Regressionplot does not work if the adjusted version of 
+globaltest was used.}
+
 \references{J. J. Goeman, S. A. van de Geer, F. de Kort and J. C.
 van Houwelingen, 2004, \emph{A global test for groups of genes: 
 testing association with a clinical outcome}, 
@@ -43,8 +46,8 @@ Globaltest.pdf included with this package.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 
-\seealso{\code{\link{globaltest}}, \code{\link{checkerboard}},
-\code{\link{geneplot}}, \code{\link{permutations}}.}
+\seealso{\code{\link{globaltest}}, \code{\link{sampleplot}},
+\code{\link{geneplot}}.}
 
 \examples{
 if (interactive()) {

@@ -2,7 +2,7 @@
 
 \alias{checkerboard}
 
-\title{Checkerboard plot for Global Test result}
+\title{Checkerboard plot for Global Test}
 
 \description{Produces a plot to visualize the test result produced
 by \code{\link{globaltest}}, by showing the association between
@@ -33,8 +33,8 @@ Globaltest.pdf included with this package.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 
-\seealso{\code{\link{globaltest}}, \code{\link{regressionplot}},
-\code{\link{geneplot}}, \code{\link{permutations}}.}
+\seealso{\code{\link{globaltest}}, \code{\link{sampleplot}},
+\code{\link{geneplot}}.}
 
 \examples{
 if (interactive()) {

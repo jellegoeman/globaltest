@@ -2,7 +2,7 @@
 
 \alias{geneplot}
 
-\title{Geneplot for Global Test result}
+\title{Gene Plot for Global Test}
 
 \description{Produces a plot to show the influence of individual
 genes on the test result produced by \code{\link{globaltest}}.}
@@ -13,18 +13,20 @@ genes on the test result produced by \code{\link{globaltest}}.}
     \item{gt}{The output of a call to \code{\link{globaltest}}.}
     \item{geneset}{The name or number of the geneset to be plotted 
 (only necessary if multiple genesets were tested).}
-    \item{genesubset}{A vector of gene names or numbers which describes 
-a subset of the tested geneset. If supplied, only the subset will 
-be plotted.}
+    \item{genesubset}{A vector of names or numbers of genes to be plotted 
+(default: plot all genes)}
     \item{...}{Any extra arguments will be forwarded to the plotting 
 function.}}
 
-\details{The geneplot shows a bar an a reference line for each
-gene. The bar shows the influence of each gene on the test result;
-the reference line shows the expected influence if the gene was
-not associated with the outcome. The color of the bar indicates
-positive or negative correlation of the gene with the clinical
-outcome, to distinguish between up and downregulation.}
+\details{The geneplot shows a bar an a reference line for each 
+gene. The bar shows the influence of each gene on the test 
+result: the test statistic Q is the average of the bars of the 
+genes. The reference line shows the expected influence if the 
+gene was not associated with the outcome. The marks on the bars 
+show the standard deviation of the bar under the null hypothesis. 
+The color of the bar indicates positive or negative correlation 
+of the gene with the clinical outcome, to distinguish between up 
+and downregulation.}
 
 \value{If gene names were supplied in the call to 
 \code{\link{globaltest}}, geneplot returns the vector of gene 
@@ -39,8 +41,7 @@ Globaltest.pdf included with this package.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 
-\seealso{\code{\link{globaltest}}, \code{\link{regressionplot}},
-\code{\link{checkerboard}}, \code{\link{permutations}}.}
+\seealso{\code{\link{globaltest}}, \code{\link{sampleplot}}.}
 
 \examples{
 if (interactive()){ 

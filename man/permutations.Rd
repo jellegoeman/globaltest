@@ -2,7 +2,7 @@
 
 \alias{permutations}
 
-\title{Histogram for Global Test result}
+\title{Permutations Plot for Global Test}
 
 \description{Produces a histogram for visualization of the permutations
 used in \code{\link{globaltest}}.}
@@ -21,6 +21,9 @@ the test statistic for the true clinical outcome.}
 
 \value{\code{NULL} (no output except the plot).}
 
+\note{Permutations does not work if the adjusted version of 
+globaltest was used.}
+
 \references{J. J. Goeman, S. A. van de Geer, F. de Kort and J. C.
 van Houwelingen, 2004, \emph{A global test for groups of genes: 
 testing association with a clinical outcome}, 
@@ -29,8 +32,8 @@ Globaltest.pdf included with this package.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 
-\seealso{\code{\link{globaltest}}, \code{\link{checkerboard}},
-\code{\link{geneplot}}, \code{\link{regressionplot}}.}
+\seealso{\code{\link{globaltest}}, \code{\link{sampleplot}},
+\code{\link{geneplot}}.}
 
 \examples{
 if (interactive()) {

@@ -7,8 +7,8 @@
 \description{In microarray data, tests a (list of) group(s) of 
 genes for significant association with a given clinical variable.}
 
-\usage{globaltest(X, Y, test.genes = NULL, model = 'logistic', 
-    levels = NULL, permutation = FALSE, nperm = NULL, 
+\usage{globaltest(X, Y, test.genes = NULL, model = NULL, 
+    levels = NULL, adjust = NULL, permutation = FALSE, nperm = NULL, 
     sampling = FALSE, ndraws = NULL, verbose = TRUE) }
 
 \arguments{
@@ -31,12 +31,19 @@ subset of the rownames for \code{X}.}
     \item{model}{Indicates the model the test uses: 
 Use \code{model = 'logistic'} for a two-valued outcome \code{Y} 
 (the default) or \code{model = 'linear'} for a continuous 
-outcome.}
-    \item{levels}{If Y is a exprSet covariate and contains more than 2 levels:
-levels is a vector of length 2 with the subgroups to test }
+outcome. If \code{model} is not supplied, globaltest will try to
+determine the model from \code{Y}.}
+    \item{levels}{If \code{Y} is a factor and contains more than 2 levels:
+\code{levels} is a vector of levels of \code{Y} to test. If 
+\code{levels} is length 2: test these groups against each other. 
+If levels is length 1: test that level against the others.}
+    \item{adjust}{Confounders or risk factors for which the test must 
+be adjusted. Must be either a data frame or the names of 
+covariates in the phenoData slot of the exprSet \code{X}} 
     \item{permutation}{A logical flag. If \code{TRUE} \code{nperm} 
 permutations are used to calculate the p-value instead of the 
-asymptotic formulas. Recommended for small sample sizes.}
+asymptotic formulas. Recommended for small sample size. Not 
+possible if an adjusted globaltest is used.}
     \item{nperm}{The number permutations used. The default is 10,000. 
 If a number is specified for \code{nperm}, \code{permutation} is 
 automatically set to \code{TRUE}.}
@@ -48,7 +55,7 @@ random sets have a lower p-value than the tested group.}
     \item{ndraws}{The number of random groups of genes to be drawn.
 The default is 1,000. If a number is specified for \code{ndraws},
 \code{sampling} is automatically set to \code{TRUE}.}
-    \item{verbose}{Prints some progress information if set to TRUE}.}
+    \item{verbose}{Prints some progress information if set to \code{TRUE}}.}
 
 \details{The Global Test tests whether a group of genes (of any 
 size from one single gene to all genes on the array) is 
@@ -60,11 +67,11 @@ For a significant result it is not necessary that the genes in
 the group have similar expression patterns, only that many of 
 them are correlated with the outcome.}
 
-\note{If the number of rows of \code{X} does not match the length 
-of the vector \code{Y}, but the number of columns does, the
-matrix \code{X} given is tacitly replaced by \code{t(X)} to make
-\code{X} and \code{Y} match. A warning is printed if \code{X} is
-square.}
+\note{If the number of rows of a matrix \code{X} does not match 
+the length of the vector \code{Y}, but the number of columns 
+does, the matrix \code{X} given is tacitly replaced by 
+\code{t(X)} to make \code{X} and \code{Y} match. A warning is 
+printed if \code{X} is square.}
 
 \value{The function returns an object of class 
 \code{\link{gt.result-class}}.}
@@ -77,9 +84,9 @@ Globaltest.pdf included with this package.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 
-\seealso{\code{\link{regressionplot}}, 
-\code{\link{checkerboard}}, \code{\link{geneplot}}, 
-\code{\link{permutations}}.}
+\seealso{\code{\link{geneplot}}, \code{\link{sampleplot}}, 
+\code{\link{permutations}}, \code{\link{checkerboard}}, 
+\code{\link{regressionplot}}.}
 
 \examples{
 if (interactive()) {
