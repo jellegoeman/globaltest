@@ -1463,8 +1463,8 @@ regressionplot <- function(gt, geneset, sampleid,...)
     abline(lm(Rsub ~ Ssub), col = 2)
 
     # Some explanation
-    if ( ( !all(samples) ) & ( !is.null(names(Y)) ) )
-        cat("Samples investigated:\n", names(Y)[samplenr], "\n")
+##    if ( ( !all(samples) ) & ( !is.null(names(Y)) ) )
+##        cat("Samples investigated:\n", names(Y)[samplenr], "\n")
     # No output
     invisible(NULL)
 }
