@@ -8,4 +8,5 @@ Depends: R (>= 1.8.0), methods
 Description: Testing whether a group of genes (e.g. a pathway) is significantly associated with a clinical variable of interest.
 Reference: J. J. Goeman, S.A. van de Geer, F. de Kort and J. C. van Houwelingen, 2004, 'A global test for groups of genes: testing association with a clinical outcome', Bioinformatics 20 (1) 93--99.
 License: GPL version 2 or newer
-Packaged: Wed Mar  3 21:37:22 2004; madman
+ReleaseLevel: devel
+
