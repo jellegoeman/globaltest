@@ -1,0 +1,37 @@
+citHeader("To cite the globaltest package in publications use:")
+
+citEntry(entry="Manual",
+    title = "Globaltest: testing association of a group of genes
+        with a clinical variable",
+    author = personList(as.person("J. J. Goeman"),
+        as.person("J. Oosting")),
+    year = substring(packageDescription("globaltest")$Date,1,4),
+    note = paste("R package version",
+    packageDescription("globaltest")$version),
+    textVersion =
+      paste("Jelle J. Goeman and Jan Oosting (",
+        substring(packageDescription("globaltest")$Date,1,4),
+        ") Globaltest: testing association",
+        " of a group of genes with a clinical variable. ",
+        "R package, version ", packageDescription("globaltest")$Version,
+        ".", sep = "")
+)
+
+citEntry(entry="Article",
+    title = "A global test for groups of genes: testing
+        association with a clinical outcome",
+    author = personList(as.person("J. J. Goeman"),
+        as.person("S. A. van de Geer"),
+        as.person("F. de Kort"),
+        as.person("J. C. van Houwelingen")),
+    journal = "Bioinformatics",
+    number = 20,
+    pages = "93-99",
+    year = 2004,
+    textVersion =
+      paste("Jelle J. Goeman, Sara A. van de Geer,",
+        "Floor de Kort, Hans C. van Houwelingen (2004)",
+        "A global test for groups of genes:",
+        "testing association with a clinical outcome.",
+        "Bioinformatics 20, 93–99.")
+)

@@ -1,5 +1,3 @@
-require("methods")
-
 #==========================================================
 # Function "globaltest" performs the global test on (a list of) 
 #    subsets of the data
@@ -1300,7 +1298,7 @@ sampleplot <- function(gt, geneset, samplesubset, scale = FALSE, drawlabels = TR
     
     # calculate influence per sample and expected influence
     if (gt@model != 'survival') {
-      XXY <- X %*% t(X) %*% Y
+      XXY <- t(gt@IminH) %*% X %*% t(X) %*% Y
       influence <- (n/m) * Y * XXY
       up <- (sign(Y) == 1) 
       if ((gt@model == 'logistic') & (gt@df.adjust > 1)) {
@@ -1333,9 +1331,8 @@ sampleplot <- function(gt, geneset, samplesubset, scale = FALSE, drawlabels = TR
       matrixPO <- matrixP %*% t(matrixO)
       matrixM <- diag(d) %*% outer(times, dtimes, "<") - matrixPO %*% outer(times, dtimes, "<")
       matrixW <- diag(rowSums(matrixPO)) - matrixPO %*% t(matrixPO)
-      influence <- rowSums(R * (outer(Y,Y) - matrixW))
+      influence <- rowSums((adjX %*% t(X)) * (outer(Y,Y) - matrixW))
       up <- (sign(Y) == 1) 
-      adjX <- t(gt@IminH) %*% X
       eye <- diag(n)
       Evarinf <- sapply(1:n, function(i) {
         out <- numeric(2)
