@@ -870,7 +870,7 @@ sampleplot <- function(gt, geneset = NULL, samplesubset = NULL, drawlabels = TRU
           segments( 1:n - 0.4, high, 1:n + 0.4, high)
         }
     }else{
-        lines(1:n, influence, lwd = 600 / n, type = 'h', col = (up+2))
+        lines(1:n, influence - Einf, lwd = 600 / n, type = 'h', col = (up+2))
     }
     segments(1/2, 0, n+1/2, 0)
     if (gt@model == 'linear')

@@ -89,14 +89,12 @@ Globaltest.pdf included with this package.}
 \code{\link{regressionplot}}.}
 
 \examples{
-if (interactive()) {
     data(exampleX)      # Expression data (40 samples; 1000 genes)
     data(exampleY)      # Clinical outcome for the 40 samples
     pathway1 <- 1:25    # A pathway contains genes 1 to 25
     pathway2 <- 26:50   # another pathway
     gt <- globaltest(exampleX, exampleY, list(pathway1,pathway2))
     gt
-}
 }
 \keyword{htest}
     
