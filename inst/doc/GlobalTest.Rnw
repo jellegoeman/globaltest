@@ -96,13 +96,13 @@ section.
 <<>>=
 keggids <- ls(env = hu6800PATH2PROBE)
 keggPW <- multiget(keggids, env = hu6800PATH2PROBE)
-cellcycle <- keggPW[["04120"]]
+cellcycle <- keggPW[["04110"]]
 @
 
 This creates a list \Robject{keggPW} of 120 pathways, each a
 vector of gene names. The vector \Robject{cellcycle} is one of them.
-It corresponds to the Cell Cycle pathway, ``04120'' in the KEGG
-database, which corresponds to 17 probes on the hu6800 chip. Suppose we are 
+It corresponds to the Cell Cycle pathway, ``04110'' in the KEGG
+database, which corresponds to 88 probe sets on the hu6800 chip. Suppose we are 
 predominantly interested in this pathway. We want to know whether this group of
 genes is associated with the clinical outcome AML versus ALL.
 
@@ -166,8 +166,8 @@ gt.cc
 
 This gives an extra output column ``comparative p'', which is the
 fraction of random genesets of the same size as the cell cycle 
-pathway (17 genes) which have a lower p-value than cell cycle 
-itself. In this case around 80\%\ of 1,000 random `pathways' of size 17 
+pathway (88 genes) which have a lower p-value than cell cycle 
+itself. In this case around 28\%\ of 1,000 random `pathways' of size 88 
 have a lower p-value than the Cell Cycle pathway. By default 
 1,000 random sets are sampled; this number can be changed with 
 the option \Rfunarg{ndraws}.
@@ -291,12 +291,12 @@ below gives the same output.
 
 <<eval=FALSE, echo=TRUE>>=
 permutations(gt.cc)
-permutations(gt.kegg, "04120")
+permutations(gt.kegg, "04110")
 @
 
 \begin{center}
 <<fig=TRUE, echo=FALSE>>=
-permutations(gt.kegg, "04120")
+permutations(gt.kegg, "04110")
 @
 \end{center}
 
@@ -327,7 +327,7 @@ Again, either of the commands below gives the same output.
 
 <<eval=FALSE>>=
 geneplot(gt.cc)
-geneplot(gt.kegg, "04120")
+geneplot(gt.kegg, "04110")
 @
 
 For a large number of genes the plot might become overcrowded. 
@@ -381,7 +381,7 @@ Again, either of the commands below gives the same output.
 
 <<eval=FALSE>>= 
 sampleplot(gt.cc) 
-sampleplot(gt.kegg, "04120") 
+sampleplot(gt.kegg, "04110") 
 @
 
 For a large number of samples the plot might become overcrowded. 
@@ -426,7 +426,7 @@ can be detected.
 
 <<eval=FALSE>>=
 checkerboard(gt.cc)
-checkerboard(gt.kegg, "04120")
+checkerboard(gt.kegg, "04110")
 @
 
 The function \Rfunction{checkerboard} also has options 
@@ -436,7 +436,7 @@ FALSE} to the sample names.
 
 \begin{center}
 <<fig=TRUE, echo=FALSE>>=
-checkerboard(gt.kegg, "04120")
+checkerboard(gt.kegg, "04110")
 @
 \end{center}
 
@@ -476,7 +476,7 @@ If we want to test sample \Robject{"1"}, we say:
 
 <<fig=FALSE, echo=TRUE>>=
 regressionplot(gt.cc, sampleid = "1")
-regressionplot(gt.kegg, "04120", sampleid = "1")
+regressionplot(gt.kegg, "04110", sampleid = "1")
 @
 
 We can also use this plot for a group of samples, saying for
@@ -488,7 +488,7 @@ regressionplot(gt.cc, sampleid = c("1","2"))
 
 \begin{center}
 <<fig=TRUE, echo=FALSE>>=
-regressionplot(gt.kegg, "04120", c("2"))
+regressionplot(gt.kegg, "04110", c("2"))
 @
 \end{center}
 
