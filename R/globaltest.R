@@ -375,6 +375,13 @@ globaltest <- function(X, Y, test.genes = NULL,
         res[index, "EQ"] <- EQ
         res[index, "seQ"] <- seQ
         res[index, "comp.p"] <- comparative.p
+      }else{
+        mu2 <- NA
+        res[index, "p.val"] <- NA
+        res[index, "Q"] <- NA
+        res[index, "EQ"] <- NA
+        res[index, "seQ"] <- NA
+        res[index, "comp.p"] <- NA
       }
   }
   
@@ -442,9 +449,13 @@ permutations <- function(gt, geneset = NULL, nperm = 10^4)
             }
         }
     }
+    if (gt@res[geneset, "test.n"] == 0)
+      stop("empty pathway", call. = FALSE)
             
     # Recreate Y and R
     X <- gt@X[,test.genes]
+    if (is.na(X))
+      stop("empty pathway", call. = FALSE)
     m <- dim(X)[2]
     R <- (X %*% t(X)) / m
     Y <- gt@Y
@@ -529,6 +540,8 @@ geneplot <- function(gt, geneset = NULL, genesubset = NULL, ...)
             stop("genesubset is not a subset of the selected geneset")
         }
     }
+    if (gt@res[geneset, "test.n"] == 0)
+      stop("empty pathway", call. = FALSE)
     
     # Extract the calculated influence
     influence <- gt@influence[test.genes, 1]
@@ -592,6 +605,8 @@ regressionplot <- function(gt, geneset = NULL, sampleid = NULL,...)
             }
         }
     }
+    if (gt@res[geneset, "test.n"] == 0)
+      stop("empty pathway", call. = FALSE)
 
     # recreate matrix R and find S = Y %o% Y
     X <- gt@X[,test.genes]
@@ -680,7 +695,8 @@ checkerboard <- function(gt, geneset = NULL, sort = TRUE,...)
             }
         }
     }
-
+    if (gt@res[geneset, "test.n"] == 0)
+      stop("empty pathway", call. = FALSE)
     if (!is.logical(sort))
         stop("The option 'sort' should be either TRUE or FALSE", call. = FALSE)
 
