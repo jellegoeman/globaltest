@@ -633,7 +633,7 @@ permutations <- function(gt, geneset = NULL, nperm = 10^4)
 # See help(geneplot) for details
 #==========================================================
 
-geneplot <- function(gt, geneset = NULL, genesubset = NULL, ...)
+geneplot <- function(gt, geneset = NULL, genesubset = NULL, drawlabels = TRUE, labelsize = 0.6, ...)
 {
     # check correct input of gt
     if ( !is(gt, "gt.result"))
@@ -711,9 +711,25 @@ geneplot <- function(gt, geneset = NULL, genesubset = NULL, ...)
       varinf <- (2 / (n - gt@df.adjust + 2)) * ( (n - gt@df.adjust) * trRR - tr2R )
     }   
     sd.inf <- sqrt(varinf)
-
+    # Output: reference vector with gene labels if available
+    legend <- colnames(X)
+    if (!is.null(legend))
+      names(legend) <- 1:length(legend)
+    
+    if (is.null(labelsize))
+      labelsize<-par("cex.axis")
     # Plot reference line and influence per gene and color for up/down regulation
-    plot( 0, xlim = c(1/2, m+1/2), ylim = c(0, 1.2 * max(influence, Einf) ), col = 0, xlab = "genenr", ylab = "influence" ,...)
+    if (drawlabels & !is.null(legend)){
+    # check for space in margin of plot
+      plot.new()  
+      labwidth<-max(strwidth(legend,"inches",labelsize))
+      margins<-par("mai")
+      par(new=TRUE,"mai"=c(max(margins[1],labwidth*1.3),margins[2:4]))
+      plot( 0, xlim = c(1/2, m+1/2), ylim = c(0, 1.2 * max(influence, Einf) ), col = 0, xlab = "", ylab = "influence", xaxt="n",...)
+      axis(1, 1:length(legend), legend, cex.axis = labelsize, las=2)
+      par("mai"=margins)
+    }else
+      plot( 0, xlim = c(1/2, m+1/2), ylim = c(0, 1.2 * max(influence, Einf) ), col = 0, xlab = "genenr", ylab = "influence", ...)
     if (m <= 250) {
         rect(xleft = 1:m - 0.4, xright = 1:m + 0.4, ybottom = rep(0,times=m), ytop = influence, col = (up+2), border=0 )
         nlines <- floor((influence - Einf) / sd.inf)
@@ -738,10 +754,6 @@ geneplot <- function(gt, geneset = NULL, genesubset = NULL, ...)
         c(paste("higher expression in", gt@levels[2], "samples"), 
         paste("higher expression in", gt@levels[1], "samples")), fil = c(3,2))
        
-    # Output: reference vector with gene labels if available
-    legend <- colnames(X)
-    if (!is.null(legend))
-      names(legend) <- 1:length(legend)
     invisible(legend)
 }
 #==========================================================
@@ -752,7 +764,7 @@ geneplot <- function(gt, geneset = NULL, genesubset = NULL, ...)
 #   of the test statistic
 # See help(sampleplot) for details
 #==========================================================
-sampleplot <- function(gt, geneset = NULL, samplesubset = NULL, ...)
+sampleplot <- function(gt, geneset = NULL, samplesubset = NULL, drawlabels = TRUE, labelsize = 0.6,...)
 {
     # check correct input of gt
     if ( !is(gt, "gt.result"))
@@ -832,7 +844,23 @@ sampleplot <- function(gt, geneset = NULL, samplesubset = NULL, ...)
     rangebars <- max(influence - Einf) - min(influence - Einf)
     minplot <- min(influence - Einf) 
     maxplot <- max(influence - Einf) + 0.2 * rangebars
-    plot( 0, xlim = c(1/2, n+1/2), ylim = c(minplot, maxplot), col = 0, xlab = "samplenr", ylab = "influence" ,...)
+    # Output: reference vector with sample labels if available
+    legend <- rownames(X)[samplesubset]
+    if (!is.null(legend))
+      names(legend) <- 1:length(legend)
+    if (is.null(labelsize))
+      labelsize<-par("cex.axis")
+    if (drawlabels & !is.null(legend)){
+      # check for space in margin of plot
+      plot.new()  
+      labwidth<-max(strwidth(legend,"inches",labelsize))
+      margins<-par("mai")
+      par(new=TRUE,"mai"=c(max(margins[1],labwidth*1.3),margins[2:4]))
+      plot( 0, xlim = c(1/2, n+1/2), ylim = c(minplot, maxplot), col = 0, xlab = "", ylab = "influence" , xaxt="n",...)
+      axis(1, 1:length(legend), legend, cex.axis = labelsize, las=2)
+      par("mai"=margins)
+    }else
+      plot( 0, xlim = c(1/2, n+1/2), ylim = c(minplot, maxplot), col = 0, xlab = "samplenr", ylab = "influence", ...)
     if (n <= 250) {
         rect(xleft = 1:n - 0.4, xright = 1:n + 0.4, ybottom = rep(0,times=n), ytop = influence - Einf, col = (up+2), border=0 )
         nlines <- trunc((influence - Einf) / sd.inf)
@@ -852,10 +880,6 @@ sampleplot <- function(gt, geneset = NULL, samplesubset = NULL, ...)
       legend(1/2, maxplot,
         c(paste(gt@levels[2], "samples"), paste(gt@levels[1], "samples")), fil = c(3,2)) 
         
-    # Output: reference vector with sample labels if available
-    legend <- rownames(X)[samplesubset]
-    if (!is.null(legend))
-      names(legend) <- 1:length(legend)
     invisible(legend)
 }
 #==========================================================
@@ -961,7 +985,7 @@ regressionplot <- function(gt, geneset = NULL, sampleid = NULL,...)
 # See help(checkerboard) for details
 #==========================================================
 
-checkerboard <- function(gt, geneset = NULL, sort = TRUE,...)
+checkerboard <- function(gt, geneset = NULL, sort = TRUE, drawlabels = TRUE, labelsize = 0.6,...)
 {   
     # check correct input of gt
     if ( !is(gt, "gt.result"))
@@ -1024,10 +1048,24 @@ checkerboard <- function(gt, geneset = NULL, sort = TRUE,...)
     # Calculate median non-diagonal element of R
     lowertriangle <- outer( 1:n, 1:n, ">" )
     med <- median(R[lowertriangle])
-    
     # Draw plot
-    image(x = 1:n, y = 1:n, z = R>med, col = rainbow(2, v = c(0,1), s = c(1,0) ), xlab = label, ylab = label, 
-        lab = c(n,n,50/n),...)
+    if (is.null(labelsize))
+      labelsize<-par("cex.axis")
+    if (drawlabels & !is.null(rownames(newsamplenrs))){
+      legend<-rownames(newsamplenrs)[sort(newsamplenrs[,2],index.return=TRUE)$ix]   
+      # check for space in margin of plot
+      plot.new()  
+      labwidth<-max(strwidth(legend,"inches",labelsize))
+      margins<-par("mai")
+      par(new=TRUE,"mai"=c(max(margins[1],labwidth*1.3),max(margins[2],labwidth*1.3), margins[3:4]))
+      image(x = 1:n, y = 1:n, z = R>med, col = rainbow(2, v = c(0,1), s = c(1,0) ), ylab = "", xlab = "", 
+          yaxt="n", xaxt = "n", ...)
+      axis(2,1:length(legend), legend, cex.axis=labelsize, las=2)
+      axis(1,1:length(legend), legend, cex.axis=labelsize, las=2)
+      par("mai"=margins)
+    }else
+      image(x = 1:n, y = 1:n, z = R>med, col = rainbow(2, v = c(0,1), s = c(1,0) ), xlab = label, ylab = label, 
+          lab = c(n,n,50/n), ...)
     par(pty = "s")
     invisible(newsamplenrs)
 }

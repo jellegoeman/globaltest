@@ -7,7 +7,7 @@
 \description{Produces a plot to show the influence of individual
 samples on the test result produced by \code{\link{globaltest}}.}
 
-\usage{sampleplot(gt, geneset = NULL, samplesubset = NULL, ...)}
+\usage{sampleplot(gt, geneset = NULL, samplesubset = NULL, drawlabels = TRUE, labelsize = 0.6, ...)}
 
 \arguments{
     \item{gt}{The output of a call to \code{\link{globaltest}}.}
@@ -15,10 +15,13 @@ samples on the test result produced by \code{\link{globaltest}}.}
 (only necessary if multiple genesets were tested).}
     \item{samplesubset}{A vector of names or numbers of samples to be plotted 
 (default: all samples)}
+		\item{drawlabels}{Logical value to control drawing of the samplenames on the x-axis of the plot.}
+		\item{labelsize}{Relative size of the labels on the x-axis. If it is \code{NULL} , 
+		the current value for \code{\link[graphics:par]{par("cex.axis")}} is used}
     \item{...}{Any extra arguments will be forwarded to the plotting 
 function.}}
 
-\details{The sampleplot shows a bar an a reference line for each 
+\details{The sampleplot shows a bar and a reference line for each 
 sample. The bar shows the influence of each gene on the test 
 statistic. Samples with a positive influence carry evidence 
 against the null hypothesis (in favour of a significant p-value), 
@@ -36,7 +39,10 @@ from zero.
 
 The color of the bar indicates the sign of the residual of Y. In 
 a logistic model the coloring this distinguishes the original 
-groups.}
+groups.
+
+The bottom margin is adjusted to allow enough space for the longest 
+samplename to draw under the axis.}
 
 \value{If samplenames were supplied in the call to 
 \code{\link{globaltest}}, sampleplot returns the vector of 

@@ -8,7 +8,7 @@
 by \code{\link{globaltest}}, by showing the association between
 pairs of samples.}
 
-\usage{checkerboard(gt, geneset = NULL, sort = TRUE, ...)}
+\usage{checkerboard(gt, geneset = NULL, sort = TRUE, drawlabels = TRUE, labelsize = 0.6, ...)}
 
 \arguments{
     \item{gt}{The output of a call to \code{\link{globaltest}}.}
@@ -16,12 +16,18 @@ pairs of samples.}
 (only necessary if multiple genesets were tested)}
     \item{sort}{A logical flag to indicate whether the samples should be sorted
 by the clinical outcome to give a clearer picture.}
+        \item{drawlabels}{Logical value to control drawing of the samplenames on the x- and y-axis of the plot.}
+        \item{labelsize}{Relative size of the labels on the x- and y-axis. If it is \code{NULL} , 
+        the current value for \code{\link[graphics:par]{par("cex.axis")}} is used}
     \item{...}{Any extra arguments will be forwarded to the plotting function.}}
 
 \details{The checkerboard shows the pairs of samples which have
 high covariance in white and the pairs with low covariance in
 black. This can be used to visualize the data and to search for
-outlying arrays.}
+outlying arrays.
+
+The left and bottom margins are adjusted to allow enough space 
+for the longest samplename.}
 
 \value{A matrix giving the old and the new sample numbers.}
 

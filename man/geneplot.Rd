@@ -7,7 +7,7 @@
 \description{Produces a plot to show the influence of individual
 genes on the test result produced by \code{\link{globaltest}}.}
 
-\usage{geneplot(gt, geneset = NULL, genesubset = NULL, ...)}
+\usage{geneplot(gt, geneset = NULL, genesubset = NULL, drawlabels = TRUE, labelsize = 0.6, ...)}
 
 \arguments{
     \item{gt}{The output of a call to \code{\link{globaltest}}.}
@@ -15,6 +15,9 @@ genes on the test result produced by \code{\link{globaltest}}.}
 (only necessary if multiple genesets were tested).}
     \item{genesubset}{A vector of names or numbers of genes to be plotted 
 (default: plot all genes)}
+		\item{drawlabels}{Logical value to control drawing of gene ids (rownames) on the x-axis of the plot.}
+		\item{labelsize}{Relative size of the labels on the x-axis. If it is \code{NULL} , 
+		the current value for \code{\link[graphics:par]{par("cex.axis")}} is used}
     \item{...}{Any extra arguments will be forwarded to the plotting 
 function.}}
 
@@ -26,7 +29,10 @@ gene was not associated with the outcome. The marks on the bars
 show the standard deviation of the bar under the null hypothesis. 
 The color of the bar indicates positive or negative correlation 
 of the gene with the clinical outcome, to distinguish between up 
-and downregulation.}
+and downregulation.
+
+The bottom margin is adjusted to allow enough space for the longest 
+gene id to draw under the axis.}
 
 \value{If gene names were supplied in the call to 
 \code{\link{globaltest}}, geneplot returns the vector of gene 
