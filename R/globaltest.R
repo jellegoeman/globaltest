@@ -1,15 +1,15 @@
 #==========================================================
-# Function "globaltest" performs the global test on (a list of)
+# Function "globaltest" performs the global test on (a list of) 
 #    subsets of the data
 #
-# X is a data matrix (n rows are samples, p columns are genes)
+# X is a data matrix (n rows are samples, p columns are genes) 
 #    or Biobase exprSet.
-# NB: if the dimension of X does not fit the dimension of Y,
+# NB: if the dimension of X does not fit the dimension of Y, 
 #    but t(X) does, t(X) is used.
 # Code missing values as NA
 #
-# Y is a vector of n clinical outcomes or the name or index of one of
-#    the phenoData variables ( if X is an exprSet)
+# Y is a vector of n clinical outcomes or the name or index of one of 
+#    the phenoData variables ( if X is an exprSet) 
 #
 # test.genes = list of vectors
 #       vector can be a length p vector of 0 and 1
@@ -18,7 +18,7 @@
 #           e.g. c(5,8,9) to test genes 5, 8 and 9.
 #       or a vector with the ids in the rownames of X
 #           e.g c("AA173143","AA461092","AA487442","AA490243","R26706","R61845")
-#
+# 
 # OPTIONS:
 # model = 'logistic': for two-value Y.
 # model = 'linear': for continuous Y.
@@ -35,7 +35,7 @@
 # RESULT
 # array with 7 columns containing
 # p.value, Q, EQ, seQ, comparative.p, length of vector, rows found in X
-# where comparative.p is the fraction of random pathways of the same size
+# where comparative.p is the fraction of random pathways of the same size 
 #   with a lower p-value
 #==========================================================
 
@@ -49,7 +49,7 @@ globaltest <- function(X, Y, test.genes,
   # 0: the default for adjust:
   if (missing(adjust))
     adjust <- Y ~ 1
-
+    
   # 1: make matrix X and pDataX:
   if (is(X, "exprSet")) {
     require("Biobase")
@@ -80,7 +80,7 @@ globaltest <- function(X, Y, test.genes,
       pDataX <- NULL
     }
   }
-
+    
   # 2: coerce Y into a vector
   if ( is(Y, "formula") ) {
     adjust <- Y
@@ -90,7 +90,7 @@ globaltest <- function(X, Y, test.genes,
     if (Y %in% names(pDataX)) {
       nameY <- Y
       Y <- pDataX[[Y]]
-    } else {
+    } else { 
       stop("Y not among pData(X) variables", call. = FALSE)
     }
   } else {
@@ -112,23 +112,23 @@ globaltest <- function(X, Y, test.genes,
       }
     }
     if (is.null(nameY))
-      nameY <- "Y"
+      nameY <- "Y" 
   }
-
+  
   # 3: Determine the model from the input Y
   if (missing(model)) {
     if (is.factor(Y) | (length(unique(Y)) <= 2) | !missing(levels)) {
       model <- 'logistic'
     } else {
       if (is.numeric(Y)) {
-        if (!missing(d))
+        if (!missing(d)) 
           model <- 'survival'
         else
-          model <- 'linear'
+          model <- 'linear'            
       } else {
         stop("model could not be determined from input Y: please specify model", call. = FALSE)
       }
-    }
+    } 
   }
   model <- match.arg(model, c('linear','logistic','survival'))
   if (model == 'survival')
@@ -140,7 +140,7 @@ globaltest <- function(X, Y, test.genes,
       # Only 2 levels should be here, test for 1 now, later checks will find other errors
       levels <- NULL
       levels <- levels(factor(Y))
-      if (length(levels)==1)
+      if (length(levels)==1) 
         stop("There should be more than 1 group in the data.", call. = FALSE)
     } else {
       if (!all(levels %in% levels(factor(Y))))
@@ -156,8 +156,8 @@ globaltest <- function(X, Y, test.genes,
       samplenamesY <- names(Y)
       Y <- (Y != levels[1])
       names(Y) <- samplenamesY
-    }else{
-      stop("No more than 2 groups can be tested. Use option: levels.", call. = FALSE)
+    }else{ 
+      stop("No more than 2 groups can be tested. Use option: levels.", call. = FALSE)    
     }
     Y <- 0 + Y
   } else {
@@ -169,7 +169,7 @@ globaltest <- function(X, Y, test.genes,
       stop("X and Y must be numeric.", call. = FALSE)
   if (any(is.na(Y)))
       stop("missing values not allowed in Y.", call. = FALSE)
-
+  
   # 6: check dimensions of X, Y and pDataX
   n <- length(Y)
   if (n == 1)
@@ -198,7 +198,7 @@ globaltest <- function(X, Y, test.genes,
   }else{
     if ( (!is.null(rownames(X))) & (is.null( names(Y) )) ) {
       names(Y) <- rownames(X)
-    }else{
+    }else{ 
       if ( !all(names(Y) == rownames(X)) )
         stop("Sample names in X inconsistent with sample names in Y.", call. = FALSE)
     }
@@ -216,14 +216,14 @@ globaltest <- function(X, Y, test.genes,
         if (d %in% names(pDataX)) {
           named <- as.character(d)
           d <- pDataX[,d]
-        } else
+        } else 
           stop("d not among pData(X) variables", call. = FALSE)
       }else{
         if (length(d) != n) {
           stop("length of d not equal to length of Y", call. = FALSE)
         }else{
           if (!all(names(d) == names(Y)))
-            stop("names of d inconsistent with names of Y", call. = FALSE)
+            stop("names of d inconsistent with names of Y", call. = FALSE)  
           if (any(is.na(d)))
             stop("missing values not allowed in d", call. = FALSE)
         }
@@ -238,6 +238,7 @@ globaltest <- function(X, Y, test.genes,
         stop("there are no events.", call. = FALSE)
     }
   }
+
   # Check for correct input of adjust
   if (is(adjust, "formula")) {
     if (!(as.character(adjust)[2] %in% c("Y", nameY)))
@@ -253,14 +254,14 @@ globaltest <- function(X, Y, test.genes,
     }
   }
   adjust <- formula(paste(nameY, "~", as.character(adjust)[3]))
-
+  
   # remove redundant levels
   if (!is.null(pDataX)) {
     samples <- rownames(pDataX)
     pDataX <- data.frame(lapply(as.list(pDataX), function(x) { if (is.factor(x)) factor(x) else x}))
     rownames(pDataX) <- samples
-  }
-
+  } 
+  
   # Fit adjustmodel and adjust Y and X
   # Standardize Y in case of the linear model or unadjusted logistic (same variance for i=1,...,n)
   if (model == 'linear') {
@@ -287,7 +288,7 @@ globaltest <- function(X, Y, test.genes,
       null.Y <- Y - old.mu
       fit <- try(glm(adjust, pDataX, family = binomial, x = TRUE, na.action = 'na.fail'))
       if (is(fit, "try-error"))
-        stop("Fitting the adjustmodel failed.", call.=FALSE)
+        stop("Fitting the adjustmodel failed.", call.=FALSE)   
       mu <- fitted.values(fit)
       Z <- fit$x
       nadjust <- ncol(Z)
@@ -306,17 +307,17 @@ globaltest <- function(X, Y, test.genes,
       IminH <- diag(n) - matrix(rep(1/n, times = n*n), n, n)
       parameters <- data.frame(matrix(,n,0))
     }
-  }
+  } 
   if (model == 'survival') {
     times <- Y
     adjust <- formula(paste("Surv(", nameY, ",", named, ") ~ ", as.character(adjust[3])))
     fit <- try(coxph(adjust, pDataX, x = TRUE, na.action = 'na.fail'))
     if (is(fit, "try-error"))
-      stop("Fitting the adjustmodel failed.", call.=FALSE)
+      stop("Fitting the adjustmodel failed.", call.=FALSE) 
     Z <- fit$x
     nadjust <- 1 + ncol(Z)
     expci <- exp(fit$linear.predictors)
-    dtimes <- unique(times[d == 1])
+    dtimes <- unique(times[d == 1]) 
     nd <- length(dtimes)
     matrixO <- outer(times, dtimes, "==") * matrix(d, n, nd)
     ties <- any(colSums(matrixO) > 1)
@@ -337,14 +338,14 @@ globaltest <- function(X, Y, test.genes,
   #Rsquare <- as.numeric((null.Y %*% IminH %*% IminH %*% null.Y) / (null.Y %*% null.Y))
   if (!is.na(Rsquare) & (Rsquare < 0.01))
     stop("not enough variance in Y remaining after adjustment", call. = FALSE)
-
+  
   # Impute missing values of X and rescale X
   col.meanX <- colMeans(X, na.rm = TRUE)
   X <- X - rep(1, times=n) %o% col.meanX
   X[is.na(X)] <- 0
   adjX <- t(IminH) %*% X
   if (model != "survival") {
-    if ((model == "logistic") & (nadjust > 1))
+    if ((model == "logistic") & (nadjust > 1)) 
       norm <- sqrt(sum(mu2 %*% (adjX * adjX)) / (10 * p))
     else {
       norm <- sqrt(sum(adjX * adjX) / (10 * p))
@@ -355,49 +356,50 @@ globaltest <- function(X, Y, test.genes,
   # coerce test.genes into a list and check correct input
   if ( missing(test.genes) )
     test.genes <- list(1:p)
-
-  if ( !is.list(test.genes) )
+  
+  if ( !is.list(test.genes) ) 
     test.genes <- list(test.genes)
 
-  test.genes <- lapply(test.genes, function(tg) {
+  print(test.genes)  
+  test.genes <- lapply(test.genes, function(tg) { 
     if ( !is.vector(tg) & !is.null(tg) )
       stop("test.genes should be a (list of) vector(s)", call. = FALSE)
 
     if ( all(tg %in% c(0,1)) & (length(tg) == p) ) {
       test.names <- names(tg)[tg == 1]
       if (  !is.null(genenames )  &  !is.null(test.names) ) {
-        if( any( genenames[tg] != test.names ) )
+        if( any( genenames[tg] != test.names ) ) 
           warning("Gene names in X inconsistent with gene names in test.genes.", call. = FALSE)
       }
       tg <- (1:p)[tg == 1]
     } else {
       if (is.character(tg))  {
         tg <- match(tg, genenames)
-      } else {
+      } else {  
         if ( all(tg %in% 1:p) ) {
           test.names <- names(tg)
           names(tg) <- NULL
           if (  !is.null(genenames )  &  !is.null(test.names) ) {
-            if( any( genenames[tg] != test.names ) )
+            if( any( genenames[tg] != test.names ) ) 
             warning("Gene names in X inconsistent with gene names in test.genes.", call. = FALSE)
           }
         } else {
           stop("option 'test.genes' should be a (list of) vector(s) of gene names or numbers.", call. = FALSE)
         }
-      }
-    }
+      } 
+    }  
     tg
   })
-  path.n <- sapply(test.genes, length)
-  test.genes <- lapply(test.genes, function(tg) if (!is.null(tg)) unique(tg[!is.na(tg)]) else tg )
+  path.n <- sapply(test.genes, length) 
+  test.genes <- lapply(test.genes, function(tg) if (!is.null(tg)) unique(tg[!is.na(tg)]) else tg ) 
   test.n <- sapply(test.genes, length)
-
+  
   # Calculate the test statistic for each geneset
   res <- t(sapply(test.genes, function(tg) {
-
+      
     out <- numeric(4)
-    names(out) <- c("Q","EQ","seQ","p.val")
-
+    names(out) <- c("Q","EQ","seQ","p.val") 
+    
     # select genes to be tested
     X.sel <- as.matrix(X[,tg])
     # Number of selected genes that are in array (test.genes can be larger than that (in res[index, "path.n"] earlier)
@@ -410,11 +412,11 @@ globaltest <- function(X, Y, test.genes,
       Q <- ( Y %*% XX %*% Y )
       if (model == "survival") {
         if (ties) {
-          tiecorrect <- sum( sapply(1:length(dtimes),
+          tiecorrect <- sum( sapply(1:length(dtimes), 
             function(i) {
               if (sum(matrixO[,i]) == 1)
                 0
-              else {
+              else { 
                 matrixtie <- outer(matrixO[,i], matrixO[,i]) - diag(matrixO[,i])
                 sum(XX[as.logical(matrixtie)]) - 2 * sum(matrixP[,i] %*% XX %*% matrixtie) + sum(matrixtie) * (matrixP[,i] %*% XX %*% matrixP[,i])
               }
@@ -423,7 +425,7 @@ globaltest <- function(X, Y, test.genes,
           Q <- Q - tiecorrect
         }
       }
-
+       
       # Expectation and variance of Q and p-value
       trR <- sum(diag(R))
       trRR <- sum(R*R)
@@ -432,7 +434,7 @@ globaltest <- function(X, Y, test.genes,
       if (model == 'logistic') {
         if (as.character(adjust[3]) == "1") {
           EQ <- trR
-          mu1 <- mu[1]
+          mu1 <- mu[1] 
           mumu <- mu2[1]
           K <- ( 1 - 6 * mu1 + 6 * mu1^2 ) / mumu
           varQ <- K * ( trR2 - tr2R / n ) + 2 * trRR - 2 * tr2R / (n-1)
@@ -455,7 +457,7 @@ globaltest <- function(X, Y, test.genes,
         scl <- varQ / (2 * EQ)
         dfr <- EQ / scl
         p.value <- pf ( (scl * dfr / Q), 10^10, dfr )
-      }
+      }    
       if (model == 'survival') {
         EQ <- sum(diag(R %*% matrixW))
         tussen <- matrix(diag(R), n, ncol(matrixP)) + 2 * R %*% (matrixM - matrixP)
@@ -466,7 +468,7 @@ globaltest <- function(X, Y, test.genes,
         EQ <- 0
         seQ <- 1
       }
-
+      
       # the returns for this geneset
       out["p.val"] <- p.value
       out["Q"] <- Q
@@ -479,17 +481,17 @@ globaltest <- function(X, Y, test.genes,
       out["EQ"] <- NA
       out["seQ"] <- NA
     }
-  out
+  out  
   }))
   res <- cbind(path.n, test.n, res)
   rownames(res) <- names(test.genes)
-
+  
   Qs <- matrix(,length(test.genes),0)
   rownames(Qs) <- names(test.genes)
-
+  
   # returns an object of type "gt.result"
   gt <- new("gt.result",
-    res = res,
+    res = res, 
     X = X,
     Y = Y,
     test.genes = test.genes,
@@ -501,7 +503,7 @@ globaltest <- function(X, Y, test.genes,
     adjustmodel = adjust,
     levels = levels,
     df.adjust = as.integer(nadjust))
-
+    
   # check deprecated options:
   dots <- list(...)
   sampling <- dots[["sampling"]]
@@ -524,7 +526,7 @@ globaltest <- function(X, Y, test.genes,
     }
     warning("option sampling has been deprecated. Use function: sampling", call. = FALSE)
   }
-
+ 
   gt
 }
 #==========================================================
@@ -532,7 +534,7 @@ globaltest <- function(X, Y, test.genes,
 
 #==========================================================
 setClass("gt.result", representation(
-    res = "matrix",
+    res = "matrix", 
     X = "matrix",
     Y = "vector",
     test.genes = "list",
@@ -575,7 +577,7 @@ setMethod("show", "gt.result", function(object)
     cat("Using", ncol(object@Qs), "permutations of Y\n")
 
   cat("\n")
-
+    
   res <- data.frame(object@res)
   if ( ncol(res) < 7 ) {
     names(res) <- c("genes","tested","Statistic Q","Expected Q","sd of Q","p-value")
@@ -587,14 +589,14 @@ setMethod("show", "gt.result", function(object)
 
 
 #==========================================================
-# Two functions to extract relevant information from
+# Two functions to extract relevant information from 
 # a gt.result object
 #==========================================================
 if( !isGeneric("result") )
     setGeneric("result", function(object) standardGeneric("result"))
 
 setMethod("result", "gt.result",
-            function(object)
+            function(object) 
 {
     object@res
 })
@@ -609,50 +611,50 @@ setMethod("p.value", "gt.result",
 #==========================================================
 # The subsetting method for "gt.result"
 #==========================================================
-setMethod("[", "gt.result",
-            function(x, i, j,...,drop)
+setMethod("[", "gt.result", 
+            function(x, i, j,...,drop) 
 {
-  if (all(i %in% names(x@test.genes)) |
-          all(i %in% 1:length(x@test.genes)) |
+  if (all(i %in% names(x@test.genes)) | 
+          all(i %in% 1:length(x@test.genes)) | 
           (is.logical(i) & (length(i) == length(x@test.genes)))) {
-    x@res <- x@res[i, ,drop = FALSE]
+    x@res <- x@res[i, ,drop = FALSE] 
     x@test.genes <- x@test.genes[i]
     x@Qs <- x@Qs[i, ,drop = FALSE]
     x
   } else {
     stop("invalid geneset", call. = FALSE)
   }
-})
+})            
 
 #==========================================================
 # The length method for "gt.result"
 #==========================================================
-setMethod("length", "gt.result",
-            function(x)
+setMethod("length", "gt.result", 
+            function(x) 
 {
   length(x@test.genes)
-})
+})            
 
 #==========================================================
-# The names methods for "gt.result"
+# The names methods for "gt.result" 
 # (applies to pathwaynames)
 #==========================================================
-setMethod("names", "gt.result",
-            function(x)
+setMethod("names", "gt.result", 
+            function(x) 
 {
   names(x@test.genes)
-})
+})      
 
-setMethod("names<-", "gt.result",
-            function(x, value)
+setMethod("names<-", "gt.result", 
+            function(x, value) 
 {
   names(x@test.genes) <- value
   rownames(x@res) <- value
   rownames(x@Qs) <- value
   x
-})
+})            
 
-
+  
 #==========================================================
 # Histogram method for permutations of "gt.result"
 #==========================================================
@@ -660,7 +662,7 @@ if( !isGeneric("hist") )
     setGeneric("hist", function(x,...) standardGeneric("hist"))
 
 setMethod("hist", "gt.result",
-            function(x, ...)
+            function(x, ...) 
 {
   gt.hist <- function(x, geneset = NULL, ...) {
     if (!is.null(geneset))
@@ -669,11 +671,11 @@ setMethod("hist", "gt.result",
       stop("more than one geneset in x", call. = FALSE)
     if (ncol(x@Qs) == 0)
       stop("no permutations in x: try hist(permutations(x)) instead", call. = FALSE)
-
+      
     Qs <- as.vector(x@Qs)
     Q <- x@res[,"Q"]
     nperm <- length(Qs)
-    hst <- hist(Qs, xlim = c(1.1 * min(0, Qs, Q), 1.1 * max(Qs, Q)), breaks = 20,
+    hst <- hist(Qs, xlim = c(1.1 * min(0, Qs, Q), 1.1 * max(Qs, Q)), breaks = 20, 
       main = paste( "Histogram of Q for", nperm, "permutations of Y" ),
       xlab = "Values of Q for permuted Y", ...)
     h <- max(hst$counts)
@@ -684,15 +686,15 @@ setMethod("hist", "gt.result",
     invisible(NULL)
   }
   gt.hist(x,...)
-})
+})            
 
 
 #==========================================================
-# Function "permutations" compares the theoretical values
-# of EQ, seQ and the p.value to values based on permutations
-# of the clinical outcome, which may be better for small
-# sample sizes. It summarizes the Q-values for the permutations
-# in a histogram, in which an arrow points out the value of the
+# Function "permutations" compares the theoretical values 
+# of EQ, seQ and the p.value to values based on permutations 
+# of the clinical outcome, which may be better for small 
+# sample sizes. It summarizes the Q-values for the permutations 
+# in a histogram, in which an arrow points out the value of the 
 # true Q, for comparison
 #==========================================================
 permutations <- function(gt, geneset, nperm = 10^4)
@@ -702,8 +704,8 @@ permutations <- function(gt, geneset, nperm = 10^4)
     if ( !is(gt, "gt.result"))
       stop("permutations should be applied to a globaltest result", call. = FALSE)
     if (gt@df.adjust > 1)
-      stop("the permutation procedure is not applicable for the adjusted global test", call. = FALSE)
-
+      stop("the permutation procedure is not applicable for the adjusted global test", call. = FALSE)      
+        
     # check correct input of nperm
     if ( !(nperm > 0) )
       stop("option nperm should be a positive integer", call. = FALSE)
@@ -721,7 +723,7 @@ permutations <- function(gt, geneset, nperm = 10^4)
           test.genes <- gt@test.genes[[index]]
           if (is.character(test.genes))
             test.genes <- intersect(test.genes, colnames(gt@X))
-
+    
           # Recreate Y and XX
           X <- as.matrix(gt@X[,test.genes])
           m <- ncol(X)
@@ -730,13 +732,13 @@ permutations <- function(gt, geneset, nperm = 10^4)
           Y <- gt@Y
           n <- length(Y)
           Q <- gt@res[index, "Q"]
-
+  
           if (gt@model == "survival") {
             # recreate matrices
             times <- gt@pars[["times"]]
             d <- gt@pars[["d"]]
             expci <- gt@pars[["expci"]]
-            dtimes <- unique(times[d == 1])
+            dtimes <- unique(times[d == 1]) 
             nd <- length(dtimes)
             matrixO <- outer(times, dtimes, "==") * matrix(d, n, nd)
             ties <- any(colSums(matrixO) > 1)
@@ -746,7 +748,7 @@ permutations <- function(gt, geneset, nperm = 10^4)
             matrixPO <- matrixP %*% t(matrixO)
             matrixM <- diag(d) %*% outer(times, dtimes, "<") - matrixPO %*% outer(times, dtimes, "<")
           }
-
+  
           # Calculate Q for nperm permutations of Q
           if (gt@model != 'survival') {
             # Recalculate the Q-value for permutations of Y
@@ -764,7 +766,7 @@ permutations <- function(gt, geneset, nperm = 10^4)
             else
               chunks <- as.list(c(rep(chunk, nchunks), rest))
             Qs <- unlist(lapply(chunks, permQ))
-          } else {
+          } else { 
             # survival model:
             if (!ties) {
               permQ <- function(npm) {
@@ -801,11 +803,11 @@ permutations <- function(gt, geneset, nperm = 10^4)
                 XX <- XX[shuffle, shuffle]
                 Q.sample <- as.numeric(Y %*% XX %*% Y)
                 EQ.sample <- sum(R * matrixW)
-                tiecorrect <- sum( sapply(1:length(dtimes),
+                tiecorrect <- sum( sapply(1:length(dtimes), 
                   function(i) {
                     if (sum(matrixO[,i]) == 1)
                       0
-                    else {
+                    else { 
                       matrixtie <- outer(matrixO[,i], matrixO[,i]) - diag(matrixO[,i])
                       sum(XX[as.logical(matrixtie)]) - 2 * sum(matrixP[,i] %*% XX %*% matrixtie) + sum(matrixtie) * (matrixP[,i] %*% XX %*% matrixP[,i])
                     }
@@ -820,23 +822,23 @@ permutations <- function(gt, geneset, nperm = 10^4)
             }
           }
         }
-        Qs
-      }))
+        Qs  
+      })) 
       gt@Qs <- cbind(gt@Qs, QQs)
     }
-
+    
     gt@res[,"EQ"] <- apply(gt@Qs, 1, mean)
     gt@res[,"seQ"] <- apply(gt@Qs, 1, sd)
     gt@res[,"p.val"] <- apply(gt@Qs >= matrix(gt@res[,"Q"], nrow(gt@Qs), ncol(gt@Qs)), 1, mean)
     gt@res <- gt@res[,1:6, drop = FALSE]
-
+    
     gt
 }
 #==========================================================
 
 
 #==========================================================
-# Function "sampling" compares the p.value(s) found with
+# Function "sampling" compares the p.value(s) found with 
 # p-values from randomly generated "pathways" of the same size
 # as the tested pathway.
 #==========================================================
@@ -847,7 +849,7 @@ sampling <- function(gt, geneset, ndraws = 10^3)
     stop("sampling should be applied to a globaltest result", call. = FALSE)
   if (ncol(gt@Qs) > 0)
     stop("sampling cannot be applied to a permutation globaltest result", call. = FALSE)
-
+      
   # check correct input of ndraws
   if ( !(ndraws > 0) )
     stop("option ndraws should be a positive integer", call. = FALSE)
@@ -855,27 +857,27 @@ sampling <- function(gt, geneset, ndraws = 10^3)
   # extract the right test.genes vector
   if (!missing(geneset))
     gt <- gt[geneset]
-
+   
   # recreate matrices
   p <- ncol(gt@X)
   n <- nrow(gt@X)
-  if (gt@model == 'logistic') {
-     if (gt@df.adjust == 1) {
+  if (gt@model == 'logistic') { 
+     if (gt@df.adjust == 1) {  
        mu1 <- mean(gt@Y < 0)
        mumu <- mu1 * (1-mu1)
-       K <- ( 1 - 6 * mu1 + 6 * mu1^2 ) / mumu
+       K <- ( 1 - 6 * mu1 + 6 * mu1^2 ) / mumu 
      } else {
        mu <- gt@pars[["mu"]]
        mu2 <- gt@pars[["mu2"]]
        musq <- mu*mu
-       mu4 <- mu - 4*musq + 6*musq*mu - 3*musq*musq
+       mu4 <- mu - 4*musq + 6*musq*mu - 3*musq*musq  
      }
   }
   if (gt@model == "survival") {
     times <- gt@pars[["times"]]
     d <- gt@pars[["d"]]
     expci <- gt@pars[["expci"]]
-    dtimes <- unique(times[d == 1])
+    dtimes <- unique(times[d == 1]) 
     nd <- length(dtimes)
     matrixO <- outer(times, dtimes, "==") * matrix(d, n, nd)
     ties <- any(colSums(matrixO) > 1)
@@ -886,7 +888,7 @@ sampling <- function(gt, geneset, ndraws = 10^3)
     matrixM <- diag(d) %*% outer(times, dtimes, "<") - matrixPO %*% outer(times, dtimes, "<")
     matrixW <- diag(rowSums(matrixPO)) - matrixPO %*% t(matrixPO)
   }
-
+     
   setsizes <- unique(sapply(gt@test.genes, length))
   setsizes <- setsizes[!(setsizes %in% c(0,p))]
 
@@ -925,14 +927,14 @@ sampling <- function(gt, geneset, ndraws = 10^3)
         scl <- varQ / (2 * EQ)
         dfr <- EQ / scl
         pout <- pf ( (scl * dfr / Q), 10^10, dfr )
-      }
+      }    
       if (gt@model == 'survival') {
         EQ <- sum(R * matrixW)
-        tiecorrect <- sum( sapply(1:length(dtimes),
+        tiecorrect <- sum( sapply(1:length(dtimes), 
           function(i) {
             if (sum(matrixO[,i]) == 1)
               0
-            else {
+            else { 
               matrixtie <- outer(matrixO[,i], matrixO[,i]) - diag(matrixO[,i])
               sum(XX[as.logical(matrixtie)]) - 2 * sum(matrixP[,i] %*% XX %*% matrixtie) + sum(matrixtie) * (matrixP[,i] %*% XX %*% matrixP[,i])
             }
@@ -945,9 +947,9 @@ sampling <- function(gt, geneset, ndraws = 10^3)
         pout <- pnorm(-(Q - EQ) / sqrt(varQ))
       }
       pout
-    })
-  }))
-
+    }) 
+  }))  
+    
   comp.p <- apply(gt@res, 1, function(x) {
     m <- x["test.n"]
     if ((m == 0) | (m == p) )
@@ -962,7 +964,7 @@ sampling <- function(gt, geneset, ndraws = 10^3)
     gt@res[,"comp.p"] <- comp.p
   else
     gt@res <- cbind(gt@res, comp.p)
-
+  
   gt
 }
 
@@ -974,7 +976,7 @@ sampling <- function(gt, geneset, ndraws = 10^3)
 # geneplot or sampleplot
 #==========================================================
 setClass("gt.barplot", representation(
-    res = "matrix",
+    res = "matrix", 
     labelsize = "numeric",
     drawlabels = "logical",
     legend = "vector")
@@ -982,7 +984,7 @@ setClass("gt.barplot", representation(
 
 #==========================================================
 setMethod("result", "gt.barplot",
-            function(object)
+            function(object) 
 {
     res <- object@res
     colouring <- factor(res[,"up"])
@@ -993,52 +995,52 @@ setMethod("result", "gt.barplot",
 })
 
 #==========================================================
-# The names method for "gt.barplot"
+# The names method for "gt.barplot" 
 #==========================================================
-setMethod("names", "gt.barplot",
-            function(x)
+setMethod("names", "gt.barplot", 
+            function(x) 
 {
   rownames(x@res)
-})
+})      
 
 #==========================================================
-# A z.score method for "gt.barplot"
+# A z.score method for "gt.barplot" 
 #==========================================================
 if( !isGeneric("z.score") )
     setGeneric("z.score", function(x) standardGeneric("z.score"))
 
 
-setMethod("z.score", "gt.barplot",
-            function(x)
+setMethod("z.score", "gt.barplot", 
+            function(x) 
 {
     res <- x@res
     (res[,"influence"] - res[,"Einf"]) / res[,"sd.inf"]
-})
+})      
 
 
 #==========================================================
-setMethod("[", "gt.barplot",
-            function(x, i, j,...,drop)
+setMethod("[", "gt.barplot", 
+            function(x, i, j,...,drop) 
 {
   if (all(i %in% rownames(x@res)) | all(i %in% 1:nrow(x@res))
     | (is.logical(i) & (length(i) == nrow(x@res)))) {
-      x@res <- x@res[i, ,drop = FALSE]
+      x@res <- x@res[i, ,drop = FALSE] 
       x
   } else {
     stop("invalid subscript")
   }
-})
+})  
 
 #==========================================================
-setMethod("length", "gt.barplot",
-            function(x)
+setMethod("length", "gt.barplot", 
+            function(x) 
 {
   nrow(result(x))
-})
+})            
 
 #==========================================================
-setMethod("scale", "gt.barplot",
-            function(x, center = FALSE, scale = TRUE)
+setMethod("scale", "gt.barplot", 
+            function(x, center = FALSE, scale = TRUE) 
 {
   if (center) {
     x@res[,"influence"] <- x@res[,"influence"] - x@res[,"Einf"]
@@ -1052,13 +1054,13 @@ setMethod("scale", "gt.barplot",
     x@res[,"sd.inf"] <- x@res[,"sd.inf"] / norm
     x
   }
-})
+})            
 
 #==========================================================
-setMethod("show", "gt.barplot",
-            function(object)
+setMethod("show", "gt.barplot", 
+            function(object) 
 {
-  show(result(object))
+  show(result(object))        
 })
 
 #==========================================================
@@ -1078,11 +1080,11 @@ setMethod("plot", "gt.barplot",
       legend <- rownames(x@res)
       m <- length(influence)
       rangebars <- max(0,influence) - min(0,influence)
-      minplot <- min(0,influence)
+      minplot <- min(0,influence) 
       maxplot <- max(0,influence) + 0.2 * rangebars
       if (drawlabels & !is.null(legend)){
       # check for space in margin of plot
-        plot.new()
+        plot.new()  
         labwidth <- max(strwidth(legend,"inches",labelsize))
         margins <- par("mai")
         par(new = TRUE, "mai" = c(max(margins[1], labwidth*1.3), margins[2:4]))
@@ -1116,7 +1118,7 @@ setMethod("plot", "gt.barplot",
 
 
 #==========================================================
-# Geneplot plots the influence of each gene on the outcome
+# Geneplot plots the influence of each gene on the outcome 
 #   of the test statistic
 # See help(geneplot) for details
 #==========================================================
@@ -1126,7 +1128,7 @@ geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE, 
     # check correct input of gt
     if ( !is(gt, "gt.result"))
         stop("geneplot should be applied to a globaltest result", call. = FALSE)
-
+        
     # extract the right test.genes vector
     if (!missing(geneset))
       gt <- gt[geneset]
@@ -1138,7 +1140,7 @@ geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE, 
     if ( !missing(genesubset)) {
       if ( is.character(genesubset) ) {
         test.genes <- intersect(match(genesubset, colnames(gt@X)), test.genes)
-        if ( length(test.genes) == 0 )
+        if ( length(test.genes) == 0 ) 
           stop("genesubset is not a subset of the selected geneset")
       }else{
         if (all(genesubset %in% 1:length(test.genes)))
@@ -1153,7 +1155,7 @@ geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE, 
     m <- ncol(X)
     Y <- gt@Y
     n <- length(Y)
-    XY <- t(X) %*% Y
+    XY <- t(X) %*% Y  
     influence <- XY * XY
     up <- (sign(XY) == 1)
     adjX <- t(gt@IminH) %*% X
@@ -1164,7 +1166,7 @@ geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE, 
         trRR <- Einf * Einf
         tr2R <- Einf * Einf
         trR2 <- colSums(tussen * tussen)
-        mu1 <- mean(Y < 0)
+        mu1 <- mean(Y < 0) 
         mumu <- mu1 * (1 - mu1)
         K <- ( 1 - 6 * mu1 + 6 * mu1^2 ) / mumu
         varinf <- K * ( trR2 - tr2R / n ) + 2 * trRR - 2 * tr2R / (n-1)
@@ -1183,13 +1185,13 @@ geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE, 
       trRR <- Einf * Einf
       tr2R <- Einf * Einf
       varinf <- (2 / (n - gt@df.adjust + 2)) * ( (n - gt@df.adjust) * trRR - tr2R )
-    }
+    }   
     if (gt@model == 'survival') {
       # reconstruct matrices
       times <- gt@pars[["times"]]
       d <- gt@pars[["d"]]
       expci <- gt@pars[["expci"]]
-      dtimes <- unique(times[d == 1])
+      dtimes <- unique(times[d == 1]) 
       nd <- length(dtimes)
       matrixO <- outer(times, dtimes, "==") * matrix(d, n, nd)
       atrisk <- outer(times, dtimes, ">=")
@@ -1219,7 +1221,7 @@ geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE, 
           oj <- matrixO[,j]
           matrixtie <- outer(oj, oj) - diag(oj)
           pjX <- as.vector(pj %*% X)
-          colSums(X * (matrixtie %*% X)) - 2 * pjX * as.vector(rowSums(matrixtie) %*% X) + sum(matrixtie) * pjX * pjX
+          colSums(X * (matrixtie %*% X)) - 2 * pjX * as.vector(rowSums(matrixtie) %*% X) + sum(matrixtie) * pjX * pjX 
         }))
       }
       # reconstruct expected variance and use to standardize
@@ -1241,16 +1243,16 @@ geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE, 
     if (gt@model == 'linear')
       legend <- c("positive correlation with residual Y", "negative correlation with residual Y", "+", "-")
     if (gt@model == 'logistic')
-      legend <- c(paste("higher expression in", gt@levels[2], "samples"),
-        paste("higher expression in", gt@levels[1], "samples"), paste("high in", gt@levels[2]),
+      legend <- c(paste("higher expression in", gt@levels[2], "samples"), 
+        paste("higher expression in", gt@levels[1], "samples"), paste("high in", gt@levels[2]), 
         paste("high in", gt@levels[1]) )
     if (gt@model == 'survival')
-      legend <- c(paste("positively associated with survival"),
+      legend <- c(paste("positively associated with survival"), 
         paste("negatively associated with survival"), "+", "-")
-
-    gtbar <- new("gt.barplot",
+    
+    gtbar <- new("gt.barplot",     
       res = res,
-      labelsize = labelsize,
+      labelsize = labelsize, 
       drawlabels = drawlabels,
       legend = legend)
     if (scale)
@@ -1262,7 +1264,7 @@ geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE, 
 
 
 #==========================================================
-# Sampleplot plots the influence of each sample on the outcome
+# Sampleplot plots the influence of each sample on the outcome 
 #   of the test statistic
 # See help(sampleplot) for details
 #==========================================================
@@ -1271,7 +1273,7 @@ sampleplot <- function(gt, geneset, samplesubset, scale = FALSE, drawlabels = TR
     # check correct input of gt
     if ( !is(gt, "gt.result"))
         stop("geneplot should be applied to a globaltest result", call. = FALSE)
-
+        
     # extract the right test.genes vector
     if (!missing(geneset))
       gt <- gt[geneset]
@@ -1286,7 +1288,7 @@ sampleplot <- function(gt, geneset, samplesubset, scale = FALSE, drawlabels = TR
     n <- nrow(X)
     if (missing(samplesubset))
       samplesubset <- 1:n
-    else {
+    else {  
       if (all(samplesubset %in% rownames(X)))
         samplesubset <- match(samplesubset, rownames(X))
       else
@@ -1295,12 +1297,12 @@ sampleplot <- function(gt, geneset, samplesubset, scale = FALSE, drawlabels = TR
     }
     m <- ncol(X)
     Y <- gt@Y
-
+    
     # calculate influence per sample and expected influence
     if (gt@model != 'survival') {
       XXY <- t(gt@IminH) %*% X %*% t(X) %*% Y
       influence <- (n/m) * Y * XXY
-      up <- (sign(Y) == 1)
+      up <- (sign(Y) == 1) 
       if ((gt@model == 'logistic') & (gt@df.adjust > 1)) {
         mu2 <- abs(Y) * (1 - abs(Y))
         adjX <- t(gt@IminH) %*% X
@@ -1318,11 +1320,11 @@ sampleplot <- function(gt, geneset, samplesubset, scale = FALSE, drawlabels = TR
     } else {
       # survival model
       adjX <- t(gt@IminH) %*% X
-      R <- adjX %*% t(adjX)
+      R <- adjX %*% t(adjX) 
       times <- gt@pars[["times"]]
       d <- gt@pars[["d"]]
       expci <- gt@pars[["expci"]]
-      dtimes <- unique(times[d == 1])
+      dtimes <- unique(times[d == 1]) 
       nd <- length(dtimes)
       matrixO <- outer(times, dtimes, "==") * matrix(d, n, nd)
       atrisk <- outer(times, dtimes, ">=")
@@ -1332,7 +1334,7 @@ sampleplot <- function(gt, geneset, samplesubset, scale = FALSE, drawlabels = TR
       matrixM <- diag(d) %*% outer(times, dtimes, "<") - matrixPO %*% outer(times, dtimes, "<")
       matrixW <- diag(rowSums(matrixPO)) - matrixPO %*% t(matrixPO)
       influence <- rowSums((adjX %*% t(X)) * (outer(Y,Y) - matrixW))
-      up <- (sign(Y) == 1)
+      up <- (sign(Y) == 1) 
       eye <- diag(n)
       Evarinf <- sapply(1:n, function(i) {
         out <- numeric(2)
@@ -1351,12 +1353,12 @@ sampleplot <- function(gt, geneset, samplesubset, scale = FALSE, drawlabels = TR
       })
       Einf <- Evarinf[1,]
       sd.inf <- sqrt(Evarinf[2,])
-      tiecorrect <- sum( sapply(1:nd,
+      tiecorrect <- sum( sapply(1:nd, 
         function(j) {
           oj <- matrixO[,j]
           if (sum(oj) == 1)
             rep(0, n)
-          else {
+          else { 
             XX <- X %*% t(X) / n
             matrixtie <- outer(oj, oj) - diag(oj)
             pj <- matrixP[,j]
@@ -1376,7 +1378,7 @@ sampleplot <- function(gt, geneset, samplesubset, scale = FALSE, drawlabels = TR
       Einf <- Einf / norm
       sd.inf <- sd.inf / norm
     }
-
+    
     # Output: gt.barplot object
     res <- cbind(influence - Einf, 0, sd.inf, up)
     colnames(res) <- c("influence", "Einf", "sd.inf", "up")
@@ -1387,10 +1389,10 @@ sampleplot <- function(gt, geneset, samplesubset, scale = FALSE, drawlabels = TR
       legend <- c(paste(gt@levels[2], "samples"), paste(gt@levels[1], "samples"), gt@levels[2], gt@levels[1])
     if (gt@model == 'survival')
       legend <- c("late event time or censored", "early event time", "late", "early")
-
-    gtbar <- new("gt.barplot",
+    
+    gtbar <- new("gt.barplot",     
       res = res,
-      labelsize = labelsize,
+      labelsize = labelsize, 
       drawlabels = drawlabels,
       legend = legend)
     gtbar <- gtbar[samplesubset]
@@ -1402,7 +1404,7 @@ sampleplot <- function(gt, geneset, samplesubset, scale = FALSE, drawlabels = TR
 #==========================================================
 
 #==========================================================
-# The function regressionplot allows the evaluation of
+# The function regressionplot allows the evaluation of 
 #   possibly outlying samples.
 # See help(regressionplot) for details
 #==========================================================
@@ -1413,7 +1415,7 @@ regressionplot <- function(gt, geneset, sampleid,...)
     # check correct input of gt
     if ( !is(gt, "gt.result"))
         stop("geneplot should be applied to a globaltest result", call. = FALSE)
-
+        
     # extract the right test.genes vector
     if (!missing(geneset))
       gt <- gt[geneset]
@@ -1429,7 +1431,7 @@ regressionplot <- function(gt, geneset, sampleid,...)
     R <- as.vector(X %*% t(X))
     S <- as.vector(Y %o% Y)
     n <- length(Y)
-
+    
     # Check correct input of sampleid
     if ( missing(sampleid) ) {
       sampleid <- 1:n
@@ -1437,7 +1439,7 @@ regressionplot <- function(gt, geneset, sampleid,...)
       if (!( all(sampleid %in% 1:n) | all(sampleid %in% rownames(X)) ))
         stop("Option sampleid incorrect", call. = FALSE)
     }
-
+            
     # Extract relevant entries from S and R
     samples <- rep(FALSE,times = n)
     names(samples) <- rownames(X)
@@ -1452,7 +1454,7 @@ regressionplot <- function(gt, geneset, sampleid,...)
     Ssub <- S[subselection]
     Rrest <- R[selection & !subselection]
     Srest <- S[selection & !subselection]
-
+    
     # Draw the plots
     plot(Sall, Rall, xlab = "Covariance between outcomes", ylab = "Covariance between expression profiles", col = 0,...)
     if (length(Rrest) > 0){
@@ -1461,13 +1463,10 @@ regressionplot <- function(gt, geneset, sampleid,...)
     }
     points(Ssub, Rsub, col = 2, pch = 4, cex = 1.5)
     abline(lm(Rsub ~ Ssub), col = 2)
-
-    # Some explanation
-##    if ( ( !all(samples) ) & ( !is.null(names(Y)) ) )
-##        cat("Samples investigated:\n", names(Y)[samplenr], "\n")
+    
     # No output
     invisible(NULL)
-}
+}   
 #==========================================================
 
 
@@ -1478,11 +1477,11 @@ regressionplot <- function(gt, geneset, sampleid,...)
 #==========================================================
 
 checkerboard <- function(gt, geneset, sort = TRUE, drawlabels = TRUE, labelsize = 0.6,...)
-{
+{   
     # check correct input of gt
     if ( !is(gt, "gt.result"))
         stop("geneplot should be applied to a globaltest result", call. = FALSE)
-
+        
     # extract the right test.genes vector
     if (!missing(geneset))
       gt <- gt[geneset]
@@ -1498,20 +1497,20 @@ checkerboard <- function(gt, geneset, sort = TRUE, drawlabels = TRUE, labelsize 
     X <- as.matrix(gt@X[,test.genes])
     Y <- gt@Y
     R <- X %*% t(X)
-
+        
     # Sort Y if needed and return new samplenrs
     n <- length(Y)
     perm <- sort.list(Y)
     rperm <- sort.list(Y[n:1])
     if ( any(perm != 1:n ) & any(rperm != 1:n) & (sort)){
-        newsamplenrs <- matrix( c(1:n, sort.list( perm )), n, 2 )
+        newsamplenrs <- matrix( c(1:n, sort.list( perm )), n, 2 ) 
         label <- "sorted samplenr"
         R <- R[perm,perm]
     }else{
         sort = FALSE
         label <- "samplenr"
-        newsamplenrs <- matrix( c(1:n, 1:n), n, 2 )
-    }
+        newsamplenrs <- matrix( c(1:n, 1:n), n, 2 ) 
+    }    
     colnames(newsamplenrs) <- c("samplnr.old", "samplenr.new")
     rownames(newsamplenrs) <- rownames(X)
 
@@ -1522,19 +1521,19 @@ checkerboard <- function(gt, geneset, sort = TRUE, drawlabels = TRUE, labelsize 
     if (is.null(labelsize))
       labelsize<-par("cex.axis")
     if (drawlabels & !is.null(rownames(newsamplenrs))){
-      legend<-rownames(newsamplenrs)[sort(newsamplenrs[,2],index.return=TRUE)$ix]
+      legend<-rownames(newsamplenrs)[sort(newsamplenrs[,2],index.return=TRUE)$ix]   
       # check for space in margin of plot
-      plot.new()
+      plot.new()  
       labwidth<-max(strwidth(legend,"inches",labelsize))
       margins<-par("mai")
       par(new=TRUE,"mai"=c(max(margins[1],labwidth*1.3),max(margins[2],labwidth*1.3), margins[3:4]))
-      image(x = 1:n, y = 1:n, z = R>med, col = rainbow(2, v = c(0,1), s = c(1,0) ), ylab = "", xlab = "",
+      image(x = 1:n, y = 1:n, z = R>med, col = rainbow(2, v = c(0,1), s = c(1,0) ), ylab = "", xlab = "", 
           yaxt="n", xaxt = "n", ...)
       axis(2,1:length(legend), legend, cex.axis=labelsize, las=2)
       axis(1,1:length(legend), legend, cex.axis=labelsize, las=2)
       par("mai"=margins)
     }else
-      image(x = 1:n, y = 1:n, z = R>med, col = rainbow(2, v = c(0,1), s = c(1,0) ), xlab = label, ylab = label,
+      image(x = 1:n, y = 1:n, z = R>med, col = rainbow(2, v = c(0,1), s = c(1,0) ), xlab = label, ylab = label, 
           lab = c(n,n,50/n), ...)
     par(pty = "s")
     invisible(newsamplenrs)
