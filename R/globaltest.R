@@ -360,7 +360,6 @@ globaltest <- function(X, Y, test.genes,
   if ( !is.list(test.genes) ) 
     test.genes <- list(test.genes)
 
-  print(test.genes)  
   test.genes <- lapply(test.genes, function(tg) { 
     if ( !is.vector(tg) & !is.null(tg) )
       stop("test.genes should be a (list of) vector(s)", call. = FALSE)
