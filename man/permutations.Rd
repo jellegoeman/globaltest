@@ -30,9 +30,10 @@ Mathematical Institute, Leiden University. Available from
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}}
 
 \seealso{\code{\link{globaltest}}, \code{\link{checkerboard}},
-\code{\link{geneplot}}, \code{\link{regressionplot}}.}
+  \code{\link{geneplot}}, \code{\link{regressionplot}}.} 
 
 \examples{
+if(interactive()){
     data(exampleX)      # Expression data (40 samples; 1000 genes)
     data(exampleY)      # Clinical outcome for the 40 samples
     pathway <- 1:25     # A pathway contains genes 1 to 25
@@ -40,6 +41,7 @@ Mathematical Institute, Leiden University. Available from
                                                 permutation = TRUE)
     gt
     permutations(gt)
+}
 }
 
 \keyword{hplot}

@@ -33,15 +33,17 @@ Mathematical Institute, Leiden University. Available from
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}}
 
 \seealso{\code{\link{globaltest}}, \code{\link{regressionplot}},
-\code{\link{checkerboard}}, \code{\link{permutations}}.}
+  \code{\link{checkerboard}}, \code{\link{permutations}}.}  
 
 \examples{
+if(interactive()){
     data(exampleX)      # Expression data (40 samples; 1000 genes)
     data(exampleY)      # Clinical outcome for the 40 samples
     pathway <- 1:25     # A pathway contains genes 1 to 25
     gt <- globaltest(exampleX, exampleY, test.genes = pathway)
     gt
-    geneplot(gt)
+        geneplot(gt)
+}
 }
 
 \keyword{hplot}

@@ -61,26 +61,30 @@ Mathematical Institute, Leiden University. Available from
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}.}
 
-\seealso{\code{\link{geneplot}}, \code{\link{regressionplot}}, 
-\code{\link{checkerboard}}, \code{\link{permutations}}, 
-\code{\link{gt.result}}.}
+\seealso{\code{\link{geneplot}}, \code{\link{regressionplot}},
+  \code{\link{checkerboard}}, \code{\link{permutations}},
+  \code{\link{gt.result}}.}  
 
-\examples{ 
-    data(exampleX)      # Expression data (40 samples; 1000 genes)
-    data(exampleY)      # Clinical outcome for the 40 samples
-    pathway <- 1:25     # A pathway contains genes 1 to 25
-    gt <- globaltest(exampleX, exampleY, test.genes = pathway)
-    gt
+\examples{
+    if(interactive()){
+        data(exampleX)      # Expression data (40 samples; 1000 genes)
+        data(exampleY)      # Clinical outcome for the 40 samples
+        pathway <- 1:25     # A pathway contains genes 1 to 25
+        gt <- globaltest(exampleX, exampleY, test.genes = pathway)
+        gt
+
+        # For comparison: test all genes:
+        gt <- globaltest(exampleX, exampleY)
+        gt
     
-    # For comparison: test all genes:
-    gt <- globaltest(exampleX, exampleY)
-    gt
-    
-    # For comparison: the permutation version:
-    gt <- globaltest(exampleX, exampleY, test.genes = pathway, 
+        # For comparison: the permutation version:
+        gt <- globaltest(exampleX, exampleY, test.genes = pathway, 
                                                 permutation = TRUE)
-    gt
-    permutations(gt)
+        gt
+   
+        permutations(gt)
+    }
+
 }
 
 \keyword{htest}
