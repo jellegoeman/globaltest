@@ -468,7 +468,7 @@ globaltest <- function(X, Y, test.genes = NULL,
             ps <- vector("numeric",ndraws)
             for (sample in 1:ndraws){
               X.sample <- as.matrix(X[,sample(1:p,m)])
-              R <- ( t(IminH) %*% X.sel %*% t(X.sel) %*% (IminH) ) / m
+              R <- ( t(IminH) %*% X.sample %*% t(X.sample) %*% (IminH) ) / m
               XX <- (X.sample %*% t(X.sample)) / m
               Q.sample <- as.numeric(Y %*% XX %*% Y)
               EQ.sample <- sum(diag(R))
@@ -483,14 +483,14 @@ globaltest <- function(X, Y, test.genes = NULL,
                   varQ <- K * ( trR2 - tr2R / n ) + 2 * trRR - 2 * tr2R / (n-1)
                 } else {
                   RV <- R %*% diag(mu2)
-                  EQ <- as.numeric(sum(diag(RV)))
+                  EQ.sample <- as.numeric(sum(diag(RV)))
                   musq <- mu*mu
                   mu4 <- mu - 4*musq + 6*musq*mu - 3*musq*musq  
                   VarQ <-  sum(diag(R) * diag(R) * (mu4 - 3 * mu2 * mu2)) + 2 * sum(diag(RV %*% RV))
-              }
-            }else{ 
-              # model = 'linear'
-              varQ <- (2 / (n - nadjust + 2)) * ( (n - nadjust) * trRR - tr2R )
+                }
+              }else{ 
+                # model = 'linear'
+                varQ <- (2 / (n - nadjust + 2)) * ( (n - nadjust) * trRR - tr2R )
             }    
             scl <- varQ / (2 * EQ.sample)
             dfr <- EQ.sample / scl
