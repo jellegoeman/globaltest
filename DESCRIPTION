@@ -1,6 +1,6 @@
 Package: globaltest
-Version: 2.1.4
-Date: 2004-04-23
+Version: 2.1.5
+Date: 2004-05-07
 Title: Testing Association of a Group of Genes with a Clinical Variable
 Author: Jelle Goeman and Jan Oosting
 Maintainer: Jelle Goeman <j.j.goeman@lumc.nl>
@@ -8,3 +8,5 @@ Depends: R (>= 1.8.0), methods
 Description: Testing whether a group of genes (e.g. a pathway) is significantly associated with a clinical variable of interest.
 Reference: J. J. Goeman, S.A. van de Geer, F. de Kort and J. C. van Houwelingen, 2004, 'A global test for groups of genes: testing association with a clinical outcome', Bioinformatics 20 (1) 93--99.
 License: GPL version 2 or newer
+Packaged: Mon May  3 21:32:22 2004; madman
+

@@ -11,8 +11,7 @@
 
 \documentclass[a4paper]{article}
 
-\title{The Global Test: Testing association of a pathway 
-with a clinical variable}
+\title{Testing association of a pathway with a clinical variable}
 
 \author{Jelle Goeman \and Jan Oosting}
 
@@ -23,19 +22,40 @@ with a clinical variable}
 
 \section{Introduction}
 
-This HowTo document explains how to test whether a given group of
-genes is significantly associated with a clinical outcome using
-the R-package \Rpackage{globaltest}. The explanation here
-focusses on practical use of the test. To understand the idea and
-the mathematics behind the test, and for more details on how to
-interpret a test result, we refer to the paper (Goeman e.a.
-2004).
+This document shows the functionality of the R-package
+\Rpackage{globaltest}. The main function tests whether a given
+group of genes is significantly associated with a clinical outcome.
+The explanation here focuses on practical use of the test. To 
+understand the idea and the mathematics behind the test, and 
+for more details on how to interpret a test result, we refer to 
+the paper (Goeman e.a. 2004).
 
-In our examples we use data which are available from the
+In the last few years there has been a shift in focus from studying the 
+effects of single genes to studying effects of multiple functionally 
+related genes. Most of the current methods for studying pathways involve 
+looking at increased proportions of differentially expressed genes in 
+pathways of interest. These methods do not identify pathways where many genes
+have altered their expression in a small way. The globaltest was designed to 
+address this issue.
+
+Essentially the globaltest is based on an emperical Bayesian generalized linear 
+model where the regression coefficients between expression data and clinical
+outcome are the random variables. The test applies a goodness of fit test on 
+this model. The globaltest is optimal when all coefficients show an effect, even 
+if none of the individual coefficients shows a significant relation between 
+expression and outcome. However the null hypothesis will also be rejected when 
+there are 1 or a few coefficients with a significant relation.
+
+By grouping together genes before testing usually the number of tests will 
+decrease and amount of correction for multiple testing will be decreased. Genes can 
+be grouped together in any meaningful way, for example based in function (KEGG, GO) or 
+location (chromosome, cytoband).
+
+In our examples we use datasets that are available from the
 BioConductor website. All the necessary packages to repeat the
 examples below are available from www.bioconductor.org.
 
-First we install some packages from BioConductor and load
+First we load some packages from BioConductor and load
 the data we'll use.
 
 <<results=hide>>=
@@ -60,8 +80,8 @@ method may be used instead. Several phenotype variables are
 available with \Robject{golubX}, among them ``ALL.AML'', the
 clinical variable that interests us.
 
-This document explains how to use globaltest based on BioConductor 
-\Rclass{exprSet} input. For examples of using simple vector an matrix input,
+In this document we use the globaltest based on BioConductor 
+\Rclass{exprSet} input. For examples using simple vector or matrix input,
 see \Robject{help(globaltest)}.
 
 
@@ -71,7 +91,7 @@ Suppose we are interested in testing whether AML and ALL have
 different gene expression pattern for certain pathways from the
 KEGG database.
 
-First we load all KEGG pathways. We'll need the rest in the next
+First we load all KEGG pathways. We willl use the rest in the next
 section.
 <<>>=
 keggids <- ls(env = hu6800PATH2PROBE)
@@ -79,7 +99,7 @@ keggPW <- multiget(keggids, env = hu6800PATH2PROBE)
 cellcycle <- keggPW[["04120"]]
 @
 
-This created a list \Robject{keggPW} of 120 pathways, each a
+This creates a list \Robject{keggPW} of 120 pathways, each a
 vector of gene names. The vector \Robject{cellcycle} is one of them.
 It corresponds to the Cell Cycle pathway, ``04120'' in the KEGG
 database, which corresponds to 17 probes on the hu6800 chip. Suppose we are 
@@ -96,8 +116,10 @@ gt.all <- globaltest(golubX, "ALL.AML")
 
 The first input \Rfunarg{X} should be the \Rclass{exprSet} 
 object, the second input \Rfunarg{Y} the name of the clinical 
-variable in \Robject{pData(X)}. Alternatively we can give a 
-vector as \Rfunarg{Y} and a matrix of expressions as \Rfunarg{X}. 
+variable in \Robject{pData(X)}. 
+Alternatively we can give a matrix of expressions as \Rfunarg{X} and 
+a vector as \Rfunarg{Y}. 
+
 The test result is stored in a \Rclass{gt.result} object, which 
 also contains all the information needed to draw the plots.
 
@@ -171,7 +193,7 @@ more accurate p-values.
 
 It is also possible to adjust the globaltest for confounders or 
 for known risk factors. For example in the Golub Data set we 
-might be afraid for a disturbance due to that the fact that some 
+may be afraid for a disturbance due to that the fact that some 
 samples were taken from peripheral blood while others were taken 
 from bone marrow. We can correct for this using the option 
 \Rfunarg{adjust}. The option \Rfunarg{adjust} can also be used when the 

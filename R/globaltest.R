@@ -22,8 +22,8 @@ require("methods")
 #           e.g c("AA173143","AA461092","AA487442","AA490243","R26706","R61845")
 # 
 # OPTIONS:
-# model = 'logistic': (default).
-# model = 'linear': for continuous Y.
+# model = "logistic": (default).
+# model = "linear": for continuous Y.
 # levels: vector of groups to test in Y. Not needed if Y is binominal
 #           If Y contains > 2 levels then the following methods are used
 #           if levels contains 1 value: this groups is tested against all other samples
@@ -95,8 +95,7 @@ globaltest <- function(X, Y, test.genes = NULL,
         }
       } 
     }
-    if ( !(model %in% c('linear','logistic')) )
-      stop("option 'model' should be either 'linear' or 'logistic'.", call. = FALSE)
+    model<- match.arg(model, c('linear','logistic')) 
 
     # 3: coerce X into a matrix
     if (is(X, "exprSet")) {
@@ -535,6 +534,80 @@ globaltest <- function(X, Y, test.genes = NULL,
 
 
 #==========================================================
+setClass("gt.result", representation(
+    res = "matrix", 
+    X = "matrix",
+    Y = "vector",
+    test.genes = "list",
+    adjustmatrix = "matrix",
+    Rsquare = "numeric",
+    model = "character",
+    levels = "vector",
+    df.adjust = "integer")
+)
+
+#==========================================================
+# Function "show" prints out a result of type "gt.result"
+# such as results from a call to "globaltest"
+#==========================================================
+
+setMethod("show", "gt.result", function(object)
+{
+  npathways <- length(object@test.genes)
+  nsamples <- length(object@Y)
+  ngenes <- dim(object@X)[2]
+
+  cat("Global Test result:\n")
+  if (npathways == 1)
+    cat("Data:", nsamples, "samples with", ngenes, "genes; 1 pathway tested\n")
+  else
+    cat("Data:", nsamples, "samples with", ngenes, "genes;", npathways, "pathways tested\n")
+  cat("Model:", object@model, "\n")
+  if (object@Rsquare != 1)
+    cat("Adjusted:", 100 * round(object@Rsquare, 3), "% of variance of Y remains after adjustment\n")
+  cat("\n")
+    
+  res <- data.frame(object@res)
+  if ( all(is.na(res[,"comp.p"])) ) {
+    res <- res[,1:6]
+    colnames(res) <- c("genes","tested","Statistic Q","Expected Q","sd of Q","p-value")
+  }else{
+    colnames(res) <- c("genes","tested","Statistic Q","Expected Q","sd of Q","p-value","comp. p")
+  }
+  print(signif(res, digits = 5))
+})
+
+
+#==========================================================
+# Two functions to extract relevant information from 
+# a gt.result object
+#==========================================================
+if( !isGeneric("result") )
+    setGeneric("result", function(object) standardGeneric("result"))
+
+setMethod("result", "gt.result",
+            function(object) 
+{
+    res <- object@res
+ 
+    if ( all(is.na(res[,"comp.p"])) ) {
+      res <- res[,c("path.n","test.n","Q","EQ","seQ","p.val")]
+    }else{
+      res <- res[,c("path.n","test.n","Q","EQ","seQ","p.val","comp.p")]
+    }
+    
+    res
+})
+
+#==========================================================
+if( !isGeneric("p.value") )
+    setGeneric("p.value", function(gt) standardGeneric("p.value"))
+
+setMethod("p.value", "gt.result",
+            function(gt) gt@res[,"p.val"])
+
+
+#==========================================================
 # Function "permutations" compares the theoretical values 
 # of EQ, seQ and the p.value to values based on permutations 
 # of the clinical outcome, which may be better for small 
@@ -616,7 +689,7 @@ permutations <- function(gt, geneset = NULL, nperm = 10^4)
     # Draw histogram
     hst <- hist(Qs, xlim = c(0, 1.1 * max( c( Qs, Q ) ) ), 
       main = paste( "Histogram of Q for", nperm, "permutations of Y" ),
-      xlab = "Values of Q for permuted Y" )
+      xlab = "Values of Q for permuted Y")
     h <- max(hst$counts)
     arrows( Q, h/5, Q, 0 )
     text( Q, h/4.5, 'Q' )
@@ -730,7 +803,7 @@ geneplot <- function(gt, geneset = NULL, genesubset = NULL, drawlabels = TRUE, l
       par("mai"=margins)
     }else
       plot( 0, xlim = c(1/2, m+1/2), ylim = c(0, 1.2 * max(influence, Einf) ), col = 0, xlab = "genenr", ylab = "influence", ...)
-    if (m <= 250) {
+    if (m <= 300) {
         rect(xleft = 1:m - 0.4, xright = 1:m + 0.4, ybottom = rep(0,times=m), ytop = influence, col = (up+2), border=0 )
         nlines <- floor((influence - Einf) / sd.inf)
         nlines[(nlines < 0) | (sd.inf < 10^-3)] <- 0
@@ -861,7 +934,7 @@ sampleplot <- function(gt, geneset = NULL, samplesubset = NULL, drawlabels = TRU
       par("mai"=margins)
     }else
       plot( 0, xlim = c(1/2, n+1/2), ylim = c(minplot, maxplot), col = 0, xlab = "samplenr", ylab = "influence", ...)
-    if (n <= 250) {
+    if (n <= 300) {
         rect(xleft = 1:n - 0.4, xright = 1:n + 0.4, ybottom = rep(0,times=n), ytop = influence - Einf, col = (up+2), border=0 )
         nlines <- trunc((influence - Einf) / sd.inf)
         nlines[sd.inf < 10^-3] <- 0
@@ -1072,50 +1145,6 @@ checkerboard <- function(gt, geneset = NULL, sort = TRUE, drawlabels = TRUE, lab
 #==========================================================
 
 #==========================================================
-# Two functions to extract relevant information from 
-# a gt.result object
-#==========================================================
-result <- function(gt)
-{
-    # check correct input of gt
-    if ( !is(gt, "gt.result"))
-        stop("result should be applied to a globaltest result", call. = FALSE)
-    
-    res <- gt@res
- 
-    if ( all(is.na(res[,"comp.p"])) ) {
-      res <- res[,c("path.n","test.n","Q","EQ","seQ","p.val")]
-    }else{
-      res <- res[,c("path.n","test.n","Q","EQ","seQ","p.val","comp.p")]
-    }
-    
-    res
-}
-
-p.value <- function(gt)
-{
-    # check correct input of gt
-    if ( !is(gt, "gt.result"))
-        stop("p.values should be applied to a globaltest result", call. = FALSE)
-
-    gt@res[,"p.val"]
-}
-
-#==========================================================
-setClass("gt.result", representation(
-    res = "matrix", 
-    X = "matrix",
-    Y = "vector",
-    test.genes = "list",
-    adjustmatrix = "matrix",
-    Rsquare = "numeric",
-    model = "character",
-    levels = "vector",
-    df.adjust = "integer")
-)
-
-
-#==========================================================
 # .First.lib is called when the package is loaded
 # It initializes the object "gt.result"
 #   and the its "show" function.
@@ -1131,39 +1160,6 @@ setClass("gt.result", representation(
         }
         where <- pos.to.env(where)
     }
-
-    #==========================================================
-    # Function "show" prints out a result of type "gt.result"
-    # such as results from a call to "globaltest"
-    #==========================================================
-
-    setMethod("show", "gt.result", function(object)
-    {
-      gt <- object
-      npathways <- length(gt@test.genes)
-      nsamples <- length(gt@Y)
-      ngenes <- dim(gt@X)[2]
-
-      cat("Global Test result:\n")
-      if (npathways == 1)
-        cat("Data:", nsamples, "samples with", ngenes, "genes; 1 pathway tested\n")
-      else
-        cat("Data:", nsamples, "samples with", ngenes, "genes;", npathways, "pathways tested\n")
-      cat("Model:", gt@model, "\n")
-      if (gt@Rsquare != 1)
-        cat("Adjusted:", 100 * round(gt@Rsquare, 3), "% of variance of Y remains after adjustment\n")
-      cat("\n")
-        
-      res <- data.frame(gt@res)
-      if ( all(is.na(res[,"comp.p"])) ) {
-        res <- res[,1:6]
-        colnames(res) <- c("genes","tested","Statistic Q","Expected Q","sd of Q","p-value")
-      }else{
-        colnames(res) <- c("genes","tested","Statistic Q","Expected Q","sd of Q","p-value","comp. p")
-      }
-      print(signif(res, digits = 5))
-    }, where = where)
-    #==========================================================
 
 
     invisible(NULL)
