@@ -8,11 +8,14 @@
 effect of specific samples on the test result produced by
 \code{\link{globaltest}}.}
 
-\usage{regressionplot(testresult, samplenr = NULL)}
+\usage{regressionplot(gt, geneset = NULL, sampleid = NULL, ...)}
 
 \arguments{
-    \item{testresult}{The output of a call to \code{\link{globaltest}}.}
-    \item{samplenr}{A vector giving row numbers of samples of interest.}}
+    \item{gt}{The output of a call to \code{\link{globaltest}}.}
+    \item{geneset}{The name or number of the geneset to be plotted 
+(only necessary if multiple genesets were tested).}
+    \item{sampleid}{A vector of names or numbers of the samples of interest.}
+    \item{...}{Any extra arguments will be forwarded to the plotting function.}}
 
 \details{The regressionplot plots, for all pairs of samples, the
 covariance between the expression patterns against the covariance
@@ -22,9 +25,9 @@ the samples, which visualizes the test result of the function
 \code{\link{globaltest}}. A steeply increasing slope indicates a
 high (possibly significant) value of the test statistic.
 
-An optional argument \code{samplenr} can be supplied, giving
+An optional argument \code{sampleid} can be supplied, giving
 sample numbers of possibly outlying arrays. In this case, all
-pairs of arrays involving one of the arrays in \code{samplenr} is
+pairs of arrays involving one of the arrays in \code{sampleid} is
 marked as a red cross, while the other pairs are marked as a blue
 dot. The blue line which is fitted through all points can now be
 compared to a red dotted line which is fitted though only the red
@@ -32,27 +35,26 @@ crosses.}
 
 \value{\code{NULL} (no output).}
 
-\references{J. J. Goeman, S.A. van de Geer, F. de Kort and J. C.
-van Houwelingen, \emph{A global test for association of a group of
-genes with a clinical outcome}, Technical Report MI 2003-03,
-Mathematical Institute, Leiden University. Available from 
-\url{http://www.math.leidenuniv.nl/~jgoeman}.}
+\references{J. J. Goeman, S. A. van de Geer, F. de Kort and J. C.
+van Houwelingen, 2004, \emph{A global test for groups of genes: 
+testing association with a clinical outcome}, 
+\emph{Bioinformatics} 20 (1) 93--99. See also the 
+HowToGlobaltest.pdf included with this package.}
 
-\author{Jelle Goeman: \email{j.j.goeman@lumc.nl}}
+\author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 
 \seealso{\code{\link{globaltest}}, \code{\link{checkerboard}},
-  \code{\link{geneplot}}, \code{\link{permutations}}.} 
+\code{\link{geneplot}}, \code{\link{permutations}}.}
 
 \examples{
-if(interactive()){
+if (interactive()) {
     data(exampleX)      # Expression data (40 samples; 1000 genes)
     data(exampleY)      # Clinical outcome for the 40 samples
     pathway <- 1:25     # A pathway contains genes 1 to 25
     gt <- globaltest(exampleX, exampleY, test.genes = pathway)
     gt
     regressionplot(gt)
-    regressionplot(gt,40)
+    regressionplot(gt, sampleid = 40)
 }
 }
-
 \keyword{hplot}

@@ -1,70 +1,119 @@
 require("methods")
 
 #==========================================================
-# Function "globaltest" performs the global test
-# X is a data matrix (n rows are samples, p columns are genes).
-# NB: if the dimension of X does not fit the dimension of Y,
-#       but t(X) does, t(X) is used.
+# Function "globaltest" performs the global test on (a list of) 
+#    subsets of the data
+#
+# X is a data matrix (n rows are samples, p columns are genes) 
+#    or Biobase exprSet.
+# NB: if the dimension of X does not fit the dimension of Y, 
+#    but t(X) does, t(X) is used.
 # Code missing values as NA
-# Y is a vector of n clinical outcomes.
-
-# OPTIONS:
-# model = 'logistic': for two-valued Y (default).
-# model = 'linear': for continuous Y.
-# test.genes = vector: to only test a subset of the genes.
+#
+# Y is a vector of n clinical outcomes or the name or index of one of 
+#    the phenoData variables ( if X is an exprSet) 
+#
+# test.genes.lst = list of vectors
 #       vector can be a length p vector of 0 and 1
 #           (1 = selected; 0 = not selected).
 #       or a vector with the numbers of the selected genes
 #           e.g. c(5,8,9) to test genes 5, 8 and 9.
-#       default: test all genes.
-# permutation = FALSE: give asymptotic version of test (default)
-# permutation = TRUE: give permutation version of test.
-# nperm = number: number of permutations sampled (default = 10^4).
+#       or a vector with the ids in the rownames of X
+#           e.g c("AA173143","AA461092","AA487442","AA490243","R26706","R61845")
+# 
+# OPTIONS:
+# model = 'logistic': (default).
+# model = 'linear': for continuous Y.
+# levels = vector of groups to test in Y. Not needed if Y is binominal
+#           If Y contains > 2 levels then the following methods are used
+#           if levels contains 1 value: this groups is tested against all other samples
+#           if levels contains 2 values: these groups are tested against each other
+#           TODO: if levels contain > 2 values: test all groups
+# sampling = TRUE: compare to sampled pathways of same size
+# ndraws = number: number of "pathways" sampled (default = 10^3).
+#
+# RESULT
+# array with 7 columns containing
+# p.value, Q, EQ, seQ, comparative.p, length of vector, rows found in X
+# where comparative.p is the fraction of random pathways of the same size 
+#   with a lower p-value
+# TODO: if #levels > 2 then the result is a list of arrays
 #==========================================================
 
-globaltest <- function(X, Y,
-                        test.genes = NULL,
+globaltest <- function(X, Y, test.genes = NULL,
                         model = 'logistic',
+                        levels = NULL,
                         permutation = FALSE,
-                        nperm = NULL)
+                        nperm = NULL,
+                        sampling = FALSE,
+                        ndraws = NULL,
+                        verbose = TRUE)
 
 {
     # check for correct input of X and Y:
-    # 1: coerce X into a matrix
+    # 1: coerce Y into a vector
+    if ( is(X, "exprSet") & length(Y)==1 ) {
+      Y <- pData(X)[,Y]
+      samplenamesY <- sampleNames(X)
+      if (model=='logistic') {
+        if (is.null(levels)){
+          # Only 2 levels should be here, test for 1 now, later checks will find other errors
+          levels<-levels(factor(Y))
+          if (length(levels)==1) 
+            stop("There should be more than 1 group in the data.", call. = FALSE)
+        }
+        if (length(levels)==2 ) {
+          # create a subset of samples
+          samplenamesY <- samplenamesY[Y == levels[1] | Y == levels[2]]
+          X <- X[,Y == levels[1] | Y==levels[2]]
+          Y <- Y[Y == levels[1] | Y==levels[2]]
+        }
+        if (length(levels)<=2 ) {
+          Y <- (Y == levels[1])
+        }else{ 
+          stop("No more than 2 groups can be tested.", call. = FALSE)    
+        }
+      }
+    }else{
+      if ( !is.vector(Y) & !is.matrix(Y) & !is.data.frame(Y) )
+          stop("Y should be of type 'vector'.", call. = FALSE)
+      if ( is.data.frame(Y) )
+          Y <- as.matrix(Y)
+      if ( is.matrix(Y) ) {
+        if ( dim(Y)[1] == 1 )
+          Y <- t(Y)
+        if ( dim(Y)[2] == 1 ) {
+          namesY <- rownames(Y)
+          Y <- as.vector(Y)
+          names(Y) <- namesY
+        } else {
+          stop("Y should be a single vector.", call. = FALSE)
+        }
+      }
+      samplenamesY <- names(Y)
+      names(Y) <- NULL
+    }
+
+    # 2: coerce X into a matrix
     if (is(X, "exprSet"))
         X <- exprs(X)
     if (!is.vector(X) & !is.data.frame(X) & !is.matrix(X))
         stop("X should be of type 'matrix'.", call. = FALSE)
     X <- as.matrix(X)
 
-    # 2: coerce Y into a vector
-    if ( !is.vector(Y) & !is.matrix(Y) & !is.data.frame(Y) )
-        stop("Y should be of type 'vector'.", call. = FALSE)
-    if ( is.data.frame(Y) )
-        Y <- as.matrix(Y)
-    if ( is.matrix(Y) ) {
-        if ( dim(Y)[1] == 1 )
-            Y <- t(Y)
-        if ( dim(Y)[2] == 1 ) {
-            samples <- rownames(Y)
-            Y <- as.vector(Y)
-            names(Y) <- samples
-        } else
-            stop("Y should be a single vector.", call. = FALSE)
-    }
-
     # 3: check if X and Y are numeric
-    if (is.logical(Y))
+    if (is.logical(Y))    
         Y <- 0 + Y
     if (!is.numeric(X) | !is.numeric(Y))
         stop("X and Y may only have numeric values.", call. = FALSE)
     if (any(is.na(Y)))
         stop("Missing values not allowed in Y.", call. = FALSE)
-
-    # 4: check dimensions of X and Y
+    
+    # 4: check dimensions of X and Y 
     n <- length(Y)
-    pn <- dim(X)
+    pn <- dim(X)    
     if (pn[2] == n){
+        # probably all exprsets will be transposed here
         p <- pn[1]
         X <- t(X)
     }else{
@@ -75,16 +124,25 @@ globaltest <- function(X, Y,
     }
     if (n == p)
         warning("As many samples as genes.\n Columns are assumed to represent samples; rows assumed genes.", call.=FALSE)
-
+        
     # 5: extract genenames and samplenames
     genenames <- colnames(X)
-    samplenames <- rownames(X)
-    if (  ( is.null(samplenames) ) & ( !is.null( names(Y) ) ) )
-        samplenames <- names(Y)
-    if ( ( !is.null(rownames(X) ) ) & ( !is.null( names(Y) ) ) & ( !all(names(Y) == rownames(X)) ) )
-        warning("Sample names in X inconsistent with sample names in Y.", call. = FALSE)
-    dimnames(X) <- NULL
-    names(Y) <- NULL
+    samplenamesX <- rownames(X)
+    if (  ( is.null(samplenamesX) ) & ( !is.null(samplenamesY) ) ) {
+      samplenames <- samplenamesY
+    }else{
+      if (  ( !is.null(samplenamesX) ) & ( is.null( samplenamesY ) ) ) {
+        samplenames <- samplenamesX
+      }else{ 
+        if ( all(samplenamesY == samplenamesX) ) {
+          samplenames <- samplenamesY
+        }else{
+          stop("Sample names in X inconsistent with sample names in Y.", call. = FALSE)
+        }
+      }
+    }
+    rownames(X) <- samplenames
+
 
     # Check for correct input of model
     if ( (model != 'linear') & (model != 'logistic') )
@@ -97,241 +155,463 @@ globaltest <- function(X, Y,
         else
             stop("For the logistic model Y should take exactly two values.\n For a continuous Y use option: model = 'linear'.", call. = FALSE)
     }
-
-    # check for correct input of test.genes
-    # 1: set default
-    if (is.null(test.genes))
-        test.genes <- rep(TRUE,times = p)
-    else{
-        # 2: coerce test.genes into a vector
-        if ( !is.vector(test.genes) & !is.matrix(test.genes) & !is.data.frame(test.genes) )
-            stop("test.genes should be of type 'vector'.", call. = FALSE)
-        if ( is.data.frame(test.genes) )
-            test.genes <- as.matrix(test.genes)
-        if ( is.matrix(test.genes) ) {
-            if ( dim(test.genes)[1] == 1 )
-                test.genes <- t(test.genes)
-            if ( dim(test.genes)[2] == 1 ) {
-               genes <- rownames(test.genes)
-               test.genes <- as.vector(test.genes)
-               names(test.genes) <- genes
-            } else
-                stop("test.genes should be a single vector.", call. = FALSE)
+    
+    # check for correct input of sampling and ndraws
+    if ( (!is.logical(sampling)) | (length(sampling) != 1) )
+        stop("Option sampling should be either TRUE or FALSE", call. = FALSE)
+   
+    if (!is.null(ndraws)){
+        if ( !(ndraws == as.integer(ndraws)) | (ndraws < 1) | (length(ndraws) != 1) ) {
+            stop("Option ndraws should be a single positive integer", call. = FALSE)
+        }else{
+            sampling <- TRUE
         }
-
-        # 3: check format of test.genes
-        if ( all( (test.genes == 0) | (test.genes == 1) ) & (length(test.genes) == p) & (!all(test.genes==0)) ) {
-            test.genes <- (test.genes == 1)
-            test.names <- names(test.genes)[test.genes]
-            names(test.genes) <- NULL
-        }
-        else
-            if ( all(test.genes == as.integer(test.genes)) & (min(test.genes) >= 1) & (max(test.genes) <= p) ) {
-                falses <- rep(FALSE, times = p)
-                falses[test.genes] <- TRUE
-                if ( length(test.genes) == sum(falses) )
-                    test.names <- names(sort(test.genes))
-                else
-                    test.names <- NULL
-                test.genes <- falses
-            }
-            else
-                stop("Option test.genes should have 0 or 1 for each gene\n or be a list of gene numbers.", call. = FALSE)
-
-        # 4: check compatibility of names
-        genenames <- genenames[test.genes]
-        if ( ( !is.null(genenames ) ) & ( !is.null( test.names ) ) & ( !all( genenames == test.names) ) )
-           warning("Gene names in X inconsistent with gene names in test.genes.", call. = FALSE)
-
-    }
-
+    }else{
+        if (sampling)
+            ndraws <- 10^3
+    }        
+    
     # check for correct input of permutation and nperm
     if ( (!is.logical(permutation)) | (length(permutation) != 1) )
         stop("Option permutation should be either TRUE or FALSE", call. = FALSE)
+   
     if (!is.null(nperm)){
-        if ( !(nperm == as.integer(nperm)) | (nperm < 1) | (length(nperm) != 1) )
+        if ( !(nperm == as.integer(ndraws)) | (nperm < 1) | (length(nperm) != 1) ) {
             stop("Option nperm should be a single positive integer", call. = FALSE)
-        else
+        }else{
             permutation <- TRUE
+        }
     }else{
         if (permutation)
             nperm <- 10^4
+    }        
+ 
+    if (sampling & permutation) 
+        stop("sampling = TRUE and permutation = TRUE not allowed at the same time: this takes too long")
+   
+    # coerce test.genes into a list
+    if ( is.list(test.genes) ) {
+        test.genes.lst <- test.genes
+    }else{
+        test.genes.lst <- list(test.genes)
     }
 
     # center Y
     mu <- mean(Y)
     Y <- Y - mu
 
-    # select genes to be tested
-    X <- as.matrix(X[,test.genes])
-    m <- sum(test.genes)
+    # prepare output per pathway
+    res <- matrix(0, nrow = length(test.genes.lst), ncol = 7)
+    colnames(res) <- c("path.n","test.n","Q","EQ","seQ","p.val","comp.p")
+    rownames(res) <- names(test.genes.lst)
 
     # Center genes and set missing values to zero
     col.meanX <- colMeans(X, na.rm = TRUE)
-    X.cent <- X - rep(1,times=n) %o% col.meanX
-    X.cent[is.na(X.cent)] <- 0
+    X <- X - rep(1, times=n) %o% col.meanX
+    X[is.na(X)] <- 0
 
-    # calculate test statistic Q
-    R <- ( X.cent %*% t(X.cent) ) / m
-    mu2 <- switch(model,
-        'linear' = var(Y),
-        'logistic' = mu * (1-mu))
-    Q <- as.numeric( ( Y %*% R %*% Y ) / mu2 )
+    verbose <- ( verbose & (sampling | permutation) & (length(test.genes.lst) > 20) )
+    if (verbose) {
+      cat(length(test.genes.lst), "genesets to be processed. Each dot represents", 
+        length(test.genes.lst) %/% 20, "pathways.\n")
+      countprogress <- 0
+    }
 
-    # Expectation, variance and p-value of Q from asymptotic formula's
-    if (!permutation){
-        EQ <- sum(diag(R))
-        trRR <- sum(R^2)
-        tr2R <- EQ^2
-        trR2 <- sum(diag(R^2))
-        if (model == 'logistic'){
-            K <- ( 1 - 6 * mu + 6 * mu^2 ) / mu2
-            varQ <- K * ( trR2 - tr2R / n ) + 2 * trRR - 2 * tr2R / (n-1)
+    sampledist<-list(NULL)
+    
+    for (index in 1:length(test.genes.lst)) {
+        
+      if (verbose) {
+        countprogress <- countprogress + 1
+        if ( countprogress %% (length(test.genes.lst) %/% 20) == 0) {
+          cat(".")
+        }
+      }
+      test.genes <- test.genes.lst[[index]] 
+      # check for correct input of test.genes
+      # 1: set default
+      if (is.null(test.genes)) {
+          test.genes <- rep(TRUE,times = p)
+          if (is.null(genenames)) {
+            test.genes.lst[[index]] <- test.genes
+          }else{
+            test.genes.lst[[index]] <- genenames
+          }
+          res[index, "path.n"] <- p
+      }else{
+          # 2: coerce test.genes into a vector
+          if ( !is.vector(test.genes) & !is.matrix(test.genes) & !is.data.frame(test.genes) )
+              stop("test.genes should be of type 'vector'.", call. = FALSE)
+          if ( is.data.frame(test.genes) )
+              test.genes <- as.matrix(test.genes)
+          if ( is.matrix(test.genes) ) {
+              if ( dim(test.genes)[1] == 1 )
+                  test.genes <- t(test.genes)
+              if ( dim(test.genes)[2] == 1 ) {   
+                 genes <- rownames(test.genes)     
+                 test.genes <- as.vector(test.genes)
+                 names(test.genes) <- genes
+              } else
+                  stop("test.genes should be a single vector.", call. = FALSE)
+          }
+  
+          # 3: check format of test.genes
+          if ( all( (test.genes == 0) | (test.genes == 1) ) & (length(test.genes) == p) & (!all(test.genes==0)) ) {
+              test.genes <- (test.genes == 1)
+              test.names <- names(test.genes)[test.genes]
+              res[index, "path.n"] <- sum(test.genes)
+          } else {
+            if (is.character(test.genes))  {
+              res[index, "path.n"] <- length(test.genes)
+              test.genes <- intersect(test.genes, genenames)
+              test.names <- test.genes
+            } else {  
+              if ( length(intersect(1:p, test.genes) == length(test.genes)) ) {
+                  test.genes <- sort(test.genes)
+                  test.names <- names(test.genes)
+                  res[index, "path.n"] <- length(test.genes)
+              }
+              else
+                  stop("Option test.genes should have 0 or 1 for each gene\n or be a list of gene names or numbers.", call. = FALSE)
+            } 
+          }  
+        
+          # 4: check compatibility of names
+          if (!is.character(test.genes)) {
+            if (  !is.null(genenames )  &  !is.null( test.names ) ) {
+                 if( any( genenames[test.genes] != test.names ) ) 
+                     warning("Gene names in X inconsistent with gene names in test.genes.", call. = FALSE)
+            }
+          }
+      }
+    
+      # select genes to be tested
+      X.cent <- as.matrix(X[,test.genes])
+      # Number of selected genes that are in array (test.genes can be larger than that (in res[index, "path.n"] earlier)
+      m <- dim(X.cent)[2]
+      res[index, "test.n"] <- m
+      if (m>0) {
+
+        # calculate test statistic Q
+        R <- ( X.cent %*% t(X.cent) ) / m
+        mu2 <- switch(model,
+            'linear' = var(Y),
+            'logistic' = mu * (1-mu))
+        Q <- as.numeric( ( Y %*% R %*% Y ) / mu2 )
+ 
+        # Expectation and variance of Q and p-value
+        if (!permutation) {
+            # Asymptotic p.value
+            EQ <- sum(diag(R))
+            trRR <- sum(R^2)
+            tr2R <- EQ^2
+            trR2 <- sum(diag(R^2))
+            if (model == 'logistic'){
+                K <- ( 1 - 6 * mu + 6 * mu^2 ) / mu2
+                varQ <- K * ( trR2 - tr2R / n ) + 2 * trRR - 2 * tr2R / (n-1)
+            }else{
+                varQ <- (2 / (n+1)) * ( (n-1) * trRR - tr2R )
+            }    
+            seQ <- sqrt(varQ)
+            scl <- varQ / (2 * EQ)
+            dfr <- EQ / scl
+            p.value <- pf ( (scl * dfr / Q), 10^6, dfr )
         }else{
-            varQ <- (2 / (n+1)) * ( (n-1) * trRR - tr2R )
+            # Permutation p.value
+            permQ <- function(stR, YY, npm) {
+                pms <- apply( matrix(rnorm(n * npm), n, npm), 2, sort.list )
+                YY.pm <-  matrix( YY[pms], n, npm )
+                colSums(( stR %*% YY.pm ) * YY.pm)
+            }
+
+            Qs <- numeric(nperm)
+            chunk <- 5000
+            nchunks <- trunc(nperm / chunk)
+            rest <- nperm - nchunks * chunk
+            for (i in 1:nchunks){
+                Qs[(chunk * (i-1) + 1):(chunk * i)] <- permQ( R/mu2, Y, chunk ) 
+                NULL
+            }
+            if (rest > 0)
+                Qs[(chunk * nchunks + 1):nperm] <- permQ( R/mu2, Y, rest ) 
+            p.value <- sum(Qs >= rep(Q, times=nperm)) / nperm
+            EQ <- mean(Qs)
+            seQ <- sd(Qs)
         }
-        seQ <- sqrt(varQ)
-        scl <- varQ / (2 * EQ)
-        dfr <- EQ / scl
-        p.value <- pf ( (scl * dfr / Q), 10^6, dfr )
-        Qs <- numeric(0)
-    }
+ 
+        if (sampling) {
+            # Check if this geneset size has been sampled already
+            if (m>length(sampledist)) length(sampledist)<-m
+            if (is.null(sampledist[[m]])) {
+                ps<- vector("numeric",ndraws)
+                for (sample in 1:ndraws){
+                    X.sample <- as.matrix(X[,sample(1:p,m)])
+                    R.sample <- (X.sample %*% t(X.sample)) / m
+                    Q.sample <- as.numeric(( Y %*% R.sample %*% Y) / mu2 )
+                    EQ.sample <- sum(diag(R.sample))
+                    trRR <- sum(R.sample*R.sample)
+                    tr2R <- EQ.sample*EQ.sample
+                    trR2 <- sum(diag(R.sample*R.sample))
+                    if (model == 'logistic'){
+                        K <- ( 1 - 6 * mu + 6 * mu * mu ) / mu2
+                        varQ <- K * ( trR2 - tr2R / n ) + 2 * trRR - 2 * tr2R / (n-1)
+                    }else{
+                        varQ <- (2 / (n+1)) * ( (n-1) * trRR - tr2R )
+                    }    
+                    scl <- varQ / (2 * EQ.sample)
+                    dfr <- EQ.sample / scl
+                    ps[sample] <- pf ( (scl * dfr / Q.sample), 10^6, dfr )
+               }
+               sampledist[[m]]<-ps
+            }
+            comparative.p <- mean(sampledist[[m]] < rep(p.value, times=ndraws))
+        }else 
+            comparative.p <- NA
+        
 
-    # Interior function to calculate Q for a number npm of permutations of Y
-    permQ <- function(stR, YY, npm){
-        pms <- apply( matrix(rnorm(n * npm), n, npm), 2, sort.list )
-        YY.pm <-  matrix( YY[pms], n, npm )
-        colSums(( stR %*% YY.pm ) * YY.pm)
-    }
+        # the returns for this geneset
+        res[index, "p.val"] <- p.value
+        res[index, "Q"] <- Q
+        res[index, "EQ"] <- EQ
+        res[index, "seQ"] <- seQ
+        res[index, "comp.p"] <- comparative.p
+      }
+  }
+  
+  # calculate influence per gene and expected influence
+  XY <- t(X) %*% Y  
+  obs.inf <- as.vector( sign(XY) * XY^2 / mu2 )
+  exp.inf <- colSums(X * X)
+  influence <- cbind(obs.inf, exp.inf)
+  colnames(influence) <- c("observed","expected")
 
-    # Expectation, variance and p-value of Q from permutation version
-    if (permutation)
-    {
-        Qs <- numeric(nperm)
-        chunk <- 5000
-        nchunks <- trunc(nperm / chunk)
-        rest <- nperm - nchunks * chunk
-        for (i in 1:nchunks){
-            Qs[(chunk * (i-1) + 1):(chunk * i)] <- permQ( R/mu2, Y, chunk )
-            NULL
-        }
-        if (rest > 0)
-            Qs[(chunk * nchunks + 1):nperm] <- permQ( X.cent, Y, rest ) / (m * mu2)
-        EQ <- mean(Qs)
-        seQ <- sd(Qs)
-        p.value <- sum(Qs >= rep(Q, times=nperm)) / nperm
-    }
-
-    # calculate influence per gene and expected influence
-    XY <- t(X.cent) %*% Y
-    influence <- as.vector( sign(XY) * XY^2 / mu2 )
-    exp.influence <- colSums(X.cent * X.cent)
-
-    # returns an object of type "gt.result"
-    names(influence) <- genenames
-    names(Y) <- samplenames
-    new("gt.result",
-        Q = Q,
-        EQ = EQ,
-        seQ = seQ,
-        p.value = p.value,
-        Qs = Qs,
-        matrixR = R,
-        Y = Y,
-        influence = influence,
-        exp.influence = exp.influence,
-        test.genes = test.genes)
+  # returns an object of type "gt.result"
+  names(Y) <- samplenames
+  new("gt.result",
+    res = res, 
+    X = X,
+    Y = Y,
+    influence = influence,
+    test.genes = test.genes.lst)
 }
 #==========================================================
 
 
 #==========================================================
-# Function "permutations" gives a histogram of the values of Q
-#   calculated for permutations of the clinical outcome
-# An arrow points out the value of the true Q, for comparison
+# Function "permutations" compares the theoretical values 
+# of EQ, seQ and the p.value to values based on permutations 
+# of the clinical outcome, which may be better for small 
+# sample sizes. It summarizes the Q-values for the permutations 
+# in a histogram, in which an arrow points out the value of the 
+# true Q, for comparison
 #==========================================================
 
-permutations <- function(testresult)
+permutations <- function(gt, geneset = NULL, nperm = 10^4)
 {
-    nperm <- length(testresult@Qs)
-    if ( nperm > 0 ){
-        hst <- hist(testresult@Qs, xlim = c(0, 1.1 * max( c( testresult@Qs, testresult@Q ) ) ),
-            main = paste( "Histogram of Q for", nperm, "permutations of Y" ),
-            xlab = "Values of Q for permuted Y" )
-        h <- max(hst$counts)
-        arrows( testresult@Q, h/5 , testresult@Q, 0 )
-        text( testresult@Q, h/4.5, 'Q' )
-        invisible(NULL)
+    # check correct input of gt
+    if ( !is(gt, "gt.result"))
+        stop("permutations should be applied to a globaltest result", call. = FALSE)
+        
+    # check correct input of nperm
+    if ( !(nperm > 0) )
+      stop("option nperm should be a positive integer", call. = FALSE)
+        
+    # extract the right test.genes vector
+    test.genes.lst <- gt@test.genes
+    if ( is.null(geneset) ) {
+        if ( (length(test.genes.lst) == 1) ) {
+            test.genes <- test.genes.lst[[1]]
+            geneset <- 1
+        }else{
+            stop("option geneset is missing with no default")
+        }
     }else{
-        stop("The function 'permutations' requires that\n the permutation version of 'globaltest' was used.", call. = FALSE)
+        if ( is.character(geneset) ) {
+            if ( length(intersect(names(test.genes.lst), geneset )) == 1 ) {
+                test.genes <- test.genes.lst[[geneset]]
+            }else{
+                ifelse( (length(intersect(names(test.genes.lst), geneset )) == 0),
+                    stop("requested geneset was not among the tested ones", call. = FALSE),
+                    stop("more than one geneset given", call. = FALSE) )
+            }
+        }else{
+            if ( length(intersect(1:length(test.genes.lst), geneset)) == 1 ) {
+                test.genes <- test.genes.lst[[geneset]]
+            }else{
+                stop("incorrect input of geneset", call. = FALSE)
+            }
+        }
     }
+            
+    # Recreate Y and R
+    X <- gt@X[,test.genes]
+    m <- dim(X)[2]
+    R <- (X %*% t(X)) / m
+    Y <- gt@Y
+    n <- length(Y)
+    mu2 <- var(Y)
+    Q <- gt@res[geneset, "Q"]
+
+    # Recalculate the Q-value for permutations of Y
+    permQ <- function(stR, YY, nn, npm) {
+      pms <- apply( matrix(rnorm(nn * npm), nn, npm), 2, sort.list )
+      YY.pm <-  matrix( YY[pms], nn, npm )
+      colSums(( stR %*% YY.pm ) * YY.pm)
+    }
+
+    Qs <- numeric(nperm)
+    chunk <- 5000
+    nchunks <- trunc(nperm / chunk)
+    rest <- nperm - nchunks * chunk
+    for (i in 1:nchunks){
+      Qs[(chunk * (i-1) + 1):(chunk * i)] <- permQ( R/mu2, Y, n, chunk ) 
+      NULL
+    }
+    if (rest > 0)
+      Qs[(chunk * nchunks + 1):nperm] <- permQ( R/mu2, Y, n, rest ) 
+
+    # Draw histogram
+    hst <- hist(Qs, xlim = c(0, 1.1 * max( c( Qs, Q ) ) ), 
+      main = paste( "Histogram of Q for", nperm, "permutations of Y" ),
+      xlab = "Values of Q for permuted Y" )
+    h <- max(hst$counts)
+    arrows( Q, h/5, Q, 0 )
+    text( Q, h/4.5, 'Q' )
+
+    # No output
+    invisible (NULL)
 }
 #==========================================================
 
 
 #==========================================================
-# Geneplot plots the influence of each gene on the outcome
+# Geneplot plots the influence of each gene on the outcome 
 #   of the test statistic
 # See help(geneplot) for details
 #==========================================================
 
-geneplot <- function(testresult)
+geneplot <- function(gt, geneset = NULL, genesubset = NULL, ...)
 {
-    if (!is(testresult, "gt.result"))
-        stop("The function geneplot can only be applied to results of the function globaltest.", call. = FALSE)
-    m <- length(testresult@influence)
-    influence <- abs(testresult@influence)
-    up <- ( sign(testresult@influence) == 1 )
-    Einf <- testresult@exp.influence
-
+    # check correct input of gt
+    if ( !is(gt, "gt.result"))
+        stop("permutations should be applied to a globaltest result", call. = FALSE)
+        
+    # extract the right test.genes vector
+    test.genes.lst <- gt@test.genes
+    if ( is.null(geneset) ) {
+        if ( (length(test.genes.lst) == 1) ) {
+            test.genes <- test.genes.lst[[1]]
+            geneset <- 1
+        }else{
+            stop("option geneset is missing with no default")
+        }
+    }else{
+        if ( is.character(geneset) ) {
+            if ( length(intersect(names(test.genes.lst), geneset )) == 1 ) {
+                test.genes <- test.genes.lst[[geneset]]
+            }else{
+                ifelse( (length(intersect(names(test.genes.lst), geneset )) == 0),
+                    stop("requested geneset was not among the tested ones", call. = FALSE),
+                    stop("more than one geneset given", call. = FALSE) )
+            }
+        }else{
+            if ( length(intersect(1:length(test.genes.lst), geneset)) == 1 ) {
+                test.genes <- test.genes.lst[[geneset]]
+            }else{
+                stop("incorrect input of geneset", call. = FALSE)
+            }
+        }
+    }
+    if ( !is.null(genesubset) ) {
+        if ( length(intersect(test.genes, genesubset)) > 0 ) {
+            test.genes <- intersect(test.genes, gene.subset)
+        }else{
+            stop("genesubset is not a subset of the selected geneset")
+        }
+    }
+    
+    # Extract the calculated influence
+    influence <- gt@influence[test.genes, 1]
+    up <- (sign(influence) == 1)
+    influence <- abs(influence)
+    Einf <- gt@influence[test.genes, 2]
+    m <- length(influence)
+      
     # Plot reference line and influence per gene and color for up/down regulation
-    plot( 0, xlim = c(1/2, m+1/2), ylim = c(0, 1.2 * max(influence, Einf) ), col = 0, xlab = "genenr", ylab = "influence" )
-    if (m <= 250)
+    plot( 0, xlim = c(1/2, m+1/2), ylim = c(0, 1.2 * max(influence, Einf) ), col = 0, xlab = "genenr", ylab = "influence" ,...)
+    if (m <= 250) {
         rect(xleft = 1:m - 0.4, xright = 1:m + 0.4, ybottom = rep(0,times=m), ytop = influence, col = (up+2), border=0 )
-    else
+    }else{
         lines(1:m, influence, lwd = 600 / m, type = 'h', col = (up+2))
+    }
     lines( (1:(m+1))-1/2, c(Einf, Einf[m]), type = "s" )
     legend(1, 1.2 * max(c(influence,Einf)),
         c("pos. coregulated with Y", "neg. coregulated with Y"), fil = c(3,2))
-
-    # Output: reference list with gene labels if available
-    genenames <- names(influence)
-    if (is.null(genenames))
-        invisible(NULL)
-    else
-        if (m <= 50)
-            data.frame(genenames)
-        else
-            invisible( data.frame(genenames) )
+        
+    # Output: reference vector with gene labels if available
+    invisible(names(influence))
 }
 #==========================================================
 
 
 #==========================================================
-# The function regressionplot allows the evaluation of
+# The function regressionplot allows the evaluation of 
 #   possibly outlying samples.
 # See help(regressionplot) for details
 #==========================================================
 
-regressionplot <- function(testresult, samplenr=NULL)
+regressionplot <- function(gt, geneset = NULL, sampleid = NULL,...)
 {
-    if (!is(testresult, "gt.result"))
-        stop("The function regressionplot can only be applied to results of the function globaltest.", call. = FALSE)
+    # check correct input of gt
+    if ( !is(gt, "gt.result"))
+        stop("permutations should be applied to a globaltest result", call. = FALSE)
+        
+    # extract the right test.genes vector
+    test.genes.lst <- gt@test.genes
+    if ( is.null(geneset) ) {
+        if ( (length(test.genes.lst) == 1) ) {
+            test.genes <- test.genes.lst[[1]]
+            geneset <- 1
+        }else{
+            stop("option geneset is missing with no default")
+        }
+    }else{
+        if ( is.character(geneset) ) {
+            if ( length(intersect(names(test.genes.lst), geneset )) == 1 ) {
+                test.genes <- test.genes.lst[[geneset]]
+            }else{
+                ifelse( (length(intersect(names(test.genes.lst), geneset )) == 0),
+                    stop("requested geneset was not among the tested ones", call. = FALSE),
+                    stop("more than one geneset given", call. = FALSE) )
+            }
+        }else{
+            if ( length(intersect(1:length(test.genes.lst), geneset)) == 1 ) {
+                test.genes <- test.genes.lst[[geneset]]
+            }else{
+                stop("incorrect input of geneset", call. = FALSE)
+            }
+        }
+    }
 
-    # The matrices S and R to be plotted against each other
-    R <- as.vector(testresult@matrixR)
-    S <- as.vector(testresult@Y %o% testresult@Y)
-    n <- length(testresult@Y)
-
-    # Check correct input of samplenr
-    if ( is.null(samplenr) )
-        samplenr <- 1:n
-    if ( !is.vector(samplenr) | !all(samplenr == as.integer(samplenr)) | (max(samplenr) > n) | (min(samplenr) < 1) )
-        stop( paste("Option samplenr should be a vector of sample nrs beween 1 and ", n, sep = ""), call. = FALSE )
-
+    # recreate matrix R and find S = Y %o% Y
+    X <- gt@X[,test.genes]
+    Y <- gt@Y
+    R <- as.vector(X %*% t(X))
+    S <- as.vector(Y %o% Y)
+    n <- length(Y)
+    
+    # Check correct input of sampleid
+    if ( is.null(sampleid) ) {
+        sampleid <- 1:n
+    }else{
+        if ( !xor( (length(intersect(1:n, sampleid)) == 0), (length(intersect(names(Y), sampleid)) == 0) ) )
+            stop("Option samplenr incorrect", call. = FALSE)
+    }
+            
     # Extract relevant entries from S and R
     samples <- rep(FALSE,times = n)
-    samples[samplenr] <- TRUE
+    names(samples) <- rownames(X)
+    samples[sampleid] <- TRUE
     samples <- outer(samples, samples, "|")
     lowertriangle <- outer(1:n, 1:n, ">")
     selection <- as.vector(lowertriangle)
@@ -342,24 +622,23 @@ regressionplot <- function(testresult, samplenr=NULL)
     Ssub <- S[subselection]
     Rrest <- R[selection & !subselection]
     Srest <- S[selection & !subselection]
-
+    
     # Draw the plots
-    plot(Sall, Rall, xlab = "Covariance between outcomes", ylab = "Covariance between expression patterns", col = 0)
+    plot(Sall, Rall, xlab = "Covariance between outcomes", ylab = "Covariance between expression patterns", col = 0,...)
     if (length(Rrest) > 0){
         points(Srest, Rrest,col = 4)
         abline(lm(Rall ~ Sall), col = 4)
     }
     points(Ssub, Rsub, col = 2, pch = 4, cex = 1.5)
     abline(lm(Rsub ~ Ssub), col = 2)
-
+    
     # Some explanation
-    samplenames <- names( testresult@Y )
-    if ( ( !all(samples) ) & ( !is.null(samplenames) ) )
-        cat("Samples investigated:\n", samplenames[samplenr], "\n")
-
+    if ( ( !all(samples) ) & ( !is.null(names(Y)) ) )
+        cat("Samples investigated:\n", names(Y)[samplenr], "\n")
+         
     # No output
     invisible(NULL)
-}
+}   
 #==========================================================
 
 
@@ -369,84 +648,113 @@ regressionplot <- function(testresult, samplenr=NULL)
 # See help(checkerboard) for details
 #==========================================================
 
-checkerboard <- function(testresult, sort = TRUE)
-{
-    if (!is(testresult, "gt.result"))
-        stop("The function checkerboard can only be applied to results of the function globaltest.", call. = FALSE)
+checkerboard <- function(gt, geneset = NULL, sort = TRUE,...)
+{   
+    # check correct input of gt
+    if ( !is(gt, "gt.result"))
+        stop("permutations should be applied to a globaltest result", call. = FALSE)
+        
+    # extract the right test.genes vector
+    test.genes.lst <- gt@test.genes
+    if ( is.null(geneset) ) {
+        if ( (length(test.genes.lst) == 1) ) {
+            test.genes <- test.genes.lst[[1]]
+            geneset <- 1
+        }else{
+            stop("option geneset is missing with no default")
+        }
+    }else{
+        if ( is.character(geneset) ) {
+            if ( length(intersect(names(test.genes.lst), geneset )) == 1 ) {
+                test.genes <- test.genes.lst[[geneset]]
+            }else{
+                ifelse( (length(intersect(names(test.genes.lst), geneset )) == 0),
+                    stop("requested geneset was not among the tested ones", call. = FALSE),
+                    stop("more than one geneset given", call. = FALSE) )
+            }
+        }else{
+            if ( length(intersect(1:length(test.genes.lst), geneset)) == 1 ) {
+                test.genes <- test.genes.lst[[geneset]]
+            }else{
+                stop("incorrect input of geneset", call. = FALSE)
+            }
+        }
+    }
+
     if (!is.logical(sort))
         stop("The option 'sort' should be either TRUE or FALSE", call. = FALSE)
 
+    # recreate matrix R
+    X <- gt@X[,test.genes]
+    Y <- gt@Y
+    R <- X %*% t(X)
+        
     # Sort Y if needed and return new samplenrs
-    Y <- testresult@Y
     n <- length(Y)
     perm <- sort.list(Y)
     rperm <- sort.list(Y[n:1])
     if ( any(perm != 1:n ) & any(rperm != 1:n) & (sort)){
-        cat("Samples in the checkerboard have been sorted by clinical outcome:\n")
-        newsamplenrs <- t( matrix( c(1:n, sort.list( perm )), n, 2 ) )
+        newsamplenrs <- matrix( c(1:n, sort.list( perm )), n, 2 ) 
         label <- "sorted samplenr"
-        R <- testresult@matrixR[perm,perm]
+        R <- R[perm,perm]
     }else{
         sort = FALSE
         label <- "samplenr"
-        R <- testresult@matrixR
-        newsamplenrs <- t( matrix( c(1:n, 1:n), n, 2 ) )
-    }
-    rownames(newsamplenrs) <- c("samplnr.old", "samplenr.new")
-    colnames(newsamplenrs) <- names(Y)
+        newsamplenrs <- matrix( c(1:n, 1:n), n, 2 ) 
+    }    
+    colnames(newsamplenrs) <- c("samplnr.old", "samplenr.new")
+    rownames(newsamplenrs) <- rownames(X)
 
     # Calculate median non-diagonal element of R
     lowertriangle <- outer( 1:n, 1:n, ">" )
     med <- median(R[lowertriangle])
-
+    
     # Draw plot
-    image(x = 1:n, y = 1:n, z = R>med, col = rainbow(2, v = c(0,1), s = c(1,0) ), xlab = label, ylab = label,
-        lab = c(n,n,50/n))
+    image(x = 1:n, y = 1:n, z = R>med, col = rainbow(2, v = c(0,1), s = c(1,0) ), xlab = label, ylab = label, 
+        lab = c(n,n,50/n),...)
     par(pty = "s")
-    if (!sort)
-        invisible(newsamplenrs)
-    else
-        newsamplenrs
+    invisible(newsamplenrs)
 }
 #==========================================================
 
-
 #==========================================================
-# gene2ix takes the genenames of the genes of interest
-# and compares them to the genenames on the chip
-# to get the indices of the genes of interest on the chip
+# Two functions to extract relevant information from 
+# a gt.result object
 #==========================================================
-
-gene2ix <- function(genes, chip, logic = FALSE)
+result <- function(gt)
 {
-    g2x <- function(gns, chp)
-    {
-        lg <- length(gns)
-        if ( lg < 100 )
-            apply( outer(chp, gns, "=="), 1, any )
-        else{
-            half <- round(lg/2)
-            ix1 <- g2x(gns[1:half], chp)
-            ix2 <- g2x(gns[(half+1):lg], chp)
-            ix1 | ix2
-        }
+    # check correct input of gt
+    if ( !is(gt, "gt.result"))
+        stop("results should be applied to a globaltest result", call. = FALSE)
+    
+    res <- gt@res
+ 
+    if ( all(is.na(res[,"comp.p"])) ) {
+      res <- res[,c("path.n","test.n","Q","EQ","seQ","p.val")]
+    }else{
+      res <- res[,c("path.n","test.n","Q","EQ","seQ","p.val","comp.p")]
     }
-
-    if (!is.vector(chip) | !is.vector(genes))
-        stop("Both chip and genes should be of type 'vector'.", Call.= FALSE)
-    ix <- g2x( genes, chip )
-    cat( sum(ix), "out of", length(genes), "genes present on the chip of", length(chip), "genes.\n" )
-    if (logic) {
-        names(ix) <- chip
-        ix
-    }
-    else {
-        allgenes <- 1:length(chip)
-        names(allgenes) <- chip
-        allgenes[ix]
-    }
+    
+    res
 }
+
+p.value <- function(gt)
+{
+    # check correct input of gt
+    if ( !is(gt, "gt.result"))
+        stop("p.values should be applied to a globaltest result", call. = FALSE)
+
+    gt@res[,"p.val"]
+}
+
 #==========================================================
+setClass("gt.result", representation(
+    res = "matrix", 
+    X = "matrix",
+    Y = "vector",
+    influence = "matrix",
+    test.genes = "list")
+)
 
 
 #==========================================================
@@ -455,19 +763,16 @@ gene2ix <- function(genes, chip, logic = FALSE)
 #   and the its "show" function.
 #==========================================================
 
-.First.lib <- function(libname, pkgname)
+.First.lib <- function(libname, pkgname, where)
 {
-    setClass("gt.result", representation(
-        Q = "numeric",
-        EQ = "numeric",
-        seQ = "numeric",
-        p.value = "numeric",
-        Qs = "vector",
-        matrixR = "matrix",
-        Y = "vector",
-        influence = "vector",
-        exp.influence = "vector",
-        test.genes = "vector"))
+    if (missing(where)) {
+        where <- match(paste("package:", pkgname, sep=""), search())
+        if(is.na(where)) {
+            warning(paste("Not a package name: ",pkgname))
+            return()
+        }
+        where <- pos.to.env(where)
+    }
 
     #==========================================================
     # Function "show" prints out a result of type "gt.result"
@@ -476,30 +781,25 @@ gene2ix <- function(genes, chip, logic = FALSE)
 
     setMethod("show", "gt.result", function(object)
     {
-        # Print numbers of genes, samples and tested genes
-        m <- length(object@influence)
-        n <- length(object@Y)
-        p <- length(object@test.genes)
-        cat("Global Test result:\n")
-        cat( m, "out of", p, "genes used;", n, "samples\n\n")
+      gt <- object
+      npathways <- length(gt@test.genes)
+      nsamples <- length(gt@Y)
+      ngenes <- dim(gt@X)[2]
 
-        # Print p-value
-        p.value <- signif(object@p.value, digits = 4)
-        cat( "p value =", p.value, "\n" )
-        if (length(object@Qs) == 0)
-            cat("    based on theoretical distribution\n\n")
-        else
-            cat("    based on", length(object@Qs), "permutations\n\n")
-
-        # Print summary of test statistic
-        Q <- signif(object@Q, digits = 4)
-        EQ <- signif(object@EQ, digits = 4)
-        seQ <- signif(object@seQ, digits = 4)
-        cat( "Test statistic Q =", Q, "\n" )
-        cat( "    with expectation EQ =", EQ, "\n" )
-        cat( "    and standard deviation sdQ =", seQ, "under the null hypothesis\n" )
-    })
+      cat("Global Test result:\n")
+      cat("Data:", nsamples, "samples with", ngenes, "genes;", npathways, "pathways tested\n\n")
+        
+      res <- data.frame(gt@res)
+      if ( all(is.na(res[,"comp.p"])) ) {
+        res <- res[,1:6]
+        colnames(res) <- c("genes","tested","Statistic Q","Expected Q","sd of Q","p-value")
+      }else{
+        colnames(res) <- c("genes","tested","Statistic Q","Expected Q","sd of Q","p-value","comp. p")
+      }
+      print(signif(res, digits = 5))
+    }, where = where)
     #==========================================================
+
 
     invisible(NULL)
 }

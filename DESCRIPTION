@@ -1,10 +1,10 @@
 Package: globaltest
-Version: 1.0.1
-Date: 2003-03-04
+Version: 2.0
+Date: 2004-01-01
 Title: Global Test
-Author: Jelle Goeman <j.j.goeman@lumc.nl>
+Author: Jelle Goeman <j.j.goeman@lumc.nl> and Jan Oosting <j.oosting@lumc.nl>
 Maintainer: Jelle Goeman <j.j.goeman@lumc.nl>
-Depends: R (>= 1.6.0), methods
-Description: Testing globally whether a group of genes is significantly related to some clinical variable of interest.
-Reference: Technical Report MI 200303, Mathematical Institute, Leiden University
+Depends: R (>= 1.8.0), methods
+Description: Testing whether a group of genes (e.g. a pathway) is significantly associated with a clinical variable of interest.
+Reference: J. J. Goeman, S.A. van de Geer, F. de Kort and J. C. van Houwelingen, A global test for groups of genes: testing association with a clinical outcome, Bioinformatics (To appear, 2004).
 License: GPL version 2 or newer

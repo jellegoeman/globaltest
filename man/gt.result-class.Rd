@@ -1,41 +1,30 @@
 \name{gt.result-class}
-
 \docType{class}
+\alias{gt.result-class}
+\alias{show,gt.result-method}
 
-\alias{gt.result}
-\alias(gt.result-class}
-
-\title{Class gt.result, for results of the function globaltest}
+\title{Class "gt.result" for results of the function globaltest}
 
 \description{The class gt.result is the output of a call to
-\code{\link{globaltest}} and the input of various plotting functions to
-visualize the test reult.}
+\code{\link{globaltest}} and the input of various plotting 
+functions to visualize the test result.}
 
 \section{Slots}{
 \describe{
-    \item{Q}{The test statistic.}
-    \item{EQ}{The expected value of \code{Q} under the null
-    hypothesis.}
-    \item{seQ}{The standard deviation of \code{Q} under the null
-    hypothesis.}
-    \item{p.value}{The p-value resulting from the test.}
-    \item{Qs}{Values of \code{Q} for permutations of the clinical
-    variable}
-    \item{matrixR}{The covariance matrix between the expression
-    patterns of the samples.}
-    \item{Y}{The centered clinical variable.}
-    \item{influence}{The influence of each gene on the test
-    statistic.}
-    \item{exp.influence}{The expected influence of each gene on
-    the test statistic under the null hypothesis.}
-    \item{test.genes}{A logical vector indicating which genes were
-    to be tested.}
+    \item{res}{The matrix of test results.}
+    \item{X}{The transformed data matrix.}
+    \item{Y}{The transformed outcome vector.}
+    \item{influence}{The influence and expected influence of each 
+gene on the test statistic.}
+    \item{test.genes}{A list of vectors indicating the tested genes.}
     }
 }
 
 \section{Methods}{
 \describe{
     \item{show}{Summarizes the test result}
+    \item{p.value}{Extracts the p-values.}
+    \item{result}{Extracts the results matrix.} 
     \item{checkerboard}{Produces a plot to visualize the test result
     produced by \code{\link{globaltest}} by showing the association
     between pairs of samples.}
@@ -49,10 +38,11 @@ visualize the test reult.}
     }
 }
 
-\author{Jelle Goeman: \email{j.j.goeman@lumc.nl}}
+\author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 
-\seealso{\code{\link{globaltest}}, \code{\link{regressionplot}},
+\seealso{\code{\link{globaltest}}, \code{\link{p.value}}, 
+\code{\link{result}}, \code{\link{regressionplot}}, 
 \code{\link{geneplot}}, \code{\link{permutations}}, 
 \code{\link{checkerboard}}.}
 
-\keyword{methods}
+\keyword{classes}
