@@ -58,17 +58,13 @@ examples below are available from www.bioconductor.org.
 First we load some packages from BioConductor and load
 the data we'll use.
 
-<<results=hide>>=
+<<initialize, results=hide>>=
 library(globaltest)
 library(golubEsets)
 library(hu6800)
-library(KEGG)
 library(vsn)
 data(golubMerge)
 golubM <- update2MIAME(golubMerge)
-@
-
-<<results=hide>>=
 golubX <- vsn(golubM)
 @
 
@@ -93,16 +89,16 @@ KEGG database.
 
 First we load all KEGG pathways. We willl use the rest in the next
 section.
-<<>>=
-keggids <- ls(envir = hu6800PATH2PROBE)
-keggPW <- mget(keggids, envir = hu6800PATH2PROBE)
-cellcycle <- keggPW[["04110"]]
+<<loadKEGG>>=
+kegg <- as.list(hu6800PATH2PROBE)
+cellcycle <- kegg[["04110"]]
 @
 
-This creates a list \Robject{keggPW} of 120 pathways, each a
+This creates a sorted list \Robject{kegg} of \Sexpr{length(kegg)} pathways, each a
 vector of gene names. The vector \Robject{cellcycle} is one of them.
 It corresponds to the Cell Cycle pathway, ``04110'' in the KEGG
-database, which corresponds to 88 probe sets on the hu6800 chip. Suppose we are 
+database, which corresponds to \Sexpr{length(cellcycle)} probe sets on the 
+hu6800 chip. Suppose we are 
 predominantly interested in this pathway. We want to know whether this group of
 genes is associated with the clinical outcome AML versus ALL.
 
@@ -110,7 +106,7 @@ Always first test all genes to see if the overall gene expression
 pattern is different for different clinical outcomes. We can do 
 this by saying 
 
-<<>>= 
+<<all>>= 
 gt.all <- globaltest(golubX, "ALL.AML") 
 @ 
 
@@ -123,7 +119,7 @@ a vector as \Rfunarg{Y}.
 The test result is stored in a \Rclass{gt.result} object, which 
 also contains all the information needed to draw the plots.
 
-<<>>= 
+<<all.display>>= 
 gt.all 
 @ 
 
@@ -137,17 +133,26 @@ the larger ones) also to be associated with it.
 
 Because \Robject{golubX} is an \Rclass{exprSet}, we could simply
 give the name of the phenotype variable ``AML.ALL'' as our \Rfunarg{Y}
-input. Alternatively, we can give a vector here. The clinical
-variable must define two groups (i.e.\ have two values) or be \
-continuous. For a multi-valued clinical variable, the option 
+input. Alternatively, we can give a vector here. 
+
+The Global Test allows three different kinds of clinical 
+variables to be tested. \begin{itemize} \item A clinical variable 
+defining two groups, i.e.\ having two values (using the logistic 
+model). For a multi-valued clinical variable, the option 
 \Rfunarg{levels} can be used to set which groups are to be tested 
-against each other. The function \Rfunction{globaltest} will 
-automatically choose an appropriate model based on \Rfunarg{Y}. To override 
-the automatic choice, use the option \Rfunarg{model}.
+against each other. \item A continuously distributed measurement 
+(using the linear model). \item A survival time (using the Cox 
+model). In that case \Rfunarg{Y} should contain the last 
+observation time of each individual, and an extra argument 
+\Rfunarg{d} should be supplied which contains the event 
+indicator, which has value \Rfunarg{event} if an event occurred. 
+\end{itemize} The function \Rfunction{globaltest} will 
+automatically choose an appropriate model based on \Rfunarg{Y}. 
+To override the automatic choice, use the option \Rfunarg{model}.
 
 Now we test the Cell Cycle pathway that interests us:
 
-<<>>=
+<<cellcycle>>=
 gt.cc <- globaltest(golubX, "ALL.AML", cellcycle)
 gt.cc
 @
@@ -156,33 +161,34 @@ We conclude that the expression pattern of the cellcycle pathway
 is notably different between AML and ALL samples. However, as the 
 test on all genes was significant we can generally expect most 
 pathways to be significant as well. To get an impression of how 
-``special'' this pathway is, one can use the option 
-\Rfunarg{sampling}.
+``special'' this pathway is, one can use the function 
+\Rfunction{sampling}.
 
-<<>>=
-gt.cc <- globaltest(golubX, "ALL.AML", cellcycle, sampling = TRUE)
+<<sampling>>=
+gt.cc <- sampling(gt.cc) 
 gt.cc
 @
 
 This gives an extra output column ``comparative p'', which is the
 fraction of random genesets of the same size as the cell cycle 
-pathway (88 genes) which have a lower p-value than cell cycle 
-itself. In this case around 28\%\ of 1,000 random `pathways' of size 88 
+pathway (\Sexpr{length(cellcycle)} genes) which have a lower p-value than 
+cell cycle 
+itself. In this case around \Sexpr{100*round(result(gt.cc)[,"comp.p"],2)}
+\%\ of 1,000 random `pathways' of size \Sexpr{length(cellcycle)} 
 have a lower p-value than the Cell Cycle pathway. By default 
 1,000 random sets are sampled; this number can be changed with 
 the option \Rfunarg{ndraws}.
 
 By default the p-value of globaltest is calculated using 
 approximate formulas which are more accurate for large sample 
-size, but may be inaccurate for small sample size. For 72 arrays 
-they should be accurate enough. For small sample sizes (below 30, 
-say), it is recommended to use the permutation version of 
-globaltest. This calculates the p-value on the basis of 10,000 
+size, but may be inaccurate for very small sample size. For 72 
+arrays they should be accurate enough. For very small sample 
+sizes an alternative is to use the permutation version of 
+globaltest. This recalculates the p-value on the basis of 10,000 
 permutations of the clinical variable.
 
-<<>>=
-gt.cc <- globaltest(golubX, "ALL.AML", cellcycle, permutation = TRUE)
-gt.cc
+<<permutations>>=
+permutations(gt.cc) 
 @
 
 The permutation p-value is not so accurate in the lower range as
@@ -201,20 +207,16 @@ study design is different from the simple `two independent
 samples' design of the standard global test. In a paired design, 
 for example, put the pair-id (as a factor) in \Rfunarg{adjust}.
 
-There may be more than one name of a covariate in \Rfunarg{adjust} 
-or \Rfunarg{adjust} may be supplied as a \Rclass{data.frame}. The 
-variables in \Rfunarg{adjust} may be numeric or factor.
+The user may supply one or more names of covariates in the option
+\Rfunarg{adjust} or supply \Rfunarg{adjust} as a 
+\Rclass{data.frame}. The easiest way of adjustment, however, is by 
+using a \Rclass{formula} object as input for \Rfunarg{Y}, as follows:
 
-<<>>= 
-gt.cc <- globaltest(golubX, "ALL.AML", cellcycle, adjust = "BM.PB")
-gt.cc 
+<<adjust>>= 
+globaltest(golubX, ALL.AML ~ BM.PB, cellcycle)
 @
 
-<<echo=FALSE,results=hide>>=
-gt.cc <- globaltest(golubX, "ALL.AML", cellcycle)
-@
-
-The test result also gives the percentage of the variance in $Y$ 
+The test result now also gives the percentage of the variance in $Y$ 
 that was left after the adjustment. It is a crude measure like 
 $1-R^2$. If the percentage is low, the adjustment already 
 explained most of the variance of the outcome $Y$ and there was 
@@ -222,10 +224,9 @@ not much residual variance left to test the influence of the
 genes. To see an example, adjust for ``Source'' instead of 
 ``BM.PB''.
 
-The option \Rfunarg{adjust} may be combined with the option 
-\Rfunarg{sampling}. However, \Rfunction{globaltest} does not allow 
-\Rfunarg{permutation} and \Rfunarg{sampling} or \Rfunarg{permutation} 
-and \Rfunarg{adjust} be used simultaneously.
+The option \Rfunarg{adjust} may again be combined with the function 
+\Rfunarg{sampling}, but not with \Rfunarg{permutation}.
+
  
 
 \section{Multiple Global Testing}
@@ -233,13 +234,20 @@ and \Rfunarg{adjust} be used simultaneously.
 It is also possible to test many pathways at once. To test all
 KEGG pathways we proceed as follows:
 
-<<>>=
-gt.kegg <- globaltest(golubX, "ALL.AML", keggPW)
+<<kegg>>=
+gt.kegg <- globaltest(golubX, "ALL.AML", kegg)
 @
 
 The result \Robject{gt.kegg} can be displayed and prints a matrix 
 whose rows correspond to the KEGG pathways. It gives the test 
-results for each pathway. The same options described above for 
+results for each pathway. We can also display only some of them:
+
+<<kegg.display>>=
+gt.kegg[1:10]
+gt.kegg["04110"]
+@
+
+The same options described above for 
 the single pathway \Rfunction{globaltest} can be applied to the 
 multiple pathway version of \Rfunction{globaltest} as well.
 
@@ -250,20 +258,15 @@ extracts the vector of p-values. The latter function can be used
 for example when a correction for multiple testing is to be done.
 Note however that due to the extremely high correlations between
 the tests for different pathways, many multiple testing
-procedures are inappropriate for the Global Test.
+procedures are inappropriate for the Global Test. See the 
+\Rpackage{multtest} package for details.
 
-A procedure that is appropriate, although very conservative, is 
-the Benjamini and Yekutieli (2001) method. Applying this with a 
-False Discovery Rate of 0.01, we see that even with this 
-conservative procedure, we can see that more than half of the 120 
-KEGG pathways can be said to be associated with the clinical 
-variable.
+We might want to sort the pathways by their p-value, and show the top 
+five. This can be done as follows
 
-<<>>=
-library(multtest)
-mt.res <- mt.rawp2adjp(p.value(gt.kegg), proc = "BY")
-kegg.p <- mt.res$adjp[,"BY"]
-sum(kegg.p < 0.01)
+<<sort.by.p>>=
+sort.gt.kegg <- gt.kegg[sort.list(p.value(gt.kegg))]
+sort.gt.kegg[1:5]
 @
 
 
@@ -281,28 +284,29 @@ samples. Of these three, \Rfunction{sampleplot} is probably the most
 useful.
 
 
-\subsection{Permutations plot}
+\subsection{Permutations histogram}
 
-The permutations plot plots the values of the test statistic $Q$ 
+The permutations histogram plots the values of the test statistic $Q$ 
 calculated for permutations of the clinical outcome in a 
 histogram. The observed value of $Q$ for the true values of the 
-clinical outcome is marked with an arrow. Either of the commands 
-below gives the same output.
+clinical outcome is marked with an arrow. 
 
-<<eval=FALSE, echo=TRUE>>=
-permutations(gt.cc)
-permutations(gt.kegg, "04110")
+<<hist, eval=FALSE, echo=TRUE>>=
+hist(permutations(gt.cc))
 @
 
 \begin{center}
-<<fig=TRUE, echo=FALSE>>=
-permutations(gt.kegg, "04110")
+<<hist-plot, fig=TRUE, echo=FALSE>>=
+hist(permutations(gt.cc))
 @
 \end{center}
 
 The output can be interpreted as a plot of the distribution of 
 the test statistic under the null hypothesis that the pathway is 
-not associated with the clinical variable.
+not associated with the clinical variable. Strictly speaking, 
+however, the permutation version of the Global Test is a 
+different test with different properties (especially for survival 
+data). It may give different p-values for small samples.
 
 The function \Rfunction{permutations} may not be used when the 
 adjusted version of \Rfunction{globaltest} was used.
@@ -314,92 +318,110 @@ The second diagnostic plot is the Gene Plot, which can be used to
 assess the influence of each gene on the outcome of the test. The
 Gene Plot gives a bar and a reference line for each gene tested. 
 The bar indicates the influence of each gene on the test 
-statistic (the test statistic for the group is the average of the 
-bars for the genes). The reference line gives the expected height 
-of the bar under the null hypothesis that the gene is not 
-associated with the clinical outcome. Marks indicate with how 
-many standard deviations (under the null) the bar exceeds the 
-reference line. Finally the bars are coloured to indicate a 
-positive or a negative association of the gene with the clinical 
-outcome.
+statistic. 
 
-Again, either of the commands below gives the same output.
+A reference line for each bar gives the expected height of the 
+bar under the null hypothesis that the gene is not associated 
+with the clinical outcome (except in a survival model, where the 
+expected height is zero). Marks indicate with how many standard 
+deviations (under the null) the bar exceeds the reference line. 
+Finally the bars are coloured to indicate a positive or a 
+negative association of the gene with the clinical outcome.
 
-<<eval=FALSE>>=
+The geneplot bars have two interpretations. In the first place, 
+the bars are the Global Test statistic for the single gene 
+pathway containing only that gene. A positive bar that is many 
+standard deviations above the reference line therefore indicates 
+a gene that is significantly associated with the clinical 
+variable in \Rfunarg{Y}. Secondly, the bars indicate the 
+influence of the gene on the test result of the whole pathway  
+(the test statistic for the group is the average of the bars for 
+the genes). Removing a gene with a low bar (relative to the 
+reference line) or a negative bar from the pathway will result in 
+a lower p-value for the pathway, removing a gene with a tall 
+positive bar will have the opposite effect.
+
+To plot the geneplot, use any of the commands below:
+
+<<geneplot>>=
 geneplot(gt.cc)
 geneplot(gt.kegg, "04110")
+geneplot(gt.kegg["04110"])
 @
 
 For a large number of genes the plot might become overcrowded. 
 Use the option \Rfunarg{genesubset} to plot only a subset of the 
 genes, \Rfunarg{labelsize} to resize the gene labels or 
-\Rfunarg{drawlabels = FALSE} to remove them. In the latter case, 
-use 
+\Rfunarg{drawlabels = FALSE} to remove them. Alternatively, we can 
+plot part of the geneplot later, as follows
 
-<<eval=FALSE>>= 
-legend <- geneplot(gt.cc, drawlabels = FALSE) 
+<<geneplot.subset>>=
+gp.cc <- geneplot(gt.cc) 
+plot(gp.cc[1:40])
 @
 
-The return of the plot is a legend connecting the gene numbers 
-appearing in the plot if \Rfunarg{drawlabels = FALSE} to the gene 
-names. 
+This allows one to look at subsets of a large pathway more 
+closely. The return of the \Rfunction{geneplot} is an object of 
+type \Rclass{gt.barplot} containing the numbers and names 
+appearing in the plot: 
+
+<<geneplot.table>>= 
+gp.cc[1:10]
+@
+
+The option \Rfunarg{scale} can be used to rescale the bars to have unit 
+standard deviation.
 
 \begin{center}
-<<fig=TRUE, echo=FALSE>>=
-geneplot(gt.cc)
+<<geneplot-plot, fig=TRUE, echo=FALSE>>=
+plot(gp.cc[1:40])
 @
 \end{center}
 
 \subsection{Sample Plot}
 
-The Sample Plot looks very similar to the Gene Plot and visualizes 
-the influence of the individual samples on the test result. It 
-has a bar and a reference line for each sample tested. The bar 
-indicates the influence of each sample on the test statistic, 
-similar to the \Rfunction{geneplot}. The direction of the bar (upward or 
-downward) indicates evidence against or in favour of the null 
-hypothesis. If a sample has a positive bar, its expression 
-profile is relatively similar to that of samples which have the 
-same value of the clinical variable and relatively unlike the 
-profile of the samples which have a different value of the 
-clinical variable. If the bar is negative, it is the other way 
-around: the sample is more similar in expression profile to 
+The Sample Plot looks very similar to the Gene Plot and 
+visualizes the influence of the individual samples on the test 
+result. It has a bar and a reference line for each sample tested. 
+The bar indicates the influence of each sample on the test 
+statistic, similar to the \Rfunction{geneplot}. The direction of 
+the bar (upward or downward) indicates evidence against or in 
+favour of the null hypothesis. If a sample has a positive bar, 
+its expression profile is relatively similar to that of samples 
+which have the same value of the clinical variable and relatively 
+unlike the profile of the samples which have a different value of 
+the clinical variable. If the bar is negative, it is the other 
+way around: the sample is more similar in expression profile to 
 samples with a different clinical variable. A small p-value will 
 therefore generally coincide with many positive bars. If there 
-are still tall negative bars, these indicate deviating samples.
+are still tall negative bars, these indicate deviating samples: 
+removing a sample with a negative bar would result in a lower 
+p-value.
 
 If the null hypothesis is true the expected influence is zero. 
 Marks on the bars indicate the standard deviation of the 
 influence of the sample under the null hypothesis. Finally the 
 bars are coloured to distinguish the samples. In a logistic model 
 the colours differentiate between the original groups, in an 
-unadjusted linear model they differentiate the above mean from 
-the below mean values of $Y$. In an adjusted linear model they 
-distinguish positive from negative residuals after adjustment.
+unadjusted linear model they differentiate the values above the 
+mean from the values below the mean of $Y$. In an adjusted linear 
+or the survival model they distinguish positive from negative 
+residuals after fitting the null model.
 
 Again, either of the commands below gives the same output.
 
-<<eval=FALSE>>= 
+<<sampleplot>>= 
 sampleplot(gt.cc) 
-sampleplot(gt.kegg, "04110") 
+sampleplot(gt.kegg, "04110")
+sampleplot(gt.kegg["04110"])
 @
 
-For a large number of samples the plot might become overcrowded. 
-Use the option \Rfunarg{samplesubset} to plot only a subset of the 
-samples, \Rfunarg{labelsize} to resize the sample labels or 
-\Rfunarg{drawlabels = FALSE} to remove them. In the latter case, 
-use 
-
-<<eval=FALSE>>= 
-legend <- sampleplot(gt.cc, drawlabels = FALSE) 
-@
-
-The return of the plot is a legend connecting the sample numbers 
-appearing in the plot if \Rfunarg{drawlabels = FALSE} to the sample 
-names. 
+The options of \Rfunction{sampleplot} and the resulting
+\Rclass{gt.barplot} object are be handled in the same way as 
+described under ``geneplot''.
 
 \begin{center} 
-<<fig=TRUE, echo=FALSE>>= 
+<<sampleplot-plot,fig=TRUE,echo=FALSE>>= 
 sampleplot(gt.cc) 
 @ 
 \end{center}
@@ -424,7 +446,7 @@ learned about the structure of the data. For example, by looking
 at samples which deviate from the main pattern, outlying samples
 can be detected.
 
-<<eval=FALSE>>=
+<<checkerboard>>=
 checkerboard(gt.cc)
 checkerboard(gt.kegg, "04110")
 @
@@ -435,7 +457,7 @@ to link the numbers appearing in the plot if \Rfunarg{drawlabels =
 FALSE} to the sample names.
 
 \begin{center}
-<<fig=TRUE, echo=FALSE>>=
+<<checkerboard-plot, fig=TRUE, echo=FALSE>>=
 checkerboard(gt.kegg, "04110")
 @
 \end{center}
@@ -474,7 +496,7 @@ clinical outcome.
 
 If we want to test sample \Robject{"1"}, we say:
 
-<<fig=FALSE, echo=TRUE>>=
+<<regressionplot>>=
 regressionplot(gt.cc, sampleid = "1")
 regressionplot(gt.kegg, "04110", sampleid = "1")
 @
@@ -482,12 +504,12 @@ regressionplot(gt.kegg, "04110", sampleid = "1")
 We can also use this plot for a group of samples, saying for
 example:
 
-<<fig=FALSE, echo=TRUE>>=
+<<regressionplot2>>=
 regressionplot(gt.cc, sampleid = c("1","2"))
 @
 
 \begin{center}
-<<fig=TRUE, echo=FALSE>>=
+<<regressionplot-plot, fig=TRUE, echo=FALSE>>=
 regressionplot(gt.kegg, "04110", c("2"))
 @
 \end{center}

@@ -4,7 +4,7 @@
 
 \alias{exampleY}
 
-\title{Example clinical variable for package "globaltest".}
+\title{Example (simulated) clinical variable for package "globaltest".}
 
 \description{A simulated clinical variable used used in the 
 examples of the package "globaltest".}

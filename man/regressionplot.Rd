@@ -8,13 +8,13 @@
 effect of specific samples on the test result produced by
 \code{\link{globaltest}}.}
 
-\usage{regressionplot(gt, geneset = NULL, sampleid = NULL, ...)}
+\usage{regressionplot(gt, geneset, sampleid, ...)}
 
 \arguments{
     \item{gt}{The output of a call to \code{\link{globaltest}}.}
     \item{geneset}{The name or number of the geneset to be plotted 
 (only necessary if multiple genesets were tested).}
-    \item{sampleid}{A vector of names or numbers of the samples of interest.}
+    \item{sampleid}{An optional vector of names or numbers of the samples of interest.}
     \item{...}{Any extra arguments will be forwarded to the plotting function.}}
 
 \details{The regressionplot plots, for all pairs of samples, the

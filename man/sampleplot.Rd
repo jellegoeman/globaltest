@@ -7,17 +7,19 @@
 \description{Produces a plot to show the influence of individual
 samples on the test result produced by \code{\link{globaltest}}.}
 
-\usage{sampleplot(gt, geneset = NULL, samplesubset = NULL, drawlabels = TRUE, labelsize = 0.6, ...)}
+\usage{sampleplot(gt, geneset, samplesubset, scale = FALSE, 
+        drawlabels = TRUE, labelsize = 0.6, ...)}
 
 \arguments{
     \item{gt}{The output of a call to \code{\link{globaltest}}.}
     \item{geneset}{The name or number of the geneset to be plotted 
 (only necessary if multiple genesets were tested).}
-    \item{samplesubset}{A vector of names or numbers of samples to be plotted 
-(default: all samples)}
-		\item{drawlabels}{Logical value to control drawing of the samplenames on the x-axis of the plot.}
-		\item{labelsize}{Relative size of the labels on the x-axis. If it is \code{NULL} , 
-		the current value for \code{\link[graphics:par]{par("cex.axis")}} is used}
+    \item{samplesubset}{A vector of names or numbers of samples to be plotted. 
+Default: plot all samples}
+    \item{scale}{Logical: should the bars be scaled to unit standard deviation?}
+        \item{drawlabels}{Logical value to control drawing of the samplenames on the x-axis of the plot.}
+        \item{labelsize}{Relative size of the labels on the x-axis. If it is \code{NULL} , 
+        the current value for \code{\link[graphics:par]{par("cex.axis")}} is used}
     \item{...}{Any extra arguments will be forwarded to the plotting 
 function.}}
 
@@ -44,10 +46,7 @@ groups.
 The bottom margin is adjusted to allow enough space for the longest 
 samplename to draw under the axis.}
 
-\value{If samplenames were supplied in the call to 
-\code{\link{globaltest}}, sampleplot returns the vector of 
-samplenames corresponding to the samplenumbers appearing in the 
-plot. Otherwise \code{NULL}.}
+\value{An object of type \code{\link[gt.barplot-class]{gt.barplot}}.}
 
 \references{J. J. Goeman, S. A. van de Geer, F. de Kort and J. C. 
 van Houwelingen, 2004, \emph{A global test for groups of genes: 
@@ -61,13 +60,13 @@ Globaltest.pdf included with this package.}
 \code{\link{regressionplot}}, \code{\link{checkerboard}}.}
 
 \examples{
-if (interactive()){ 
     data(exampleX)      # Expression data (40 samples; 1000 genes)
     data(exampleY)      # Clinical outcome for the 40 samples
     pathway <- 1:25     # A pathway contains genes 1 to 25
     gt <- globaltest(exampleX, exampleY, test.genes = pathway)
-    gt
-    sampleplot(gt)
-}
+    
+    if (interactive()){ 
+      sampleplot(gt)
+    }
 }
 \keyword{hplot}

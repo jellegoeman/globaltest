@@ -4,7 +4,8 @@
 
 \alias{exampleX}
 
-\title{Example expression data for package "globaltest".}
+\title{Example (simulated) expression data for package 
+"globaltest".}
 
 \description{A simulated gene expression dataset used in the 
 examples of the package "globaltest".}

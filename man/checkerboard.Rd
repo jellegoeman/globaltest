@@ -8,7 +8,8 @@
 by \code{\link{globaltest}}, by showing the association between
 pairs of samples.}
 
-\usage{checkerboard(gt, geneset = NULL, sort = TRUE, drawlabels = TRUE, labelsize = 0.6, ...)}
+\usage{checkerboard(gt, geneset, sort = TRUE, drawlabels = TRUE, 
+labelsize = 0.6, ...)}
 
 \arguments{
     \item{gt}{The output of a call to \code{\link{globaltest}}.}
@@ -43,14 +44,16 @@ Globaltest.pdf included with this package.}
 \code{\link{geneplot}}.}
 
 \examples{
-if (interactive()) {
     data(exampleX)      # Expression data (40 samples; 1000 genes)
     data(exampleY)      # Clinical outcome for the 40 samples
     pathway <- 1:25     # A pathway contains genes 1 to 25
+    
     gt <- globaltest(exampleX, exampleY, test.genes = pathway)
     gt
-    checkerboard(gt)
-}
+    
+    if (interactive()) {
+      checkerboard(gt)
+    }
 }
 
 \keyword{hplot}
