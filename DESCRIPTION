@@ -3,12 +3,11 @@ Version: 3.0.5
 Date: 2005-04-04
 Title: Testing Association of a Group of Genes with a Clinical Variable
 Author: Jelle Goeman <j.j.goeman@lumc.nl> and Jan Oosting <j.oosting@lumc.nl>
-Maintainer: Jelle Goeman <j.j.goeman@lumc.nl> and Jan Oosting <j.oosting@lumc.nl>
+Maintainer: Jelle Goeman <j.j.goeman@lumc.nl>
 Depends: R (>= 2.0.0), methods
 Suggests: Biobase, survival, vsn, golubEsets, KEGG, hu6800
 Description: Testing whether a group of genes (e.g. a pathway) is significantly associated with a clinical variable of interest.
-Reference: J.J. Goeman, S.A. van de Geer, F. de Kort and J.C. van Houwelingen, 2004, 'A global test for groups of genes: testing association with a clinical outcome', Bioinformatics 20 (1) 93--99. 
-J.J. Goeman, J. Oosting, A. Cleton-Jansen, J.K. Anninga and J.C. van Houwelingen, 2005, 'Testing association of a pathway with survival' Bioinformatics 21, to appear.
+Reference: J.J. Goeman, S.A. van de Geer, F. de Kort and J.C. van Houwelingen, 2004, 'A global test for groups of genes: testing association with a clinical outcome', Bioinformatics 20 (1) 93--99. and J.J. Goeman, J. Oosting, A. Cleton-Jansen, J.K. Anninga and J.C. van Houwelingen, 2005, 'Testing association of a pathway with survival' Bioinformatics 21, to appear.
 License: GPL version 2 or newer
 URL: www.math.leidenuniv.nl/~jgoeman/
 Packaged: Mon Nov 22 15:55:15 2004; jjgoeman

@@ -90,8 +90,11 @@ different gene expression pattern for certain pathways from the
 KEGG database.
 
 First we load all KEGG pathways. We will use the rest in the next
-section. <<loadKEGG>>= kegg <- as.list(hu6800PATH2PROBE) cellcycle
-<- kegg[["04110"]] @
+section.
+<<loadKEGG>>=
+kegg <- as.list(hu6800PATH2PROBE)
+cellcycle <- kegg[["04110"]]
+@
 
 This creates a sorted list \Robject{kegg} of \Sexpr{length(kegg)} pathways, each a
 vector of gene names. The vector \Robject{cellcycle} is one of them.
