@@ -94,8 +94,8 @@ KEGG database.
 First we load all KEGG pathways. We willl use the rest in the next
 section.
 <<>>=
-keggids <- ls(env = hu6800PATH2PROBE)
-keggPW <- multiget(keggids, env = hu6800PATH2PROBE)
+keggids <- ls(envir = hu6800PATH2PROBE)
+keggPW <- mget(keggids, envir = hu6800PATH2PROBE)
 cellcycle <- keggPW[["04110"]]
 @
 
