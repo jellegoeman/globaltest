@@ -1,6 +1,6 @@
 Package: globaltest
-Version: 3.1.0
-Date: 2005-04-04
+Version: 3.1.1
+Date: 2005-07-08
 Title: Testing Association of a Group of Genes with a Clinical
         Variable
 Author: Jelle Goeman <j.j.goeman@lumc.nl> and Jan Oosting
@@ -18,5 +18,3 @@ Reference: J.J. Goeman, S.A. van de Geer, F. de Kort and J.C. van
         of a pathway with survival' Bioinformatics 21, to appear.
 License: GPL version 2 or newer
 URL: www.math.leidenuniv.nl/~jgoeman/
-Packaged: Mon Nov 22 15:55:15 2004; jjgoeman
-

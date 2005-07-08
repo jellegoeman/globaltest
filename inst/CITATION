@@ -45,11 +45,11 @@ citEntry(entry="Article",
         as.person("J. C. van Houwelingen")),
     journal = "Bioinformatics",
     number = 21,
-    pages = "to appear",
+    pages = "1950-1957",
     year = 2005,
     textVersion =
       paste("Jelle J. Goeman, Jan Oosting, Anne-Marie Cleton-Jansen,",
         "Jakob, K. Anninga, Hans C. van Houwelingen (2005)",
         "Testing association of a pathway with survival.",
-        "Bioinformatics 21, to appear.")
+        "Bioinformatics 21, 1950-1957.")
 )

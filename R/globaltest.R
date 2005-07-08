@@ -746,6 +746,7 @@ permutations <- function(gt, geneset, nperm = 10^4)
             matrixP <- outer(expci, hazinc, "*") * atrisk
             matrixPO <- matrixP %*% t(matrixO)
             matrixM <- diag(d) %*% outer(times, dtimes, "<") - matrixPO %*% outer(times, dtimes, "<")
+            matrixW <- diag(rowSums(matrixPO)) - matrixPO %*% t(matrixPO)
           }
   
           # Calculate Q for nperm permutations of Q
