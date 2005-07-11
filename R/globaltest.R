@@ -149,7 +149,7 @@ globaltest <- function(X, Y, test.genes,
     if (length(levels)==2 ) {
     # create a subset of samples
       X <- as.matrix(X[,Y == levels[1] | Y == levels[2]])
-      pDataX <- pDataX[Y == levels[1] | Y == levels[2],]
+      pDataX <- pDataX[Y == levels[1] | Y == levels[2], ,drop = FALSE]
       Y <- Y[Y == levels[1] | Y == levels[2]]
     }
     if (length(levels)<=2 ) {
