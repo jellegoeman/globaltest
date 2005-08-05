@@ -184,12 +184,16 @@ globaltest <- function(X, Y, test.genes,
       else
           stop("Dimensions of X and Y don't match.", call. = FALSE)
   }
-  if (is.null(pDataX))
-    pDataX <- data.frame(Y)
-  if (nrow(pDataX) != n)
-    stop("dimension of adjust incompatible with Y", call. = FALSE)
   if (n == p & is.null(pDataX))
       warning("As many samples as genes.\n Columns of X are assumed samples; rows assumed genes.", call.=FALSE)
+  if (is.null(pDataX)) {
+    pDataX <- data.frame(Y)
+    if ( (!is.null(rownames(X))) & (is.null( names(Y) )) ) {
+      rownames(pDataX) <- rownames(X)
+    }
+  }
+  if (nrow(pDataX) != n)
+    stop("dimension of adjust incompatible with Y", call. = FALSE)
 
   # 7: extract genenames and compare samplenames
   genenames <- colnames(X)
@@ -675,7 +679,7 @@ setMethod("hist", "gt.result",
     Q <- x@res[,"Q"]
     nperm <- length(Qs)
     hst <- hist(Qs, xlim = c(1.1 * min(0, Qs, Q), 1.1 * max(Qs, Q)), breaks = 20, 
-      main = paste( "Histogram of Q for", nperm, "permutations of Y" ),
+      main = "",
       xlab = "Values of Q for permuted Y", ...)
     h <- max(hst$counts)
     arrows( Q, h/5, Q, 0 )
@@ -1409,7 +1413,7 @@ sampleplot <- function(gt, geneset, samplesubset, scale = FALSE, drawlabels = TR
 # See help(regressionplot) for details
 #==========================================================
 
-regressionplot <- function(gt, geneset, sampleid,...)
+regressionplot <- function(gt, geneset, sampleid, ...)
 {
 
     # check correct input of gt
@@ -1434,7 +1438,7 @@ regressionplot <- function(gt, geneset, sampleid,...)
     
     # Check correct input of sampleid
     if ( missing(sampleid) ) {
-      sampleid <- 1:n
+      sampleid <- NULL
     }else{
       if (!( all(sampleid %in% 1:n) | all(sampleid %in% rownames(X)) ))
         stop("Option sampleid incorrect", call. = FALSE)
@@ -1458,11 +1462,13 @@ regressionplot <- function(gt, geneset, sampleid,...)
     # Draw the plots
     plot(Sall, Rall, xlab = "Covariance between outcomes", ylab = "Covariance between expression profiles", col = 0,...)
     if (length(Rrest) > 0){
-        points(Srest, Rrest,col = 4)
-        abline(lm(Rall ~ Sall), col = 4)
+      points(Srest, Rrest,col = 4, cex=0.5)
+      abline(lm(Rall ~ Sall), col = 4)
     }
-    points(Ssub, Rsub, col = 2, pch = 4, cex = 1.5)
-    abline(lm(Rsub ~ Ssub), col = 2)
+    if (length(Rsub) > 0){
+      points(Ssub, Rsub, col = 2, pch = 4, cex = 2)
+      abline(lm(Rsub ~ Ssub), col = 2, lty = 2)
+    }
     
     # No output
     invisible(NULL)
