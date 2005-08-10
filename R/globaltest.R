@@ -611,6 +611,8 @@ if( !isGeneric("p.value") )
 setMethod("p.value", "gt.result",
             function(gt) gt@res[,"p.val"])
 
+
+
 #==========================================================
 # The subsetting method for "gt.result"
 #==========================================================
@@ -656,6 +658,29 @@ setMethod("names<-", "gt.result",
   rownames(x@Qs) <- value
   x
 })            
+
+#==========================================================
+# A sort method for "gt.result"
+#==========================================================
+if( !isGeneric("sort") ) setGeneric("sort")
+
+setMethod("sort", matchSignature(signature(x = "gt.result", index.return = "logical"), sort),
+  function(x, partial = NULL, na.last = NA, decreasing = FALSE, 
+      method = c("shell", "quick", "radix"), index.return) {
+    ix <- sort.list(p.value(x), partial, na.last, decreasing, method)
+    x <- x[ix]
+    if (index.return) 
+      list(x = x, ix = ix)
+    else
+      x
+  }
+)
+setMethod("sort", matchSignature(signature(x = "gt.result", index.return = "missing"), sort),
+  function(x, partial = NULL, na.last = NA, decreasing = FALSE, 
+      method = c("shell", "quick", "radix"), index.return) {
+    sort(x, partial, na.last, decreasing, method, index.return = FALSE)
+  }
+)
 
   
 #==========================================================

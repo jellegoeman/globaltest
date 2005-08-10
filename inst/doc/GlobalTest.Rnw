@@ -267,7 +267,7 @@ We might want to sort the pathways by their p-value, and show the top
 five. This can be done as follows
 
 <<sort.by.p>>=
-sort.gt.kegg <- gt.kegg[sort.list(p.value(gt.kegg))]
+sort.gt.kegg <- sort(gt.kegg)
 sort.gt.kegg[1:5]
 @
 
