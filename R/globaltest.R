@@ -357,7 +357,7 @@ globaltest <- function(X, Y, test.genes,
     X <- X / norm
   }
 
-  # coerce test.genes into a list and check correct input
+  # Coerce test.genes into a list and check correct input
   if ( missing(test.genes) )
     test.genes <- list(1:p)
   
@@ -451,7 +451,7 @@ globaltest <- function(X, Y, test.genes,
         seQ <- sqrt(varQ)
         scl <- varQ / (2 * EQ)
         dfr <- EQ / scl
-        p.value <- pf ( (scl * dfr / Q), 10^10, dfr )
+        p.value <- pchisq(Q / scl, dfr, lower.tail = FALSE)
       }
       if (model == 'linear') {
         EQ <- sum(diag(R))
@@ -459,7 +459,7 @@ globaltest <- function(X, Y, test.genes,
         seQ <- sqrt(varQ)
         scl <- varQ / (2 * EQ)
         dfr <- EQ / scl
-        p.value <- pf ( (scl * dfr / Q), 10^10, dfr )
+        p.value <- pchisq(Q / scl, dfr, lower.tail = FALSE)
       }    
       if (model == 'survival') {
         EQ <- sum(diag(R %*% matrixW))
@@ -945,7 +945,7 @@ sampling <- function(gt, geneset, ndraws = 10^3)
         }
         scl <- varQ / (2 * EQ)
         dfr <- EQ / scl
-        pout <- pf ( (scl * dfr / Q), 10^10, dfr )
+        pout <- pchisq(Q / scl, dfr, lower.tail = FALSE)
       }
       if (gt@model == 'linear') {
         trR <- sum(diag(R))
@@ -955,7 +955,7 @@ sampling <- function(gt, geneset, ndraws = 10^3)
         varQ <- (2 / (n - gt@df.adjust + 2)) * ( (n - gt@df.adjust) * trRR - tr2R )
         scl <- varQ / (2 * EQ)
         dfr <- EQ / scl
-        pout <- pf ( (scl * dfr / Q), 10^10, dfr )
+        pout <- pchisq(Q / scl, dfr, lower.tail = FALSE)
       }    
       if (gt@model == 'survival') {
         EQ <- sum(R * matrixW)
