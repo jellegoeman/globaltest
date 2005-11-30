@@ -11,8 +11,8 @@
 \alias{p.value,gt.result-method}
 \alias{names,gt.result-method}
 \alias{names<-,gt.result-method}
-\alias{sort,gt.result,ANY,ANY,ANY,ANY,logical-method}
-\alias{sort,gt.result,ANY,ANY,ANY,ANY,missing-method}
+\alias{sort,gt.result-method}
+
 
 \title{Class "gt.result" for results of the function globaltest}
 

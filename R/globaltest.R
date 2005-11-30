@@ -31,6 +31,7 @@
 #           if levels contains 2 values: these groups are tested against each other
 # adjust = data.frame: confounders or riskfactors for which the test must be adjusted
 #       may be coded as names or indices of variables in the PhenoData slot of X (if exprSet)
+# scaleX = scales the expession matrix to get pleasant values (does not affect the p-value).
 #
 # RESULT
 # array with 7 columns containing
@@ -42,7 +43,7 @@
 globaltest <- function(X, Y, test.genes,
                         model, levels,
                         d, event = 1,
-                        adjust, ...)
+                        adjust, scaleX = TRUE, ...)
 
 
 {
@@ -52,7 +53,6 @@ globaltest <- function(X, Y, test.genes,
     
   # 1: make matrix X and pDataX:
   if (is(X, "exprSet")) {
-    require("Biobase")
     if (is.data.frame(adjust)) {
       if (any(sampleNames(X) != rownames(adjust)))
         stop("samplenames of X and adjust inconsistent", call. = FALSE)
@@ -79,6 +79,10 @@ globaltest <- function(X, Y, test.genes,
     } else {
       pDataX <- NULL
     }
+  }
+  
+  if (!is.logical(scaleX) | (length(scaleX) > 1)) {
+    stop("scaleX should be either TRUE of FALSE", call. = FALSE)
   }
     
   # 2: coerce Y into a vector
@@ -132,11 +136,11 @@ globaltest <- function(X, Y, test.genes,
   }
   model <- match.arg(model, c('linear','logistic','survival'))
   if (model == 'survival')
-    require("survival")
+    require("survival") || stop("Package survival is unavailable", call. = FALSE)
 
   # 4: Preparation of X and Y in the logistic model using option levels
   if (model=='logistic') {
-    if (missing(levels)){
+    if (missing(levels)) {
       # Only 2 levels should be here, test for 1 now, later checks will find other errors
       levels <- NULL
       levels <- levels(factor(Y))
@@ -348,7 +352,7 @@ globaltest <- function(X, Y, test.genes,
   X <- X - rep(1, times=n) %o% col.meanX
   X[is.na(X)] <- 0
   adjX <- t(IminH) %*% X
-  if (model != "survival") {
+  if (scaleX & (model != "survival")) {
     if ((model == "logistic") & (nadjust > 1)) 
       norm <- sqrt(sum(mu2 %*% (adjX * adjX)) / (10 * p))
     else {
@@ -669,9 +673,9 @@ setMethod("names<-", "gt.result",
 #==========================================================
 if( !isGeneric("sort") ) setGeneric("sort")
 
-setMethod("sort", matchSignature(signature(x = "gt.result", index.return = "logical"), sort),
+setMethod("sort", matchSignature(signature(x = "gt.result"), sort),
   function(x, partial = NULL, na.last = NA, decreasing = FALSE, 
-      method = c("shell", "quick", "radix"), index.return) {
+      method = c("shell", "quick", "radix"), index.return = FALSE) {
     ix <- sort.list(p.value(x), partial, na.last, decreasing, method)
     x <- x[ix]
     if (index.return) 
@@ -680,12 +684,20 @@ setMethod("sort", matchSignature(signature(x = "gt.result", index.return = "logi
       x
   }
 )
-setMethod("sort", matchSignature(signature(x = "gt.result", index.return = "missing"), sort),
-  function(x, partial = NULL, na.last = NA, decreasing = FALSE, 
-      method = c("shell", "quick", "radix"), index.return) {
-    sort(x, partial, na.last, decreasing, method, index.return = FALSE)
-  }
-)
+
+#==========================================================
+# Adds multiple-testing-corrected p-values
+#==========================================================
+gt.multtest <- function(gt, proc = c("BH", "Bonferroni", "Holm", "Hochberg", "SidakSS", "SidakSD", "BY")) {
+  proc <- match.arg(proc)
+  if (!is(gt, "gt.result")) stop("gt must be a gt.result object")
+  mt <- mt.rawp2adjp(p.value(gt))
+  mt <- mt[sort.list(mt$index), proc]
+  gt@res <- cbind(gt@res, mt)
+  colNames(gt@res)[nrow(gt@res)] = paste("p." + proc + ".adjusted")
+  gt
+}
+
 
   
 #==========================================================
@@ -1586,4 +1598,10 @@ checkerboard <- function(gt, geneset, sort = TRUE, drawlabels = TRUE, labelsize 
 # .onLoad is called when the package is loaded
 #==========================================================
 .onLoad <- function(lib, pkg) require(methods)
+
+.onAttach <- function(lib, pkg) {
+    if(interactive() && .Platform$OS.type == "windows" && .Platform$GUI == "Rgui"){
+      addVigs2WinMenu("globaltest")
+    }
+}
 #==========================================================

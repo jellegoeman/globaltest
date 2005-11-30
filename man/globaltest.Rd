@@ -8,7 +8,7 @@
 genes for significant association with a given clinical variable.}
 
 \usage{globaltest(X, Y, test.genes, model,
-    levels, d, event = 1, adjust, ...) }
+    levels, d, event = 1, adjust, scaleX = TRUE, ...) }
 
 \arguments{
     \item{X}{Either a matrix of gene expression data, where columns correspond to
@@ -53,6 +53,10 @@ be adjusted. Must be either a data frame or (if \code{X} is an
 exprSet) the names of covariates in the phenoData slot \code{X}
 or a \code{\link[stats:formula]{formula}} object using these
 names. Default: no adjustment.}
+    \item{scaleX}{If true, rescales the expression matrix to get pleasant value for
+all test statistics. The expression matrix \code{X} is multiplied by a constant
+in such a way that the expected value EQ of the test statistic for the global test
+becomes exactly 10. This rescaling has no effect on the p-values.}
     \item{...}{Captures deprecated input for compatibility with older versions of
 globaltest.} }
 
