@@ -644,11 +644,16 @@ setMethod("length", "gt.result",
 # The names methods for "gt.result" 
 # (applies to pathwaynames)
 #==========================================================
+if( !isGeneric("names") ) setGeneric("names")
+
 setMethod("names", "gt.result", 
             function(x) 
 {
   names(x@test.genes)
 })      
+
+if( !isGeneric("names<-") ) 
+  setGeneric("names<-", function(x, value) standardGeneric("names<-"))
 
 setMethod("names<-", "gt.result", 
             function(x, value) 
@@ -1068,6 +1073,9 @@ setMethod("length", "gt.barplot",
 })            
 
 #==========================================================
+if( !isGeneric("scale") ) 
+    setGeneric("scale", function(x, center, scale) standardGeneric("scale"))
+
 setMethod("scale", "gt.barplot", 
             function(x, center = FALSE, scale = TRUE) 
 {
@@ -1093,6 +1101,9 @@ setMethod("show", "gt.barplot",
 })
 
 #==========================================================
+if( !isGeneric("plot") )
+    setGeneric("plot", function(x, y, ...) standardGeneric("plot"))
+
 setMethod("plot", "gt.barplot",
   function(x,y,...) {
     plot.gt.barplot <- function(x, genesubset, drawlabels, labelsize, ...) {
@@ -1572,19 +1583,7 @@ checkerboard <- function(gt, geneset, sort = TRUE, drawlabels = TRUE, labelsize 
 #==========================================================
 
 #==========================================================
-# .First.lib is called when the package is loaded
+# .onLoad is called when the package is loaded
 #==========================================================
-
-.First.lib <- function(libname, pkgname, where)
-{
-    if (missing(where)) {
-        where <- match(paste("package:", pkgname, sep=""), search())
-        if(is.na(where)) {
-            warning(paste("Not a package name: ",pkgname))
-            return()
-        }
-        where <- pos.to.env(where)
-    }
-  invisible(NULL)
-}
+.onLoad <- function(lib, pkg) require(methods)
 #==========================================================

@@ -1,0 +1,7 @@
+importFrom(graphics, plot, hist)
+
+exportClasses(gt.result, gt.barplot)
+
+exportMethods("[", show, result, p.value, length, names, "names<-", sort, hist, z.score, scale, plot)
+
+export(globaltest, permutations, sampling, geneplot, sampleplot, regressionplot, checkerboard)
