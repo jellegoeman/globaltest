@@ -175,7 +175,7 @@ This gives an extra output column ``comparative p'', which is the
 fraction of random genesets of the same size as the cell cycle
 pathway (\Sexpr{length(cellcycle)} genes) which have a lower p-value than
 cell cycle
-itself. In this case around \Sexpr{100*round(result(gt.cc)[,"comp.p"],2)}
+itself. In this case around \Sexpr{100*round(result(gt.cc)[,"Comparative p"],2)}
 \%\ of 1,000 random `pathways' of size \Sexpr{length(cellcycle)}
 have a lower p-value than the Cell Cycle pathway. By default
 1,000 random sets are sampled; this number can be changed with

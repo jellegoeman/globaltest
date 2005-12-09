@@ -7,8 +7,9 @@
 \description{In microarray data, tests a (list of) group(s) of
 genes for significant association with a given clinical variable.}
 
-\usage{globaltest(X, Y, test.genes, model,
-    levels, d, event = 1, adjust, scaleX = TRUE, ...) }
+\usage{globaltest(X, Y, genesets, model,
+    levels, d, event = 1, adjust,
+    scaleX = TRUE, ...) }
 
 \arguments{
     \item{X}{Either a matrix of gene expression data, where columns correspond to
@@ -25,9 +26,9 @@ name of a covariate in the
 exprSet, or a \code{\link[stats:formula]{formula}} object using
 these names. If the clinical outcome is survival, \code{Y} should
 contain the survival times.}
-    \item{test.genes}{Either a vector or a list of vectors. Indicates
+    \item{genesets}{Either a vector or a list of vectors. Indicates
 the group(s) of genes to be tested. Each vector in
-\code{test.genes} can be given in three formats. Either it can be
+\code{genesets} can be given in three formats. Either it can be
 a vector with 1 (\code{TRUE}) or 0 (\code{FALSE}) for each gene
 in \code{X}, with 1 indicating that the gene belongs to the
 group. Or it can be a vector containing the column numbers (in
@@ -71,17 +72,9 @@ the group have similar expression patterns, only that many of
 them are correlated with the outcome.}
 
 \note{
-1. The options globaltest options sampling and permutation
+The options globaltest options sampling and permutation
 have been replaced by separate functions from version 3.0. See
-\code{\link{sampling}} and \code{\link{permutations}}.
-
-2. The scaling of the test statistic Q is arbitrary and does not
-influence the test result. The scaling used in the software
-slightly different from the unscaled version presented in the paper.
-The mechanism of the rescaling is as follows: Remember that Q is a
-average of a Qi for all genes i in the tested geneset, so EQ is the
-average of the EQi. The rescaling is such that the EQ for the pathway
-of all genes (i.e. the mean of all EQi) is 10.}
+\code{\link{sampling}} and \code{\link{permutations}}.}
 
 \value{The function returns an object of class
 \code{\link[gt.result-class]{gt.result}}.}
