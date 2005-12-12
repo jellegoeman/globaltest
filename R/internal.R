@@ -240,7 +240,6 @@ getIminH <- function(fit) {
       tussen <- diag(R) %o% rep(1,ncol(matrixP)) + 2 * R %*% (matrixM - matrixP)
       matrixT <- tussen - rep(1,n) %o% colSums(matrixP * tussen)    
       varQ <- sum(matrixPO * ((matrixT * matrixT) %*% t(matrixO)))
-      print(c(Q,EQ,varQ))
       Q <- (Q - EQ) / sqrt(varQ)
       p.value <- pnorm(-Q)
       EQ <- 0

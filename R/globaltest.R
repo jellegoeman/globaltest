@@ -285,7 +285,6 @@ globaltest <- function(X, Y, genesets,
   if ( missing(genesets) ) {
     if ("test.genes" %in% names(list(...))) {
       genesets <- list(...)[["test.genes"]]
-      print(genesets)
     } else {
       genesets <- list(all = 1:p)
     }
