@@ -54,7 +54,7 @@ permutations <- function(gt, geneset, nperm = 10^4)
   if ( !(nperm > 0) )
     stop("option nperm should be a positive integer", call. = FALSE)
   if (nperm <= ncol(gt@PermQs))
-    gt@PermQs <-  gt@PermQs[,1:nperm]
+    gt@PermQs <- gt@PermQs[,1:nperm, drop = FALSE]
   else {
     nperm <- nperm - ncol(gt@PermQs)
     # extract the right test.genes vector
@@ -184,7 +184,7 @@ permutations <- function(gt, geneset, nperm = 10^4)
   }
   EQ <- apply(gt@PermQs, 1, mean)
   seQ <- apply(gt@PermQs, 1, sd)
-  p.value <- apply(gt@PermQs >= matrix(.Q(gt), nrow(gt@PermQs), ncol(gt@PermQs)), 1, mean)
+  p.value <- apply(gt@PermQs > .Q(gt) * 0.999999, 1, mean)
   gt@res[,4:6] <- cbind(EQ, seQ, p.value)
   gt
 }
