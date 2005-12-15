@@ -59,7 +59,7 @@ geneplot <- function(gt, geneset, genesubset, plot = TRUE, scale = FALSE, drawla
   # Output: gt.barplot object
   if (model == 'linear') {
     nameY <- as.character(.formula(gt)[[2]])
-    upCode <- c("+", "-")
+    colourCode <- c("+", "-")
     if (adjusted) {
       legend <- c(paste("positive correlation with residual", nameY),
         paste("negative correlation with residual", nameY))
@@ -68,11 +68,11 @@ geneplot <- function(gt, geneset, genesubset, plot = TRUE, scale = FALSE, drawla
         paste("negative correlation with", nameY))
     }
   } else if (model == 'logistic') {
-    upCode <- c(paste("high in", .levels(gt)[1]), paste("high in", .levels(gt)[2]) )
+    colourCode <- c(paste("high in", .levels(gt)[1]), paste("high in", .levels(gt)[2]) )
     legend <- c(paste("higher expression in", .levels(gt)[1], "samples"), 
       paste("higher expression in", .levels(gt)[2], "samples"))
   } else if (model == 'survival') {
-    upCode <- c("+", "-")
+    colourCode <- c("+", "-")
     legend <- c(paste("positively associated with survival"), 
       paste("negatively associated with survival"))
   }
@@ -82,7 +82,7 @@ geneplot <- function(gt, geneset, genesubset, plot = TRUE, scale = FALSE, drawla
     labelsize = labelsize, 
     drawlabels = drawlabels,
     legend = legend,
-    upCode = upCode)
+    colourCode = colourCode)
   if (scale)
     gtbar <- scale(gtbar)
   if (plot) {

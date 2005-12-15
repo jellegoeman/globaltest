@@ -187,20 +187,6 @@ setMethod("combine", signature(x = "gt.result"),
 
 
 #==========================================================
-# Adds multiple-testing-corrected p-values
-#==========================================================
-gt.multtest <- function(gt, proc = c("BH", "Bonferroni", "Holm", "Hochberg", "SidakSS", "SidakSD", "BY")) {
-  proc <- match.arg(proc)
-  if (!is(gt, "gt.result")) stop("gt must be a gt.result object")
-  mt <- mt.rawp2adjp(p.value(gt))
-  mt <- mt[sort.list(mt$index), proc]
-  gt@res <- cbind(gt@res, mt)
-  colNames(gt@res)[nrow(gt@res)] = paste("p." + proc + ".adjusted")
-  gt
-}
-
-
-#==========================================================
 .Y <- function(gt) {
   model = .model(gt)
   if (model == "linear") {

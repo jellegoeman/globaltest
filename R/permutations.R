@@ -186,6 +186,7 @@ permutations <- function(gt, geneset, nperm = 10^4)
   seQ <- apply(gt@PermQs, 1, sd)
   p.value <- apply(gt@PermQs > .Q(gt) * 0.999999, 1, mean)
   gt@res[,4:6] <- cbind(EQ, seQ, p.value)
+  gt@res <- gt@res[,1:6, drop = FALSE]
   gt
 }
 #==========================================================

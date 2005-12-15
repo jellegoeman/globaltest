@@ -8,7 +8,7 @@ setClass("gt.barplot",
     labelsize = "numeric",
     drawlabels = "logical",
     legend = "vector",
-    upCode = "character"
+    colourCode = "vector"
   )
 )
 
@@ -18,7 +18,7 @@ setMethod("result", "gt.barplot",
 {
     res <- object@res
     colouring <- factor(res[,4])
-    levels(colouring) <- object@upCode[2:1]
+    levels(colouring) <- object@colourCode[2:1]
     res <- data.frame(res[,1:3], z.score = z.score(object), colouring)
     res
 })

@@ -79,11 +79,8 @@ have been replaced by separate functions from version 3.0. See
 \value{The function returns an object of class
 \code{\link[gt.result-class]{gt.result}}.}
 
-\references{J. J. Goeman, S. A. van de Geer, F. de Kort and J. C.
-van Houwelingen, 2004, \emph{A global test for groups of genes:
-testing association with a clinical outcome},
-\emph{Bioinformatics} 20 (1) 93--99. See also the vignette
-Globaltest.pdf included with this package.}
+\references{For references, type: citation("globaltest"). See also the vignette
+GlobalTest.pdf included with this package.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 

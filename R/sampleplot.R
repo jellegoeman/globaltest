@@ -135,7 +135,7 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
   rownames(res) <- colnames(X)
   if (model == "linear") {
     nameY <- as.character(.formula(gt)[[2]])
-    upCode <- c("+", "-")
+    colourCode <- c("+", "-")
     if (adjusted) {
       legend <- c(paste("positive residual", nameY),
         paste("negative residual", nameY))
@@ -144,10 +144,10 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
         paste("small values of", nameY))
     }
   } else if (model == 'logistic') {
-    upCode <- c(.levels(gt)[2], .levels(gt)[1] )
+    colourCode <- c(.levels(gt)[2], .levels(gt)[1] )
     legend <- c(paste(.levels(gt)[2], "samples"), paste(.levels(gt)[1], "samples"))
   } else if (model == 'survival') {
-    upCode <- c("late", "early")
+    colourCode <- c("late", "early")
     legend <- c("late event time or censored", "early event time")
   }
 
@@ -156,7 +156,7 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
     res = res,
     labelsize = labelsize, 
     drawlabels = drawlabels,
-    upCode = upCode,
+    colourCode = colourCode,
     legend = legend)
   gtbar <- gtbar[samplesubset]
   if (scale)

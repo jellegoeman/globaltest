@@ -27,11 +27,8 @@ The permuted test statistics are stored for later visualisation using
 \note{Permutations does not work if the adjusted version of
 globaltest was used.}
 
-\references{J. J. Goeman, S. A. van de Geer, F. de Kort and J. C.
-van Houwelingen, 2004, \emph{A global test for groups of genes:
-testing association with a clinical outcome},
-\emph{Bioinformatics} 20 (1) 93--99. See also the How To
-Globaltest.pdf included with this package.}
+\references{For references, type: citation("globaltest"). See also
+the vignette GlobalTest.pdf included with this package.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 

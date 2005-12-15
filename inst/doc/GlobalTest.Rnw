@@ -328,6 +328,18 @@ sort.gt.kegg <- sort(gt.kegg)
 sort.gt.kegg[1:5]
 @
 
+To correct for multiple testing, the \Rpackage{globaltest} package
+contains a function \Rfunction{multtest}, which can calculates
+multiplicity-adjusted p-values using either the False Discovery Rate
+controlling procedure of Benjamini and Hochberg of the Family-wise
+Error rate controlling procedure of Holm. For more sophisticated
+multiple testing adjustments, see the \Rpackage{multtest} package.
+
+<<multtest>>=
+sort.gt.kegg <- multtest(sort.gt.kegg, "FWER")
+sort.gt.kegg[1:5]
+@
+
 To make this list more readable, the pathway numbers can be replaced
 by the pathway names:
 
@@ -336,6 +348,8 @@ library(KEGG)
 names(sort.gt.kegg) <- as.list(KEGGPATHID2NAME)[names(sort.gt.kegg)]
 sort.gt.kegg[1:5]
 @
+
+
 
 
 \section{Diagnostic plots}
@@ -594,7 +608,7 @@ regressionplot(gt.kegg, "04110", c("2"))
 \end{center}
 
 
-\section{Reference}
+\section{References}
 \begin{itemize}
 \item
 J. J. Goeman, F. de Kort, S. A. van de Geer and J. C. van

@@ -9,4 +9,4 @@ exportClasses(gt.result, gt.barplot)
 exportMethods("[", show, result, p.value, length, names, "names<-", 
 	sort, hist, z.score, scale, plot, combine, fit)
 
-export(globaltest, permutations, sampling, geneplot, sampleplot, regressionplot, checkerboard)
+export(globaltest, permutations, sampling, geneplot, sampleplot, regressionplot, checkerboard, multtest)
