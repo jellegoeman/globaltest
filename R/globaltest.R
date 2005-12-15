@@ -117,7 +117,7 @@ globaltest <- function(X, Y, genesets,
   
   # 4: Synchronize sample names between eX and pData
   if (pDataNamesSupplied && !is.null(colnames(eX))) {
-    if (!all(rownames(pData)) == (colnames(eX))) {
+    if (!all(rownames(pData) == colnames(eX))) {
       warning("Sample names in X or exprs(X) conflict with those in Y, pData(X) or adjust", call. = FALSE)
     }
   } else {
