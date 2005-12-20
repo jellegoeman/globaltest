@@ -235,23 +235,24 @@ have a lower p-value than the Cell Cycle pathway. By default
 1,000 random sets are sampled; this number can be changed with
 the option \Rfunarg{ndraws}.
 
-By default the p-value of globaltest is calculated using
-approximate formulas which are more accurate for large sample
-size, but may be inaccurate for very small sample size. For 72
-arrays they should be accurate enough. For very small sample
-sizes an alternative is to use the permutation version of
-globaltest. This recalculates the p-value on the basis of 10,000
-permutations of the clinical variable.
+By default the p-value of globaltest is calculated using approximate
+formulas which are more accurate for large sample size, but may be
+inaccurate for very small sample size. For 72 arrays they should be
+accurate enough. For very small sample sizes an alternative is to
+use the permutation version of globaltest. This recalculates the
+p-value on the basis of permutations of the clinical variable. All
+possible permutations are used when (in a small data set) the number
+of possible permutations is smaller than the option \Rfunarg{nperm}
+(default: 10,000). Otherwise (as in this case) \Rfunarg{nperm}
+random permutations are used.
 
 <<permutations>>=
 permutations(gt.cc)
 @
 
-The permutation p-value is not so accurate in the lower range as
-it is always a multiple of one over the number of permutations
-and also has some sampling variance. If desired, the number of
-permutations can be changed with the option \Rfunarg{nperm} to get
-more accurate p-values.
+The permutation p-value is not so accurate in the lower range as it
+is always a multiple of one over the number of permutations. It also
+has some sampling variance in the random permutations case.
 
 
 \subsection{Adjusting for the presence of covariates}
@@ -284,7 +285,7 @@ genes. To see an example, adjust for ``Source'' instead of
 ``BM.PB''.
 
 The option \Rfunarg{adjust} may again be combined with the function
-\Rfunarg{sampling}, but not with \Rfunarg{permutation}.
+\Rfunarg{sampling}, but (as yet) not with \Rfunarg{permutation}.
 
 
 

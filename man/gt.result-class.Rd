@@ -1,6 +1,7 @@
 \name{gt.result-class}
 \docType{class}
 \alias{p.value}
+\alias{gt.result}
 \alias{result}
 \alias{gt.result-class}
 \alias{show,gt.result-method}

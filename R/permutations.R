@@ -48,15 +48,13 @@ permutations <- function(gt, geneset, nperm = 10^4)
   if ( !is(gt, "gt.result"))
     stop("permutations should be applied to a globaltest result", call. = FALSE)
   if (!(.model(gt) == "survival") && .adjusted(gt))
-    stop("the permutation procedure is not applicable for the adjusted global test", call. = FALSE)      
+    stop("the permutation procedure is not yet implemented for the adjusted global test", call. = FALSE)      
       
   # check correct input of nperm
   if ( !(nperm > 0) )
     stop("option nperm should be a positive integer", call. = FALSE)
-  if (nperm <= ncol(gt@PermQs))
-    gt@PermQs <- gt@PermQs[,1:nperm, drop = FALSE]
-  else {
-    nperm <- nperm - ncol(gt@PermQs)
+
+  if (min(nperm, .nPerms(gt)) > ncol(gt@PermQs)) {
     # extract the right test.genes vector
     if (!missing(geneset))
       gt <- gt[geneset]
@@ -65,6 +63,66 @@ permutations <- function(gt, geneset, nperm = 10^4)
     n <- .nSamples(gt)
     model <- .model(gt)
     adjusted <- .adjusted(gt)
+  
+    # recreate Y and necessary matrices
+    if (model == "survival") {
+      times <- as.vector(fit(gt)$y)[1:n]
+      d <- as.vector(fit(gt)$y)[(n+1):(2*n)] 
+      expci <- exp(fit(gt)$linear.predictors)
+      dtimes <- unique(times[d == 1]) 
+      nd <- length(dtimes)
+      matrixO <- outer(times, dtimes, "==") * matrix(d, n, nd)
+      ties <- any(colSums(matrixO) > 1)
+      atrisk <- outer(times, dtimes, ">=")
+      hazinc <- as.vector(1 / (expci %*% atrisk))
+      matrixP <- outer(expci, hazinc, "*") * atrisk
+      matrixPO <- matrixP %*% t(matrixO)
+      matrixM <- diag(d) %*% outer(times, dtimes, "<") - matrixPO %*% outer(times, dtimes, "<")
+      matrixW <- diag(rowSums(matrixPO)) - matrixPO %*% t(matrixPO)
+      Y <- rowSums(matrixPO) - d
+    } else if (model == "linear") {
+      Y <- fit(gt)$y - fitted.values(fit(gt))
+      mu2 <- sum(Y*Y)/df.residual(fit(gt))
+    } else if (model == "logistic") {
+      Y <- fit(gt)$y - fitted.values(fit(gt))
+      mu2 <- fit(gt)$weights[1]
+    }        
+  
+    # Make the permutations of Y
+    if (nperm >= .nPerms(gt)) { # Use all possible permutations
+      gt@PermQs <- matrix(,.nPathways(gt),0)
+      if ((model == "logistic") && !adjusted) {
+        m <- sum(Y == Y[1])
+        if (m == n/2) {
+          Y.pm <- cbind(TRUE, .allperms2(m-1,n-1))
+        } else {
+          Y.pm <- .allperms2(m,n)
+        }
+        Y.pm <- Y.pm - m/n
+      } else if (((model == "logistic") && !adjusted) || (model == "linear" && !adjusted)) {
+        Y.pm <- apply(.allperms(1:n), 2, function(pm) Y[pm])
+      } else if (model == "survival") {
+        if (!ties) {
+          pms <- .allperms(1:n)
+          Y.pm <- apply(pms, 2, function(pm) Y[pm])
+        } else {
+          pms <- .allperms(1:n)
+        }
+      }
+    } else { # Use random permutations
+      nperm <- nperm - ncol(gt@PermQs)
+      if (model == "survival") {
+        if (!ties) {
+          pms <- apply( matrix(rnorm(n * nperm), n, nperm), 2, sort.list )
+          Y.pm <-  apply(pms, 2, function(pm) Y[pm])
+        } else {
+          pms <- apply( matrix(rnorm(n * nperm), n, nperm), 2, sort.list )
+        }
+      } else {
+        pms <- apply( matrix(rnorm(n * nperm), n, nperm), 2, sort.list )
+        Y.pm <-  apply(pms, 2, function(pm) Y[pm])
+      }
+    }
     
     QQs <- t(sapply(1:.nPathways(gt), function(index) {
       if (nTested[index] == 0)
@@ -75,88 +133,37 @@ permutations <- function(gt, geneset, nperm = 10^4)
         m <- nrow(X)
         XX <- crossprod(X) / m
         Q <- realQ[index]
-
-        # recreate Y and necessary matrices
-        if (model == "survival") {
+    
+        # Calculate Q for nperm permutations of Q
+        if (model != 'survival') {
+          Qs <- colSums(( XX %*% Y.pm ) * Y.pm) / mu2
+        } else { 
+          # survival model:
           if (adjusted) {
             R <- crossprod(.IminH(gt), XX) %*% .IminH(gt)
           } else {
             R <- XX
           }
-          times <- as.vector(fit(gt)$y)[1:n]
-          d <- as.vector(fit(gt)$y)[(n+1):(2*n)] 
-          expci <- exp(fit(gt)$linear.predictors)
-          dtimes <- unique(times[d == 1]) 
-          nd <- length(dtimes)
-          matrixO <- outer(times, dtimes, "==") * matrix(d, n, nd)
-          ties <- any(colSums(matrixO) > 1)
-          atrisk <- outer(times, dtimes, ">=")
-          hazinc <- as.vector(1 / (expci %*% atrisk))
-          matrixP <- outer(expci, hazinc, "*") * atrisk
-          matrixPO <- matrixP %*% t(matrixO)
-          matrixM <- diag(d) %*% outer(times, dtimes, "<") - matrixPO %*% outer(times, dtimes, "<")
-          matrixW <- diag(rowSums(matrixPO)) - matrixPO %*% t(matrixPO)
-          Y <- rowSums(matrixPO) - d
-        } else if (model == "linear") {
-          Y <- fit(gt)$y - fitted.values(fit(gt))
-          mu2 <- sum(Y*Y)/df.residual(fit(gt))
-        } else if (model == "logistic") {
-          Y <- fit(gt)$y - fitted.values(fit(gt))
-          mu2 <- fit(gt)$weights[1]
-        }        
-
-        # Calculate Q for nperm permutations of Q
-        if (model != 'survival') {
-          # Recalculate the Q-value for permutations of Y
-          permQ <- function(npm) {
-            pms <- apply( matrix(rnorm(n * npm), n, npm), 2, sort.list )
-            Y.pm <-  matrix( Y[pms], n, npm )
-            colSums(( XX %*% Y.pm ) * Y.pm) / mu2
-          }
-
-          chunk <- 5000
-          nchunks <- trunc(nperm / chunk)
-          rest <- nperm - nchunks * chunk
-          if (rest == 0)
-            chunks <- as.list(rep(chunk, nchunks))
-          else
-            chunks <- as.list(c(rep(chunk, nchunks), rest))
-          Qs <- unlist(lapply(chunks, permQ))
-        } else { 
-          # survival model:
           if (!ties) {
-            permQ <- function(npm) {
-              pms <- apply( matrix(rnorm(n * npm), n, npm), 2, sort.list )
-              Y.pm <-  matrix( Y[pms], n, npm )
-              Q.pms <- colSums(( R %*% Y.pm ) * Y.pm)
-              EQs <- rep(0, npm)
-              varQs <- rep(0, npm)
-              for (j in 1:nd) {
-                pj <- matrixP[,j]
-                PJ <- matrix( pj[pms], n, npm )
-                mj <- matrixM[,j]
-                MJ <- matrix( mj[pms], n, npm )
-                tussen <- matrix(diag(R), n, npm) + 2 * R %*% (MJ - PJ)
-                TJ <- tussen - matrix(colSums(PJ * tussen), n, npm, byrow = TRUE)
-                varQs <- varQs + colSums(PJ * TJ * TJ)
-                EQs <- EQs + diag(R) %*% PJ - colSums(( R %*% PJ ) * PJ)
-              }
-              (Q.pms - EQs) / sqrt(varQs)
+            Q.pms <- colSums(( XX %*% Y.pm ) * Y.pm)
+            EQs <- rep(0, nperm)
+            varQs <- rep(0, nperm)
+            for (j in 1:nd) {
+              pj <- matrixP[,j]
+              PJ <- matrix( pj[pms], n, nperm )
+              mj <- matrixM[,j]
+              MJ <- matrix( mj[pms], n, nperm )
+              tussen <- matrix(diag(R), n, nperm) + 2 * R %*% (MJ - PJ)
+              TJ <- tussen - matrix(colSums(PJ * tussen), n, nperm, byrow = TRUE)
+              varQs <- varQs + colSums(PJ * TJ * TJ)
+              EQs <- EQs + diag(R) %*% PJ - colSums(( R %*% PJ ) * PJ)
             }
-            chunk <- 5000
-            nchunks <- trunc(nperm / chunk)
-            rest <- nperm - nchunks * chunk
-            if (rest == 0)
-              chunks <- as.list(rep(chunk, nchunks))
-            else
-              chunks <- as.list(c(rep(chunk, nchunks), rest))
-            Qs <- unlist(lapply(chunks, permQ))
+            Qs <- (Q.pms - EQs) / sqrt(varQs)
           } else {
             # ties present: much slower generation of permutations
-            Qs <- replicate(nperm, {
-              shuffle <- sample(n)
-              R <- R[shuffle, shuffle]
-              XX <- XX[shuffle, shuffle]
+            Qs <- sapply(1:nperm, function(ix) {
+              R <- R[pms[,ix], pms[,ix]]
+              XX <- XX[pms[,ix], pms[,ix]]
               Q.sample <- as.numeric(Y %*% XX %*% Y)
               EQ.sample <- sum(R * matrixW)
               tiecorrect <- sum( sapply(1:length(dtimes), 
@@ -181,12 +188,74 @@ permutations <- function(gt, geneset, nperm = 10^4)
       Qs  
     })) 
     gt@PermQs <- cbind(gt@PermQs, QQs)
+    EQ <- apply(gt@PermQs, 1, mean)
+    seQ <- apply(gt@PermQs, 1, sd)
+    p.value <- apply(gt@PermQs > .Q(gt) * 0.999999, 1, mean)
+    gt@res[,4:6] <- cbind(EQ, seQ, p.value)
+    gt@res <- gt@res[,1:6, drop = FALSE]
   }
-  EQ <- apply(gt@PermQs, 1, mean)
-  seQ <- apply(gt@PermQs, 1, sd)
-  p.value <- apply(gt@PermQs > .Q(gt) * 0.999999, 1, mean)
-  gt@res[,4:6] <- cbind(EQ, seQ, p.value)
-  gt@res <- gt@res[,1:6, drop = FALSE]
   gt
 }
 #==========================================================
+
+
+#==========================================================
+# Lists all permutations for the two-group case
+#==========================================================
+.allperms2 <- function(m, n) {
+  if (n == 1) {
+    if (m == 0) {
+      app <- FALSE
+    } else if (m==1) {
+      app <- TRUE
+    }
+  } else {
+    total <- choose(n,m)
+    top <- choose(n-1,m-1)
+    bottom <- choose(n-1,m)
+    app <- matrix(,n,choose(n,m))
+    app[1,] <- c(rep(TRUE, top), rep(FALSE, bottom))
+    if (m > 0)
+      app[2:n,1:top] <- .allperms2(m-1,n-1)
+    if (m < n)
+      app[2:n,(top+1):total] <- .allperms2(m,n-1)
+  }  
+  app
+}
+
+#==========================================================
+# Lists all permutations for the general case
+#==========================================================
+.allperms <- function(nums) {
+  n <- length(nums)
+  if (n == 1) {
+    app <- nums
+  } else {
+    app <- matrix(,n,factorial(n))
+    for (ix in 1:length(nums)) {
+      range <- 1:factorial(n-1) + (ix - 1) * factorial(n-1)
+      app[1,range] <- nums[ix]
+      app[2:n,range] <- .allperms(nums[-ix])
+    }
+  }
+  app
+}
+
+#==========================================================
+# Calculates the number of permutations
+#==========================================================
+.nPerms <- function(gt) {
+  n <- .nSamples(gt)
+  if ((.model(gt) == "logistic") && !.adjusted(gt)) {
+    Y <- .Y(gt)
+    m <- sum(Y == Y[1])
+    if (m == n/2) {
+      out <- choose(n,m) / 2
+    } else {
+      out <- choose(n,m)
+    }
+  } else {
+    out <- factorial(n)
+  }
+  out
+}

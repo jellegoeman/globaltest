@@ -15,11 +15,13 @@ statistic and uses these to recalculate the p-value.}
     (only necessary if multiple genesets were tested).}
     \item{nperm}{The number of permutations to be used.} }
 
-\details{A permutation p-value is calculated by comparing
-the value of the test statistic for random permutations of the clinical outcome
-to the value of the test statistic for the true clinical outcome.
-The permuted test statistics are stored for later visualisation using
-\code{hist}.}
+\details{A permutation p-value is calculated by comparing the value
+of the test statistic using permutations of the clinical outcome to
+the value of the test statistic for the true clinical outcome. If
+the number of possible permutations is smaller than the value of
+\code{nperm}, all possible permutations are used, otherwise
+\code{nperm} random permutations. The permuted test statistics are
+stored for later visualisation using \code{\link{hist}}.}
 
 \value{An object of class
 \code{\link[gt.result-class]{gt.result}}.}

@@ -2,6 +2,7 @@
 \docType{class}
 \alias{gt.barplot-class}
 \alias{z.score}
+\alias{gt.barplot}
 \alias{show,gt.barplot-method}
 \alias{[,gt.barplot-method}
 \alias{length,gt.barplot-method}
