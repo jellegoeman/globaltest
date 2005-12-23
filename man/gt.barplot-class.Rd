@@ -41,7 +41,7 @@
     \item{result}{(gt.barplot): Extracts the results matrix as a \code{data.frame}.}
     \item{length}{(gt.barplot): The number of bars (genes or samples) in the object.}
     \item{scale}{(gt.barplot): Scales the bars to unit standard deviation.}
-    \item{z.score}{(gt.barplot): Calculates the z.scores for each bar.}
+    \item{z.score}{(gt.barplot): Calculates the z.scores for each bar: (influence - expected inf) / sd(inf).}
     \item{names}{(gt.barplot): The names of the genes or samples.}
     \item{names<-}{(gt.result): Changes the names of the genes or samples.}
   }

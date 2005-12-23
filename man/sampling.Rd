@@ -19,8 +19,8 @@ smaller or equal p-value.}
 \details{For every pathway in \code{gt[geneset]}, a number \code{ndraws}
 random 'pathways' is selected by randomly sampling sets of genes of the same
 size as the tested pathway. A 'comparative p-value' is calculated by counting
-what proportion of the random pathways has a smaller or equal p-value than
-the tested pathway.}
+what proportion of the random pathways has a larger standardized test statistic
+(Q - EQ) / sd(Q) than the tested pathway.}
 
 \value{An object of class
 \code{\link[gt.result-class]{gt.result}}.}
@@ -31,8 +31,8 @@ the tested pathway.}
 
 \references{Jelle J. Goeman, Jan Oosting, Anne-Marie Cleton-Jansen, Jakob, K.
   Anninga, Hans C. van Houwelingen (2005) Testing association of a
-  pathway with survival. Bioinformatics 21, 1950-1957. See also the How To
-Globaltest.pdf included with this package.}
+  pathway with survival. Bioinformatics 21, 1950-1957. See also the vignette
+Globaltest.pdf that comes with this package.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 

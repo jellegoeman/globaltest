@@ -39,11 +39,7 @@ geneplot <- function(gt, geneset, genesubset, plot = TRUE, scale = FALSE, drawla
   if (model == "linear") {
     res <- .linearglobaltest(gt)
   } else if (model == "logistic") {
-    if (adjusted) {
-      res <- .adjustedlogisticglobaltest(gt)
-    } else {
-      res <- .unadjustedlogisticglobaltest(gt)
-    }
+      res <- .logisticglobaltest(gt)
   } else if (model == "survival") {
     if (adjusted) {
       res <- .adjustedsurvivalglobaltest(gt)

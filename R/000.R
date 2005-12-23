@@ -2,7 +2,7 @@ if( !isGeneric("result") )
     setGeneric("result", function(object) standardGeneric("result"))
 
 if( !isGeneric("p.value") )
-    setGeneric("p.value", function(gt) standardGeneric("p.value"))
+    setGeneric("p.value", function(x) standardGeneric("p.value"))
 
 if( !isGeneric("fit") )
     setGeneric("fit", function(x) standardGeneric("fit"))

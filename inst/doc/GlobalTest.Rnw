@@ -227,13 +227,18 @@ gt.cc
 
 This gives an extra output column ``Comparative p'', which is the
 fraction of random genesets of the same size as the cell cycle
-pathway (\Sexpr{length(cellcycle)} genes) which have a lower p-value than
-cell cycle
-itself. In this case around \Sexpr{100*round(result(gt.cc)[,"Comparative p"],2)}
-\%\ of 1,000 random `pathways' of size \Sexpr{length(cellcycle)}
-have a lower p-value than the Cell Cycle pathway. By default
-1,000 random sets are sampled; this number can be changed with
-the option \Rfunarg{ndraws}.
+pathway (\Sexpr{length(cellcycle)} genes) which have a larger
+standardized test statistic than cell cycle pathway itself. Pathways
+of the same size with a larger standardized test statistic will
+almost invariably also have a lower p-value. In this case around
+\Sexpr{100*round(result(gt.cc)[,"Comparative p"],2)} \%\ of 1,000
+random `pathways' of size \Sexpr{length(cellcycle)} have a larger
+standardized test statistic than the Cell Cycle pathway. This
+indicates that, although the cell cycle pathway is clearly
+differentially expressed between AML and ALL samples (low p-value),
+it is not exceptionally significant for a pathway of its size in
+this dataset. By default 1,000 random sets are sampled; this number
+can be changed with the option \Rfunarg{ndraws}.
 
 By default the p-value of globaltest is calculated using approximate
 formulas which are more accurate for large sample size, but may be

@@ -90,6 +90,7 @@ permutations <- function(gt, geneset, nperm = 10^4)
   
     # Make the permutations of Y
     if (nperm >= .nPerms(gt)) { # Use all possible permutations
+      gt@method <- 4
       gt@PermQs <- matrix(,.nPathways(gt),0)
       if ((model == "logistic") && !adjusted) {
         m <- sum(Y == Y[1])
@@ -110,6 +111,7 @@ permutations <- function(gt, geneset, nperm = 10^4)
         }
       }
     } else { # Use random permutations
+      gt@method <- 5
       nperm <- nperm - ncol(gt@PermQs)
       if (model == "survival") {
         if (!ties) {

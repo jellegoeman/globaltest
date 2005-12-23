@@ -53,7 +53,6 @@ setMethod("z.score", "gt.barplot",
     (res[,1] - res[,2]) / res[,3]
 })      
 
-
 #==========================================================
 setMethod("[", "gt.barplot", 
             function(x, i, j,...,drop) 
@@ -115,9 +114,9 @@ setMethod("plot", "gt.barplot",
       up <- x@res[,4]
       legend <- rownames(x@res)
       m <- length(influence)
-      rangebars <- max(0,influence) - min(0,influence)
+      rangebars <- max(0,influence, Einf) - min(0,influence)
       minplot <- min(0,influence) 
-      maxplot <- max(0,influence) + 0.2 * rangebars
+      maxplot <- max(0,influence, Einf) + 0.2 * rangebars
       if (drawlabels & !is.null(legend)){
       # check for space in margin of plot
         plot.new()  

@@ -14,7 +14,7 @@
 #==========================================================
 # Calculate the IminH matrix
 #==========================================================
-getIminH <- function(fit) {
+.getIminH <- function(fit) {
   if (is(fit, "glm")) {
     if (fit$rank == 1) {
       IminH <- NULL
@@ -54,9 +54,9 @@ getIminH <- function(fit) {
 
 
 #==========================================================
-# The globaltest for a linear model
+# The globaltest for a linear model; gamma approximation
 #==========================================================
-.linearglobaltest <- function (gt) {
+.linearglobaltestgamma <- function (gt) {
   Y <- fit(gt)$y - fitted.values(fit(gt))
   mu2 <- sum(Y*Y)/df.residual(fit(gt))
   nadjust <- ncol(fit(gt)$x)
@@ -102,10 +102,12 @@ getIminH <- function(fit) {
   res
 }    
 
+
+
 #==========================================================
-# The globaltest for an unadjusted logistic model
+# The globaltest for an unadjusted logistic model; gamma approximation
 #==========================================================
-.unadjustedlogisticglobaltest <- function (gt) {
+.unadjustedlogisticglobaltestgamma <- function (gt) {
   Y <- fit(gt)$y - fitted.values(fit(gt))
   n <- length(Y)
   mu <- fitted.values(fit(gt))[1]
@@ -149,9 +151,9 @@ getIminH <- function(fit) {
 
 
 #==========================================================
-# The globaltest for an adjusted logistic model
+# The globaltest for an adjusted logistic model; gamma approximation
 #==========================================================
-.adjustedlogisticglobaltest <- function (gt) {
+.adjustedlogisticglobaltestgamma <- function (gt) {
   Y <- fit(gt)$y - fitted.values(fit(gt))
   n <- length(Y)
   mu <- fitted.values(fit(gt))
@@ -192,6 +194,97 @@ getIminH <- function(fit) {
   }))
   res
 }    
+   
+   
+#==========================================================
+# The globaltest for a linear model; asymptotic distribution
+#==========================================================
+.linearglobaltest <- function (gt) {
+  Y <- fit(gt)$y - fitted.values(fit(gt))
+  mu2 <- sum(Y*Y)/df.residual(fit(gt))
+  n <- length(Y)
+  res <- t(sapply(.genesets(gt), function(tg) {
+    X <- gt@eX[tg,,drop=FALSE]
+    m <- length(tg)
+    if (m == 0) {
+      out <- rep(NA, 4)
+    } else {
+      if (m > n) {
+        XX <- crossprod(X) / m
+        if (.adjusted(gt)) {
+          R <- crossprod(.IminH(gt), XX) %*% .IminH(gt)
+        } else {
+          R <- XX
+        }
+        Q <- (crossprod(Y, XX) %*% Y) / mu2
+        lams <- eigen(R, symmetric = TRUE, only.values = TRUE)$values
+      } else {
+        if (.adjusted(gt)) {
+          otherR <- crossprod(t(X %*% .IminH(gt))) / m
+        } else {
+          otherR <- crossprod(t(X)) / m
+        }
+        Q <- crossprod(X %*% Y) / (m * mu2)
+        lams <- eigen(otherR, symmetric = TRUE, only.values = TRUE)$values
+      }
+      EQ <- sum(lams)
+      varQ <- 2*sum(lams * lams)
+      seQ <- sqrt(varQ)
+      p.value <- .pAsymptotic(Q, .weed(lams))
+      out <- c(Q, EQ, seQ, p.value)
+    }
+    out
+  }))
+  res
+}    
+
+     
+#==========================================================
+# The globaltest for the logistic model; asymptotic distribution
+#==========================================================
+.logisticglobaltest <- function (gt) {
+  Y <- fit(gt)$y - fitted.values(fit(gt))
+  n <- length(Y)
+  mu2 <- fit(gt)$weights
+  res <- t(sapply(.genesets(gt), function(set) {
+    X <- gt@eX[set,,drop=FALSE]
+    m <- length(set)
+    if (m == 0) {
+      out <- rep(NA, 4)
+    } else {
+      if (m > n) {
+        XX <- crossprod(X) / m
+        if (.adjusted(gt)) {
+          Q <- (crossprod(Y, XX) %*% Y)
+          R <- crossprod(.IminH(gt), XX) %*% .IminH(gt)
+          R <- R * (sqrt(mu2) %o% sqrt(mu2))
+        } else {
+          Q <- (crossprod(Y, XX) %*% Y) / mu2[1]
+          R <- XX
+        }
+        lams <- eigen(R, symmetric = TRUE, only.values = TRUE)$values
+      } else {
+        if (.adjusted(gt)) {
+          Q <- crossprod(X %*% Y) / m
+          XIminH <- (X %*% .IminH(gt)) * (rep(1,m) %o% sqrt(mu2))
+          otherR <- crossprod(t(XIminH)) / m
+        } else {
+          Q <- crossprod(X %*% Y) / (m * mu2[1])
+          otherR <- crossprod(t(X)) / m
+        }
+        lams <- eigen(otherR, symmetric = TRUE, only.values = TRUE)$values
+      }
+      EQ <- sum(lams)
+      varQ <- 2*sum(lams * lams)
+      seQ <- sqrt(varQ)
+      p.value <- .pAsymptotic(Q, .weed(lams))
+      out <- c(Q, EQ, seQ, p.value)
+    }
+    out
+  }))
+  res
+}    
+ 
        
 #==========================================================
 # The  globaltest for an unadjusted survival model
@@ -308,4 +401,134 @@ getIminH <- function(fit) {
   }))
   res
 }
-    
+  
+
+#==========================================================
+# Removes extremely small eigenvalues 
+#==========================================================
+.weed <- function(lams, thresh = 10^-2) {
+  lams <- -sort(-lams)
+  m <- length(lams)
+  while (lams[m] / lams[1] < thresh) {
+    q <- m-1
+    r <- m-2
+    lams[q] <- lams[q] + lams[m]
+    while ((r > 0) && (lams[r] < lams[q])) {
+      lams[r:q] <- mean(lams[r:q]) 
+      r <- r - 1
+    }
+    m <- q
+  }
+  lams[1:m]
+}
+
+#==========================================================
+# Calculates the asymptotic p-value using methods of
+# Kotz, Johnson and Boyd (1967)
+# Box (1954)
+#==========================================================
+.pAsymptotic <- function(x, lams, bet) {
+  m <- length(lams)
+  accuracy <- .Machine$double.neg.eps * 10
+  if (m == 1) {
+    upper <- pchisq(x / lams[1], df = 1, lower.tail = FALSE)
+  } else {
+    # get the tuning parameter beta
+    if (missing(bet)) {
+      lams <- sort(lams)
+      ruben <- 2 * lams[1] * lams[m] / (lams[1] + lams[m])
+      harmonic <- 1/mean(1/lams)
+      bet <- min(ruben, harmonic) * (1 - 10^-15)
+    }
+    # get an upper bound to the number of iterations needed
+    A <- qnorm(.Machine$double.neg.eps)^2
+    B <- x/bet
+    maxiter <- trunc(0.5 * (A + B + sqrt(A*A + 2*A*B) - m))
+    # starting values
+    d <- numeric(maxiter)
+    c <- numeric(maxiter+1)
+    c[1] <- prod(sqrt(bet / lams))
+    sumc <- c[1]
+    chi <- pchisq(x / bet, df = m, lower.tail = FALSE) 
+    partialsum <- c[1] * chi
+    dbase <- (1 - bet /lams)
+    ready <- FALSE
+    mixture <- TRUE
+    ix <- 1
+    # iterate!
+    while (!ready) {
+      d[ix] <- 0.5 * sum(dbase^ix)
+      c[ix+1] <- mean(c[1:ix] * d[ix:1])
+      if (c[ix+1] < 0)
+        mixture <- FALSE
+      sumc <- sumc + c[ix+1]
+      partialsum <- partialsum + c[ix+1] * chi
+      chi <- pchisq(x / bet, df = m + 2 * ix + 2, lower.tail = FALSE)
+      lower <- partialsum + (1 - sumc) * chi
+      upper <- partialsum + 1 - sumc
+      if (mixture)
+        ready <- ((upper - lower) / (upper + lower) < 10^-5) || (ix == maxiter) || (upper < accuracy)
+      else
+        ready <- ix == maxiter
+      ix <- ix + 1
+    }
+  }
+  if (upper < accuracy)
+    upper <- 0
+  upper
+}
+
+#==========================================================
+# Calculates the asymptotic p-value using methods of
+# Kotz, Johnson and Boyd (1967)
+# Box (1954)
+#==========================================================
+.pAsymptotic2 <- function(x, lams, bet) {
+  m <- length(lams)
+  accuracy <- .Machine$double.neg.eps * 10
+  if (m == 1) {
+    upper <- pchisq(x / lams[1], df = 1, lower.tail = FALSE)
+  } else {
+    # get the tuning parameter beta
+    if (missing(bet)) {
+      lams <- sort(lams)
+      ruben <- 2 * lams[1] * lams[m] / (lams[1] + lams[m])
+      harmonic <- 1/mean(1/lams)
+      bet <- min(ruben, harmonic) * (1 - 10^-8)
+    }
+    # get an upper bound to the number of iterations needed
+    A <- qnorm(.Machine$double.neg.eps)^2
+    B <- x/bet
+    maxiter <- trunc(0.5 * (A + B + sqrt(A*A + 2*A*B) - m))
+    # starting values
+    d <- numeric(maxiter)
+    c <- numeric(maxiter+1)
+    c[1] <- prod(sqrt(bet / lams))
+    sumc <- c[1]
+    chi <- pchisq(x / bet, df = m, lower.tail = FALSE) 
+    partialsum <- c[1] * chi
+    dbase <- (1 - bet /lams)
+    ready <- FALSE
+    mixture <- TRUE
+    ix <- 1
+    # iterate!
+    while (!ready) {
+      d[ix] <- 0.5 * sum(dbase^ix)
+      c[ix+1] <- mean(c[1:ix] * d[ix:1])
+      if (c[ix+1] < 0)
+        mixture <- FALSE
+      sumc <- sumc + c[ix+1]
+      partialsum <- partialsum + c[ix+1] * chi
+      chi <- pchisq(x / bet, df = m + 2 * ix + 2, lower.tail = FALSE)
+      lower <- partialsum + (1 - sumc) * chi
+      upper <- partialsum + 1 - sumc
+      ready <- (c[ix+1] < 0) || ((upper - lower) / (upper + lower) < 10^-5) || (ix == maxiter) || (upper < accuracy)
+      ix <- ix + 1
+    }
+    if (c[ix] < 0)
+      upper <- .pAsymptotic(x, lams, min(lams) * (1 - 10^-8))
+  }
+  if (upper < accuracy)
+    upper <- 0
+  upper
+}

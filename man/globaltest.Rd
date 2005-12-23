@@ -9,6 +9,7 @@ genes for significant association with a given clinical variable.}
 
 \usage{globaltest(X, Y, genesets, model,
     levels, d, event = 1, adjust,
+    method = c("auto", "asymptotic", "permutations", "gamma"),
     scaleX = TRUE, ...) }
 
 \arguments{
@@ -54,6 +55,15 @@ be adjusted. Must be either a data frame or (if \code{X} is an
 exprSet) the names of covariates in the phenoData slot \code{X}
 or a \code{\link[stats:formula]{formula}} object using these
 names. Default: no adjustment.}
+    \item{method}{The method for calculation the p-value. Use code{method =
+"asymptotic"} for the full asymptotic distribution of the test
+statistic; \code{"method = "gamma"} for the gamma (= scaled
+chi-squared) approximation to that distribution and \code{"method =
+"permutations"} for a permutation p-value. The default: \code{method
+= "auto"} chooses the permutations method if the number of possible
+permutations does not exceed 10,000 and the asymptotic otherwise.
+Note that \code{method = "gamma"} was the default option prior to
+version 4.0.0.}
     \item{scaleX}{If true, rescales the expression matrix to get pleasant value for
 all test statistics. The expression matrix \code{X} is multiplied by a constant
 in such a way that the expected value EQ of the test statistic for the global test

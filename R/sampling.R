@@ -27,7 +27,7 @@ sampling <- function(gt, geneset, ndraws = 10^3)
   setsizes <- setsizes[!(setsizes %in% c(0,p))]
   names(setsizes) <- paste("size", setsizes, sep="")
   setsizes <- as.list(setsizes)
-  setsizes <- setsizes[!names(setsizes) %in% names(gt@SamplingPs)]
+  setsizes <- setsizes[!names(setsizes) %in% names(gt@samplingZs)]
 
   maxchunksize <- 10^6
 
@@ -37,7 +37,7 @@ sampling <- function(gt, geneset, ndraws = 10^3)
     nchunks <- trunc(ndraws / chunk)
     rest <- ndraws - nchunks * chunk
     allchunks <- c(as.list(rep(chunk, nchunks)), rest)
-    ps <- unlist(lapply(allchunks, function(aChunk) {
+    zs <- unlist(lapply(allchunks, function(aChunk) {
       if (m < p/2) {
         randomgenesets <- replicate(aChunk, sample(p, m), simplify = FALSE) 
       } else {
@@ -49,9 +49,9 @@ sampling <- function(gt, geneset, ndraws = 10^3)
         res <- .linearglobaltest(randomgt)
       } else if (model == "logistic") {
         if (adjusted) {
-          res <- .adjustedlogisticglobaltest(randomgt)
+          res <- .adjustedlogisticglobaltestgamma(randomgt)
         } else {
-          res <- .unadjustedlogisticglobaltest(randomgt)
+          res <- .unadjustedlogisticglobaltestgamma(randomgt)
         }
       } else  if (model == "survival") {
         if (adjusted) {
@@ -60,21 +60,21 @@ sampling <- function(gt, geneset, ndraws = 10^3)
           res <- .unadjustedsurvivalglobaltest(randomgt)
         }
       }
-      res[,4]
+      (res[,1] - res[,2]) / res[,3]
     }))
-    ps
+    zs
   })
-  gt@SamplingPs <- c(gt@SamplingPs, sampling.list)
+  gt@samplingZs <- c(gt@samplingZs, sampling.list)
   
-  pvalue <- p.value(gt)
+  zscore <- z.score(gt)
   nTested <- .nTested(gt)
   comp.p <- sapply(1:.nPathways(gt), function(ix) {
     m <- nTested[ix]
     if ((m == 0) || (m == p) )
       out <- NA
     else {
-      ps <- gt@SamplingPs[[paste("size", m, sep = "")]]
-      out <- mean(ps < pvalue[ix])
+      zs <- gt@samplingZs[[paste("size", m, sep = "")]]
+      out <- mean(zs > zscore[ix])
     }
     out
   })

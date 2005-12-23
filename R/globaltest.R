@@ -8,6 +8,7 @@ globaltest <- function(X, Y, genesets,
                         model, levels,
                         d, event = 1,
                         adjust, 
+                        method = c("auto", "asymptotic", "permutations", "gamma"),
                         scaleX = TRUE, ...)
 
 
@@ -254,7 +255,7 @@ globaltest <- function(X, Y, genesets,
 
 
   # 13: Calculate IminH
-  IminH = getIminH(fit)
+  IminH = .getIminH(fit)
   adjusted <- !is.null(IminH)
 
 
@@ -332,7 +333,7 @@ globaltest <- function(X, Y, genesets,
   # 17: Prepare the return object of type "gt.result"
   if (!adjusted)
     IminH <- matrix(,0,0)
-  nullres <- cbind(genes = path.n, tested = test.n)
+  nullres <- cbind(Genes = path.n, Tested = test.n)
   rownames(nullres) <- names(genesets)
   Perms <- matrix(,length(genesets),0)
   rownames(Perms) <- names(genesets)
@@ -345,28 +346,60 @@ globaltest <- function(X, Y, genesets,
     PermQs = Perms
   )
 
-  # 18: Calculate the test results for each geneset and add them to gt
-  if (model == "linear") {
-    res <- .linearglobaltest(gt)
-  } else if (model == "logistic") {
-    if (adjusted) {
-      res <- .adjustedlogisticglobaltest(gt)
+  # 18: Check input of "method"
+  method <- match.arg(method)
+  if (method == "auto") {
+    if (!((model %in% c("linear", "logistic")) && adjusted) && (.nPerms(gt) < 10000)) {
+      method <- "permutations"
     } else {
-      res <- .unadjustedlogisticglobaltest(gt)
+      method <- "asymptotic"
     }
-  } else  if (model == "survival") {
-    if (adjusted) {
-      res <- .adjustedsurvivalglobaltest(gt)
-    } else {
-      res <- .unadjustedsurvivalglobaltest(gt)
+  }
+  if ((model == "survival") && (method == "gamma")) {
+    warning("No gamma approximation for a survival model. Asymptotic normality used.", call. = FALSE)
+  }
+
+  # 19: Calculate the test results for each geneset and add them to gt
+  if ((method == "gamma") || (method == "permutations")) {
+    gt@method <- 2
+    if (model == "linear") {
+      res <- .linearglobaltestgamma(gt)
+    } else if (model == "logistic") {
+      if (adjusted) {
+        res <- .adjustedlogisticglobaltestgamma(gt)
+      } else {
+        res <- .unadjustedlogisticglobaltestgamma(gt)
+      }
+    } else  if (model == "survival") {
+      if (adjusted) {
+        res <- .adjustedsurvivalglobaltest(gt)
+      } else {
+        res <- .unadjustedsurvivalglobaltest(gt)
+      }
+    }
+  } else if (method == "asymptotic") {  
+    gt@method <- 3
+    if (model == "logistic") {
+      res <- .logisticglobaltest(gt)
+    } else if (model == "linear") {
+      res <- .linearglobaltest(gt)
+    } else  if (model == "survival") {
+      if (adjusted) {
+        res <- .adjustedsurvivalglobaltest(gt)
+      } else {
+        res <- .unadjustedsurvivalglobaltest(gt)
+      }
     }
   }
   if (ncol(res) > 0) {
     colnames(res) <- c("Statistic Q","Expected Q","sd of Q","P-value")
     gt@res <- cbind(gt@res, res)
   }
+  if (method == "permutations") {
+    gt <- permutations(gt)
+  }
 
-  # 19: return
+  # 20: return
   gt
 }
 #==========================================================

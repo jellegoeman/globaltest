@@ -7,18 +7,20 @@ setClass("gt.result",
     eX = "matrix",
     genesets = "list",
     fit = "list", # A list of 1 item which is a "lm", c("lm", "glm") or "coxph" object
+    method = "numeric",
     IminH = "matrix",
     PermQs = "matrix",
-    SamplingPs = "list"
+    samplingZs = "list"
   ),
   prototype = list(
     res = matrix(,0,0),
     eX = matrix(,0,0),
     pData = data.frame(),
     fit = list(NULL),
+    method = 1,
     IminH = matrix(,0,0),
     PermQs = matrix(,0,0),
-    SamplingPs = list()
+    samplingZs = list()
   )
 )
 
@@ -48,9 +50,8 @@ setMethod("show", "gt.result", function(object)
         cat("Adjusted:", 100 * round(.Rsquare(object), 3), "% of variance of Y remains after adjustment\n")
     } else
       cat("\n")
-    if (ncol(object@PermQs) > 0)
-      cat("Using", ncol(object@PermQs), "permutations of Y\n")
   }
+  cat("Method:", .method(object), "\n")
   if (npathways > 0) {
     cat("\n") 
     print(signif(object@res, digits = 5))
@@ -68,7 +69,12 @@ setMethod("result", "gt.result",
 
 #==========================================================
 setMethod("p.value", "gt.result",
-            function(gt) gt@res[,6])
+            function(x) x@res[,6])
+
+
+#==========================================================
+setMethod("z.score", "gt.result",
+            function(x) (x@res[,3] - x@res[,4]) / x@res[,5])
 
 
 #==========================================================
@@ -174,7 +180,10 @@ setMethod("combine", signature(x = "gt.result"),
       x@res <- rbind(x@res, y@res)
       x@genesets <- c(x@genesets, y@genesets)
       x@PermQs <- rbind(x@PermQs, y@PermQs)
-      x@SamplingPs <- c(x@SamplingPs, y@SamplingPs)
+      sampled <- unique(c(names(x@samplingZs), names(y@samplingZs)))
+      x@samplingZs <- lapply(as.list(sampled), function(n)
+        c(x@samplingZs[[n]], y@samplingZs[[n]])
+      )
     }
     x
   }
@@ -213,6 +222,7 @@ setMethod("combine", signature(x = "gt.result"),
   Y
 }
 
+#==========================================================
 .levels <- function(gt) {
   out <- levels(fit(gt)$model[,1])
   if (is.null(out)) 
@@ -220,6 +230,17 @@ setMethod("combine", signature(x = "gt.result"),
   out
 }
 
+
+#==========================================================
+.method <- function(gt) {
+  switch (gt@method, 
+    "No method",
+    "Gamma approximation",
+    "Asymptotic distribution",
+    paste("All", ncol(gt@PermQs), "permutations"),
+    paste(ncol(gt@PermQs), "random permutations")
+  )
+}
 
 #==========================================================
 .adjusted <- function(gt) {
