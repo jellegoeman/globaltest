@@ -15,6 +15,9 @@
 
 \author{Jelle Goeman \and Jan Oosting}
 
+\date{Package \Rpackage{globaltest}, version
+\Sexpr{Biobase::package.version("globaltest")},\\
+\today}
 
 \begin{document}
 
@@ -240,16 +243,32 @@ it is not exceptionally significant for a pathway of its size in
 this dataset. By default 1,000 random sets are sampled; this number
 can be changed with the option \Rfunarg{ndraws}.
 
-By default the p-value of globaltest is calculated using approximate
-formulas which are more accurate for large sample size, but may be
-inaccurate for very small sample size. For 72 arrays they should be
-accurate enough. For very small sample sizes an alternative is to
-use the permutation version of globaltest. This recalculates the
-p-value on the basis of permutations of the clinical variable. All
-possible permutations are used when (in a small data set) the number
-of possible permutations is smaller than the option \Rfunarg{nperm}
-(default: 10,000). Otherwise (as in this case) \Rfunarg{nperm}
-random permutations are used.
+The p-value of globaltest can be calculated using three different
+methods, and the user can specify which method to use with the
+argument \Rfunarg{method}. Setting \Rfunarg{method} to
+``asymptotic'' lets \Rfunction{globaltest} use the asymptotic
+distribution of the test statistic $Q$. This is best for large
+sample sizes, but the test will be conservative if the small sample
+size is small. Alternatively, setting \Rfunarg{method} to ``gamma''
+lets \Rfunction{globaltest} use the gamma approximation to the
+distribution of the test statistic. The gamma approximation is less
+conservative for small samples, but has a tendency to be
+anti-conservative in the extreme tails, especially for large
+pathways. The third option is \Rfunarg{method} ``permutation'',
+which uses permutations of the clinical variable to calculate the
+p-value. All possible permutations are used when (in a small data
+set) the number of possible permutations is smaller 10,000.
+Otherwise 10,000 random permutations are used. The default method is
+to use permutations if the number of possible permutations is less
+than 10,000 and to use the asymptotic distribution otherwise. Note
+that prior to version 4.0.0, the default of \Rfunarg{method} was
+``gamma''.
+
+It is also possible to recalculate a p-value with permutations that
+has already been calculated with another method. This can be done
+with the function \Rfunction{permutations}. This function has an
+argument \Rfunarg{nperm}, which can be used to set the number of
+permutations (default 10,000).
 
 <<permutations>>=
 permutations(gt.cc)
@@ -257,7 +276,9 @@ permutations(gt.cc)
 
 The permutation p-value is not so accurate in the lower range as it
 is always a multiple of one over the number of permutations. It also
-has some sampling variance in the random permutations case.
+has some sampling variance if the permutations are random (as in
+this case). The permutations can also be visualized using
+\Rfunction{hist} (see below).
 
 
 \subsection{Adjusting for the presence of covariates}

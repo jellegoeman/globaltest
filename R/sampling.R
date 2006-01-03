@@ -8,8 +8,6 @@ sampling <- function(gt, geneset, ndraws = 10^3)
   # check correct input of gt
   if ( !is(gt, "gt.result"))
     stop("sampling should be applied to a globaltest result", call. = FALSE)
-  if (ncol(gt@PermQs) > 0)
-    stop("sampling cannot be applied to a permutation globaltest result", call. = FALSE)
       
   # check correct input of ndraws
   if ( !(ndraws > 0) )

@@ -95,7 +95,7 @@ permutations <- function(gt, geneset, nperm = 10^4)
       if ((model == "logistic") && !adjusted) {
         m <- sum(Y == Y[1])
         if (m == n/2) {
-          Y.pm <- cbind(TRUE, .allperms2(m-1,n-1))
+          Y.pm <- rbind(TRUE, .allperms2(m-1,n-1))
         } else {
           Y.pm <- .allperms2(m,n)
         }
