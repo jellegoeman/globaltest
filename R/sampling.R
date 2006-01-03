@@ -31,7 +31,6 @@ sampling <- function(gt, geneset, ndraws = 10^3)
 
   maxchunksize <- 10^6
 
-
   sampling.list <- lapply(setsizes, function(m) {
     chunk <- trunc(maxchunksize / min(m,p-m))
     nchunks <- trunc(ndraws / chunk)
@@ -46,7 +45,7 @@ sampling <- function(gt, geneset, ndraws = 10^3)
       randomgt <- gt
       randomgt@genesets <- randomgenesets
       if (model == "linear") {
-        res <- .linearglobaltest(randomgt)
+        res <- .linearglobaltestgamma(randomgt)
       } else if (model == "logistic") {
         if (adjusted) {
           res <- .adjustedlogisticglobaltestgamma(randomgt)
@@ -66,7 +65,27 @@ sampling <- function(gt, geneset, ndraws = 10^3)
   })
   gt@samplingZs <- c(gt@samplingZs, sampling.list)
   
-  zscore <- z.score(gt)
+  if (.method(gt) == 2)
+    zscore <- z.score(gt)
+  else {
+    if (model == "linear") {
+      res <- .linearglobaltestgamma(gt)
+    } else if (model == "logistic") {
+      if (adjusted) {
+        res <- .adjustedlogisticglobaltestgamma(gt)
+      } else {
+        res <- .unadjustedlogisticglobaltestgamma(gt)
+      }
+    } else  if (model == "survival") {
+      if (adjusted) {
+        res <- .adjustedsurvivalglobaltest(gt)
+      } else {
+        res <- .unadjustedsurvivalglobaltest(gt)
+      }
+    }
+    zscore <- (res[,1] - res[,2]) / res[,3]
+  }
+
   nTested <- .nTested(gt)
   comp.p <- sapply(1:.nPathways(gt), function(ix) {
     m <- nTested[ix]
