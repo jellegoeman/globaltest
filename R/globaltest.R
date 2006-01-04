@@ -220,6 +220,7 @@ globaltest <- function(X, Y, genesets,
     if (length(levels) == 2) { 
       eX <- eX[,outcome %in% levels,drop = FALSE]
       pData <- pData[outcome %in% levels,, drop = FALSE]
+      n <- ncol(eX)
     } else if (length(levels) == 1) {
       # in this case we compare one level against the others
       # a new variable must be created
