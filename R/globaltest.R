@@ -9,6 +9,7 @@ globaltest <- function(X, Y, genesets,
                         d, event = 1,
                         adjust, 
                         method = c("auto", "asymptotic", "permutations", "gamma"),
+                        nperm = 10^4,
                         scaleX = TRUE, ...)
 
 
@@ -160,14 +161,15 @@ globaltest <- function(X, Y, genesets,
       }
     }
   }
-  if (!all(all.vars(ff) %in% names(pData))) {
-    absent <- all.vars(ff)[!(all.vars(ff) %in% names(pData))]
+  covariates <- c(names(pData), names(as.list(sys.frame())))
+  if (!all(all.vars(ff) %in% covariates)) {
+    absent <- all.vars(ff)[!(all.vars(ff) %in% covariates)]
     stop(paste("Variable(s)", paste(absent, collapse = ", "), "not found"), call. = FALSE)
   }
 
-
   # 8: check for missing values in pData
-  if (any(is.na(pData[all.vars(ff)])))
+  outcome <- eval(ff[[2]], envir = pData)
+  if (any(sapply(eval(attr(terms(ff), "variables"), envir = pData), function(x) any(is.na(x)))) || any(is.na(outcome)))
       stop("Missing values only allowed in the gene expressions.", call. = FALSE)
   
   
@@ -175,7 +177,6 @@ globaltest <- function(X, Y, genesets,
   if (!missing(model)) {
     model <- match.arg(model, c('linear','logistic','survival'))
   }
-  outcome <- eval(ff[[2]], envir = pData)
   if (missing(model)) {
     if (is(outcome, "factor") || !missing(levels) || (length(unique(outcome)) <= 2)) {
       model <- "logistic"
@@ -217,23 +218,24 @@ globaltest <- function(X, Y, genesets,
         stop(paste("Levels", paste(absent, collapse = ", "), "not present in Y"), call. = FALSE)
       }
     }
-    if (length(levels) == 2) { 
-      eX <- eX[,outcome %in% levels,drop = FALSE]
-      pData <- pData[outcome %in% levels,, drop = FALSE]
-      n <- ncol(eX)
-    } else if (length(levels) == 1) {
+    if (length(levels) == 1) {
       # in this case we compare one level against the others
       # a new variable must be created
-      newnameY <- paste(as.character(ff[[2]]), ".", as.character(levels[1]), sep = "", collapse = "")
+      newnameY <- paste(as.character(ff[[2]]), ".", make.names(as.character(levels[1])), sep = "", collapse = "")
       newY <- rep(levels[1], n)
       newY[outcome != levels[1]] <- "other"
-      newY <- factor(newY)
-      levels(newY) <- c(levels[1], "other")
+      newY <- factor(newY, levels = c(levels[1], "other"))
       pData <- data.frame(pData, newY)
       names(pData)[length(pData)] <- newnameY
       ff <- formula(paste(newnameY, "~", as.character(ff[[3]])))
-    } else {
-      stop("No more than 2 groups can be tested. Use option: levels.", call. = FALSE)    
+    } else if (length(levels) < length(levels(factor(outcome)))) { 
+      eX <- eX[,outcome %in% levels,drop = FALSE]
+      pData <- pData[outcome %in% levels,, drop = FALSE]
+      n <- ncol(eX)
+    }
+    if (length(levels) > 2) {
+      model <- "multinomial"  
+      g <- length(levels)
     }
   } 
 
@@ -245,11 +247,13 @@ globaltest <- function(X, Y, genesets,
     fit <- lm(ff, data = pData, x = TRUE, y = TRUE, na.action = 'na.fail')
   } else if (model == "survival") {
     fit <- coxph(ff, data = pData, x = TRUE, y = TRUE, na.action = 'na.fail')
+  } else if (model == "multinomial") {
+    fit <- mlogit(ff, data = pData, control = glm.control(maxit = 20))
   }
   if (!is.null(coefficients(fit)) && any(is.na(coefficients(fit))))
-    stop("The adjustmodel is singular.", call. = FALSE)
+    stop("The null model is singular.", call. = FALSE)
   if ((model != "linear") && (!is.null(fit$iter) && fit$iter == 20))
-    warning("The adjustmodel failed to converge.", call. = FALSE)
+    warning("The null model failed to converge.", call. = FALSE)
   if ((model == "survival") && (all(residuals(fit) == 0))) {
     stop("There are no events.", call. = FALSE)
   }
@@ -267,7 +271,7 @@ globaltest <- function(X, Y, genesets,
   #if (correlation) {
   #  eX <- eX / apply(eX, 1, sd) %o% rep(1, times=n)
   #}
-  if (scaleX && (model != "survival")) {
+  if (scaleX && !(model %in% c("survival", "multinomial"))) {
     if (adjusted) {
       adjX <- eX %*% IminH
     } else {
@@ -281,6 +285,18 @@ globaltest <- function(X, Y, genesets,
     remove(adjX)
     eX <- eX / norm
   }
+  if (scaleX && (model == "multinomial")) {
+    if (adjusted) {
+      norm <- sqrt(.EQall(eX, IminH, fit) / 10)
+    } else {
+      mu <- fitted.values(fit)[1,]
+      matrixW <- -mu %o% mu + diag(mu)
+      XX <- crossprod(eX) / p
+      norm <- sqrt(sum(diag(matrixW)) * sum(diag(XX)) / 10)
+    }
+    eX <- eX / norm
+  }
+
 
 
   # 15: Coerce genesets into a list of vectors of numbers and check correct input
@@ -350,7 +366,7 @@ globaltest <- function(X, Y, genesets,
   # 18: Check input of "method"
   method <- match.arg(method)
   if (method == "auto") {
-    if (!((model %in% c("linear", "logistic")) && adjusted) && (.nPerms(gt) < 10000)) {
+    if (!((model %in% c("linear", "logistic")) && adjusted) && (.nPerms(gt) < nperm)) {
       method <- "permutations"
     } else {
       method <- "asymptotic"
@@ -358,6 +374,7 @@ globaltest <- function(X, Y, genesets,
   }
   if ((model == "survival") && (method == "gamma")) {
     warning("No gamma approximation for a survival model. Asymptotic normality used.", call. = FALSE)
+    method <- "asymptotic"
   }
 
   # 19: Calculate the test results for each geneset and add them to gt
@@ -371,11 +388,17 @@ globaltest <- function(X, Y, genesets,
       } else {
         res <- .unadjustedlogisticglobaltestgamma(gt)
       }
-    } else  if (model == "survival") {
+    } else if (model == "survival") {
       if (adjusted) {
         res <- .adjustedsurvivalglobaltest(gt)
       } else {
         res <- .unadjustedsurvivalglobaltest(gt)
+      }
+    } else if (model == "multinomial") {
+      if (adjusted) {
+        res <- .adjustedmultinomialglobaltestgamma(gt)
+      } else {
+        res <- .unadjustedmultinomialglobaltestgamma(gt)
       }
     }
   } else if (method == "asymptotic") {  
@@ -390,6 +413,12 @@ globaltest <- function(X, Y, genesets,
       } else {
         res <- .unadjustedsurvivalglobaltest(gt)
       }
+    } else if (model == "multinomial") {
+      if (adjusted) {
+        res <- .adjustedmultinomialglobaltest(gt)
+      } else {
+        res <- .unadjustedmultinomialglobaltest(gt)
+      }
     }
   }
   if (ncol(res) > 0) {
@@ -397,7 +426,7 @@ globaltest <- function(X, Y, genesets,
     gt@res <- cbind(gt@res, res)
   }
   if (method == "permutations") {
-    gt <- permutations(gt)
+    gt <- permutations(gt, nperm = nperm)
   }
 
   # 20: return

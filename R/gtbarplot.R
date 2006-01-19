@@ -8,6 +8,7 @@ setClass("gt.barplot",
     labelsize = "numeric",
     drawlabels = "logical",
     legend = "vector",
+    colour = "vector",
     colourCode = "vector"
   )
 )
@@ -99,6 +100,20 @@ setMethod("show", "gt.barplot",
 })
 
 #==========================================================
+setMethod("sort", matchSignature(signature(x = "gt.barplot"), sort),
+  function(x, partial = NULL, na.last = NA, decreasing = TRUE, 
+      method = c("shell", "quick", "radix"), index.return = FALSE) {
+    ix <- sort.list(p.value(x), partial, na.last, decreasing, method)
+    x <- x[ix]
+    if (index.return) 
+      list(x = x, ix = ix)
+    else
+      x
+  }
+)
+
+
+#==========================================================
 setMethod("plot", "gt.barplot",
   function(x,y,...) {
     plot.gt.barplot <- function(x, genesubset, drawlabels, labelsize, addLegend = TRUE, ...) {
@@ -116,7 +131,7 @@ setMethod("plot", "gt.barplot",
       m <- length(influence)
       rangebars <- max(0,influence, Einf) - min(0,influence)
       minplot <- min(0,influence) 
-      maxplot <- max(0,influence, Einf) + 0.2 * rangebars
+      maxplot <- max(0,influence, Einf) + 0.1 * (1+0.5*length(x@legend)) * rangebars
       if (drawlabels & !is.null(legend)){
       # check for space in margin of plot
         plot.new()  
@@ -130,9 +145,9 @@ setMethod("plot", "gt.barplot",
         plot( 0, xlim = c(1/2, m+1/2), ylim = c(minplot, maxplot), col = 0, xlab = "nr", ylab = "influence", ...)
       # plot influence bars
       if (m <= 300) {
-        rect(xleft = 1:m - 0.4, xright = 1:m + 0.4, ybottom = rep(0,times=m), ytop = influence, col = (up+2), border=0 )
+        rect(xleft = 1:m - 0.4, xright = 1:m + 0.4, ybottom = rep(0,times=m), ytop = influence, col = x@colour[up], border=0 )
       } else {
-        lines(1:m, influence, lwd = 600 / m, type = 'h', col = (up+2))
+        lines(1:m, influence, lwd = 600 / m, type = 'h', col = x@colour[up])
       }
       # plot Einf reference line
       lines( (1:(m+1))-1/2, c(Einf, Einf[m]), type = "s" )
@@ -145,7 +160,7 @@ setMethod("plot", "gt.barplot",
       }
       # write the legend
       if (addLegend) { 
-        legend(1/2, maxplot, x@legend[1:2], fil = c(3,2))
+        legend(1/2, maxplot, x@legend, fil = x@colour)
       }  
       invisible(NULL)
     }

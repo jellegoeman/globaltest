@@ -86,7 +86,9 @@ permutations <- function(gt, geneset, nperm = 10^4)
     } else if (model == "logistic") {
       Y <- fit(gt)$y - fitted.values(fit(gt))
       mu2 <- fit(gt)$weights[1]
-    }        
+    } else if (model == "multinomial") {
+      Y <- .Y(gt)
+    }
   
     # Make the permutations of Y
     if (nperm >= .nPerms(gt)) { # Use all possible permutations
@@ -100,12 +102,20 @@ permutations <- function(gt, geneset, nperm = 10^4)
           Y.pm <- .allperms2(m,n)
         }
         Y.pm <- Y.pm - m/n
-      } else if (((model == "logistic") && !adjusted) || (model == "linear" && !adjusted)) {
+      } else if (model == "linear" && !adjusted) {
         Y.pm <- apply(.allperms(1:n), 2, function(pm) Y[pm])
+      } else if (model == "multinomial") {
+        Y <- apply(.Y(gt), 1, which.max)
+        counts <- sapply(unique(Y), function(ix) sum(Y == ix))
+        g <- length(counts)
+        pms <- .allpermsG(counts, counts)
+        Y.pm <- lapply(as.list(1:g), function(ix) {
+          temp <- (pms == ix)
+          temp - colMeans(temp)
+        })
       } else if (model == "survival") {
         if (!ties) {
-          pms <- .allperms(1:n)
-          Y.pm <- apply(pms, 2, function(pm) Y[pm])
+          Y.pm <- apply(.allperms(1:n), 2, function(pm) Y[pm])
         } else {
           pms <- .allperms(1:n)
         }
@@ -113,16 +123,18 @@ permutations <- function(gt, geneset, nperm = 10^4)
     } else { # Use random permutations
       gt@method <- 5
       nperm <- nperm - ncol(gt@PermQs)
+      pms <- apply( matrix(rnorm(n * nperm), n, nperm), 2, sort.list )
       if (model == "survival") {
         if (!ties) {
-          pms <- apply( matrix(rnorm(n * nperm), n, nperm), 2, sort.list )
           Y.pm <-  apply(pms, 2, function(pm) Y[pm])
-        } else {
-          pms <- apply( matrix(rnorm(n * nperm), n, nperm), 2, sort.list )
         }
+      } else if (model == "multinomial") {
+        Y <- lapply(as.list(1:ncol(Y)), function(ix) Y[,ix])
+        Y.pm <- lapply(Y, function(yy) {
+          apply(pms, 2, function(pm) yy[pm])
+        })
       } else {
-        pms <- apply( matrix(rnorm(n * nperm), n, nperm), 2, sort.list )
-        Y.pm <-  apply(pms, 2, function(pm) Y[pm])
+        Y.pm <- apply(pms, 2, function(pm) Y[pm])
       }
     }
     
@@ -137,8 +149,10 @@ permutations <- function(gt, geneset, nperm = 10^4)
         Q <- realQ[index]
     
         # Calculate Q for nperm permutations of Q
-        if (model != 'survival') {
+        if (model %in% c("logistic", "linear")) {
           Qs <- colSums(( XX %*% Y.pm ) * Y.pm) / mu2
+        } else if (model == "multinomial") {
+          Qs <- rowSums(sapply(Y.pm, function(yy) colSums(( XX %*% yy ) * yy)))
         } else { 
           # survival model:
           if (adjusted) {
@@ -225,6 +239,52 @@ permutations <- function(gt, geneset, nperm = 10^4)
   app
 }
 
+
+#==========================================================
+# Lists all permutations for the multiple-group case
+#==========================================================
+.allpermsG <- function(counts, grouping) {
+  n <- sum(counts)
+  if (n == 1) {
+    app <- which.max(counts)
+  } else {
+    total <- .nPermsG(counts, grouping)
+    app <- matrix(,n,total)
+    choosable <- (counts > 0) & (is.na(grouping) | (1:length(counts) %in% match(unique(grouping[!is.na(grouping)]), grouping)))
+    choosable <- (1:length(counts))[choosable]
+    ix <- 0
+    for (iy in choosable) {
+      countstemp <- counts
+      countstemp[iy] <- counts[iy] - 1
+      groupingtemp <- grouping
+      groupingtemp[iy] <- NA
+      size <- .nPermsG(countstemp, groupingtemp)
+      app[1,(ix+1):(ix+size)] <- iy
+      app[2:n, (ix+1):(ix+size)] <- .allpermsG(countstemp, groupingtemp)
+      ix <- ix + size
+    }
+  }  
+  app
+}
+
+.nPermsG <- function(counts, grouping) {
+  total <- .mchoose(counts)
+  if (any(!is.na(grouping))) {
+    correction <- prod(factorial(sapply(unique(grouping[!is.na(grouping)]), function(cc) sum(grouping == cc, na.rm=TRUE))))
+  } else {
+    correction <- 1
+  }
+  total / correction
+}
+
+.mchoose <- function(counts) {
+  out <- choose(sum(counts), counts[1])
+  if (length(counts) > 2)
+    out <- out * .mchoose(counts[-1])
+  out
+}
+
+
 #==========================================================
 # Lists all permutations for the general case
 #==========================================================
@@ -243,6 +303,7 @@ permutations <- function(gt, geneset, nperm = 10^4)
   app
 }
 
+
 #==========================================================
 # Calculates the number of permutations
 #==========================================================
@@ -256,6 +317,10 @@ permutations <- function(gt, geneset, nperm = 10^4)
     } else {
       out <- choose(n,m)
     }
+  } else if ((.model(gt) == "multinomial") && !.adjusted(gt)) {
+    Y <- apply(.Y(gt), 1, which.max)
+    counts <- sapply(unique(Y), function(ix) sum(Y == ix))
+    out <- .nPermsG(counts, counts)
   } else {
     out <- factorial(n)
   }

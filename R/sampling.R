@@ -56,7 +56,13 @@ sampling <- function(gt, geneset, ndraws = 10^3)
         } else {
           res <- .unadjustedsurvivalglobaltest(randomgt)
         }
-      }
+      } else if (model == "multinomial") {
+        if (adjusted) {
+          res <- .adjustedmultinomialglobaltestgamma(randomgt)
+        } else {
+          res <- .unadjustedmultinomialglobaltestgamma(randomgt)
+        }
+      }       
       (res[,1] - res[,2]) / res[,3]
     }))
     zs
@@ -79,6 +85,12 @@ sampling <- function(gt, geneset, ndraws = 10^3)
         res <- .adjustedsurvivalglobaltest(gt)
       } else {
         res <- .unadjustedsurvivalglobaltest(gt)
+      }
+    } else if (model == "multinomial") {
+      if (adjusted) {
+        res <- .adjustedmultinomialglobaltestgamma(gt)
+      } else {
+        res <- .unadjustedmultinomialglobaltestgamma(gt)
       }
     }
     zscore <- (res[,1] - res[,2]) / res[,3]

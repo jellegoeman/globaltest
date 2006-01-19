@@ -23,7 +23,10 @@ checkerboard <- function(gt, geneset, sort = TRUE, drawlabels = TRUE, labelsize 
 
     # recreate matrix R
     X <- gt@eX[geneset,,drop=FALSE]
-    Y <- .Y(gt)
+    if (.model(gt) == "multinomial")
+      Y <- apply(.Y(gt),1,which.max)
+    else
+      Y <- .Y(gt)
     R <- crossprod(X)
         
     # Sort Y if needed and return new samplenrs

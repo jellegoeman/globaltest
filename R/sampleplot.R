@@ -33,14 +33,9 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
   m <- nrow(X)
   model <- .model(gt)
   adjusted <- .adjusted(gt)
-  if (adjusted) {
-    adjX <- X %*% .IminH(gt)
-  } else {
-    adjX <- X
-  }
   
   # calculate influence per sample and expected influence
-  if (model != 'survival') {
+  if (model %in% c("linear", "logistic")) {
     Y <- .Y(gt)
     if ((model == "logistic") && !adjusted) {
       mu2 <- fit(gt)$weights[1]
@@ -50,12 +45,14 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
       Y <- Y / sqrt(mu2)
     }  
     if (adjusted) {
+      adjX <- X %*% .IminH(gt)
       XXY <- crossprod(.IminH(gt), crossprod(X) %*% Y)
     } else {
+      adjX <- X
       XXY <- crossprod(X) %*% Y
     }
     influence <- (n/m) * Y * XXY
-    up <- (sign(Y) == 1) 
+    up <- 2 - (sign(Y) == 1) 
     R <- crossprod(adjX)
     if (model == 'logistic' && adjusted) {
       mu2 <- fit(gt)$weights
@@ -67,8 +64,55 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
     RR <- matrix(t(RR)[diag(n) == 0], n, n-1, byrow = TRUE)
     varinf <- (n/m)^2 * Y * Y * rowSums(RR)
     sd.inf <- sqrt(varinf)
-  } else {
+  } else if ((model == "multinomial") && !adjusted) {
+    Y <- .Y(gt)
+    g <- ncol(Y)
+    mu <- fitted.values(fit(gt))[1,]
+    matrixW <- -mu %o% mu + diag(mu)
+    XX <- crossprod(X) / m
+    influence <- n * rowSums(sapply(1:g, function(out) Y[,out] * (XX %*% Y[,out])))
+    Einf <- n * rowSums(Y * Y * (diag(XX) %o% rep(1,g)))
+    RR <- matrix(t(XX * XX)[diag(n) == 0], n, n-1, byrow = TRUE)
+    varinf <- n^2 * rowSums(Y * (Y %*% matrixW)) * rowSums(RR)
+    sd.inf <- sqrt(varinf)
+    up <- apply(Y, 1, which.max)
+  } else if ((model == "multinomial") && adjusted) {
+    Y <- .Y(gt)
+    bigY <- as.vector(Y)
+    g <- ncol(Y)
+    range <- lapply(as.list(1:g), function(ix) ((ix-1)*n+1):(ix*n))
+    mu <- fitted.values(fit(gt))
+    matrixW <- matrix(0,g,n*g)
+    for (ix in 1:g) 
+      matrixW[,range[[ix]]] <- -t(mu)
+    matrixW <- matrixW * (rep(1,g) %o% as.vector(mu))
+    for (ix in 1:g) 
+      matrixW[ix,range[[ix]]] <- matrixW[ix,range[[ix]]] + mu[,ix]
+    bigXX <- diag(g) %x% crossprod(X) 
+    R <- crossprod(.IminH(gt), bigXX) %*% .IminH(gt)
+    XXY <- matrix(crossprod(.IminH(gt), bigXX %*% bigY), n, g)
+    influence <- (n/m) * rowSums(Y * XXY)
+    Einf <- (n/m) * rowSums(sapply(1:g, function(out1) 
+      rowSums(sapply(1:g, function(out2) Y[,out1] * Y[,out2] * diag(R[range[[out1]],range[[out2]]])))
+    ))
+    M <- sapply(1:n, function(j)
+      rowSums(sapply(1:g, function(u)
+        rowSums(sapply(1:g, function(v) 
+          rowSums(Y * matrix(R[(u-1)*n+j,],n,g)) * rowSums(Y * matrix(R[(v-1)*n+j,],n,g)) * matrixW[u, (v-1)*n+j]
+        ))
+      ))
+    )
+    diag(M) <- 0
+    varinf <- (n/m)^2 * rowSums(M)
+    sd.inf <- sqrt(varinf)
+    up <- apply(Y, 1, which.max)
+  } else if (model == "survival") {
     # survival model
+    if (adjusted) {
+      adjX <- X %*% .IminH(gt)
+    } else {
+      adjX <- X
+    }
     R <- crossprod(adjX)
     times <- as.vector(fit(gt)$y)[1:n]
     d <- as.vector(fit(gt)$y)[(n+1):(2*n)] 
@@ -84,7 +128,7 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
     matrixW <- diag(rowSums(matrixPO)) - matrixPO %*% t(matrixPO)
     Y <- rowSums(matrixPO) - d
     influence <- colSums(crossprod(adjX, X) * (outer(Y,Y) - matrixW))
-    up <- (sign(Y) == 1) 
+    up <- 2 - (sign(Y) == 1) 
     eye <- diag(n)
     Evarinf <- sapply(1:n, function(i) {
       out <- numeric(2)
@@ -135,20 +179,25 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
   rownames(res) <- colnames(X)
   if (model == "linear") {
     nameY <- as.character(.formula(gt)[[2]])
-    colourCode <- c("+", "-")
+    colour <- c(2,3)
+    colourCode <- c("-", "+")
     if (adjusted) {
-      legend <- c(paste("positive residual", nameY),
-        paste("negative residual", nameY))
+      legend <- c(paste("negative residual", nameY), paste("positive residual", nameY))
     } else {
-      legend <- c(paste("large values of", nameY),
-        paste("small values of", nameY))
+      legend <- c(paste("small values of", nameY), paste("large values of", nameY))
     }
   } else if (model == 'logistic') {
-    colourCode <- c(.levels(gt)[2], .levels(gt)[1] )
-    legend <- c(paste(.levels(gt)[2], "samples"), paste(.levels(gt)[1], "samples"))
+    colour <- c(2,3)
+    colourCode <- .levels(gt)
+    legend <- c(paste(.levels(gt)[1], "samples"), paste(.levels(gt)[2], "samples"))
+  } else if (model == "multinomial") {
+    colourCode <- .levels(gt)
+    colour <- 1 + 1:length(.levels(gt))
+    legend <- .levels(gt)
   } else if (model == 'survival') {
-    colourCode <- c("late", "early")
-    legend <- c("late event time or censored", "early event time")
+    colourCode <- c("early", "late")
+    colour <- c(2,3)
+    legend <- c("early event time", "late event time or censored")
   }
 
 
@@ -156,6 +205,7 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
     res = res,
     labelsize = labelsize, 
     drawlabels = drawlabels,
+    colour = colour,
     colourCode = colourCode,
     legend = legend)
   gtbar <- gtbar[samplesubset]

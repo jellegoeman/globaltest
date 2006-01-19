@@ -218,15 +218,23 @@ setMethod("combine", signature(x = "gt.result"),
     matrixP <- outer(expci, hazinc, "*") * atrisk
     matrixPO <- matrixP %*% t(matrixO)
     Y <- rowSums(matrixPO) - d
+  } else if (model == "multinomial") {
+    Y <- fit(gt)@y - fitted.values(fit(gt))
   }
   Y
 }
 
 #==========================================================
 .levels <- function(gt) {
-  out <- levels(fit(gt)$model[,1])
-  if (is.null(out)) 
-    out <- c(1,0)
+  if (.model(gt) == "logistic") {
+    out <- levels(fit(gt)$model[,1])
+    if (is.null(out)) 
+      out <- c(1,0)
+  } else {
+    out <- colnames(.Y(gt))
+    if (is.null(out)) 
+      out <- 1:ncol(.Y(gt))
+  }
   out
 }
 
@@ -277,15 +285,20 @@ setMethod("combine", signature(x = "gt.result"),
     model <- "linear"
   } else if (is(fit(gt), "coxph") || is(fit(gt), "coxph.null")) {
     model <- "survival"
+  } else if (is(fit(gt), "mlogit")) {
+    model <- "multinomial"
   }
   model
 }
 
 #==========================================================
 .formula <- function(gt) {
-  if (.model(gt) %in% c("logistic", "survival")) {
+  model <- .model(gt)
+  if (model %in% c("logistic", "survival")) {
     ff <- fit(gt)$formula
-  } else {
+  } else if (model == "multinomial") {
+    ff <- fit(gt)@formula
+  } else if (model == "linear") {
     ff <- formula(fit(gt)$terms)
   }
   ff
@@ -305,6 +318,13 @@ setMethod("combine", signature(x = "gt.result"),
     Y <- residuals(fit(gt))
     nullY <- fit(gt)$y - mean(fit(gt)$y)
     out <- sum(Y * Y) / sum(nullY * nullY)
+  } else if (model == "multinomial") {
+    oldmu <- colMeans(fit(gt)@y)
+    oldmu2 <- oldmu * (1-oldmu)
+    mu <- fitted.values(fit(gt))
+    mu2 <- mu * (1-mu)
+    n <- nrow(mu)
+    out <- sum(mu2) / (n * sum(oldmu2))
   }
   out
 }

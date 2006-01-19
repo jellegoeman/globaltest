@@ -37,9 +37,15 @@ geneplot <- function(gt, geneset, genesubset, plot = TRUE, scale = FALSE, drawla
   model <- .model(gt)
   adjusted <- .adjusted(gt)
   if (model == "linear") {
-    res <- .linearglobaltest(gt)
+    res <- .linearglobaltestgamma(gt)
   } else if (model == "logistic") {
-      res <- .logisticglobaltest(gt)
+    res <- .logisticglobaltest(gt)
+  } else if (model == "multinomial") {
+    if (adjusted) {
+      res <- .adjustedmultinomialglobaltest(gt)
+    } else {
+      res <- .unadjustedmultinomialglobaltest(gt)
+    }
   } else if (model == "survival") {
     if (adjusted) {
       res <- .adjustedsurvivalglobaltest(gt)
@@ -47,15 +53,23 @@ geneplot <- function(gt, geneset, genesubset, plot = TRUE, scale = FALSE, drawla
       res <- .unadjustedsurvivalglobaltest(gt)
     }
   }
-  up <- ((gt@eX[geneset,] %*% .Y(gt)) >= 0) 
+  if (model == "multinomial") {
+    Y <- .Y(gt)
+    Y <- Y / (rep(1, nrow(Y)) %o% sqrt(colSums(Y*Y)))
+    covar <- gt@eX[geneset,] %*% Y 
+    up <- apply(covar, 1, which.max)
+  } else {
+    up <- 2 - ((gt@eX[geneset,] %*% .Y(gt)) >= 0) 
+  }
   res <- cbind(res[,1:3,drop = FALSE], up)
   colnames(res) <- c("Influence", "Expected", "SD", "UP")
   
-  
+ 
   # Output: gt.barplot object
   if (model == 'linear') {
     nameY <- as.character(.formula(gt)[[2]])
     colourCode <- c("+", "-")
+    colour <- c(3,2)
     if (adjusted) {
       legend <- c(paste("positive correlation with residual", nameY),
         paste("negative correlation with residual", nameY))
@@ -65,19 +79,25 @@ geneplot <- function(gt, geneset, genesubset, plot = TRUE, scale = FALSE, drawla
     }
   } else if (model == 'logistic') {
     colourCode <- c(paste("high in", .levels(gt)[1]), paste("high in", .levels(gt)[2]) )
+    colour <- c(3,2)
     legend <- c(paste("higher expression in", .levels(gt)[1], "samples"), 
       paste("higher expression in", .levels(gt)[2], "samples"))
   } else if (model == 'survival') {
     colourCode <- c("+", "-")
     legend <- c(paste("positively associated with survival"), 
       paste("negatively associated with survival"))
+  } else if (model == "multinomial") {
+    colourCode <- sapply(.levels(gt), function(level) paste("high in", level))
+    colour <- 1 + 1:length(.levels(gt))
+    legend <- sapply(.levels(gt), function(level) paste("highest expression in", level, "samples"))
   }
-  
+
   gtbar <- new("gt.barplot",     
     res = res,
     labelsize = labelsize, 
     drawlabels = drawlabels,
     legend = legend,
+    colour = colour,
     colourCode = colourCode)
   if (scale)
     gtbar <- scale(gtbar)

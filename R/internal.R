@@ -47,9 +47,262 @@
     matrixW <- diag(rowSums(matrixPO)) - matrixPO %*% t(matrixPO)
     IminH <- - matrixW %*% (fit$x %*% solve(crossprod(fit$x, matrixW) %*% fit$x, t(fit$x)))
     diag(IminH) <- diag(IminH) + 1
+  } else if (is(fit, "mlogit")) {
+    if (ncol(fit@x) == 1) {
+      IminH <- NULL
+    } else { 
+      mu <- fitted.values(fit)
+      p <- ncol(fit@x)
+      g <- ncol(mu)
+      n <- nrow(mu)
+      weightedX <- lapply(as.list(1:g), function(out) fit@x * (mu[,out] %o% rep(1,p)))
+      XWX <- matrix(0,p*g,p*g)
+      for (ix in 1:g) {
+        for (iy in 1:g) {
+          if (ix == iy) {
+            XWX[((ix-1)*p+1):(ix*p), ((ix-1)*p+1):(ix*p)] <- crossprod(weightedX[[ix]], fit@x) - crossprod(weightedX[[ix]])
+          } else {
+            XWX[((ix-1)*p+1):(ix*p), ((iy-1)*p+1):(iy*p)] <- - crossprod(weightedX[[ix]], weightedX[[iy]])
+          }
+        }
+      }
+      eigs <- eigen(XWX, symmetric = TRUE)
+      weightedEigens <- eigs$vectors[,1:(p*(g-1))] * (rep(1,p*g) %o% sqrt(1/eigs$values[1:(p*(g-1))]))
+      XWX.MP <- crossprod(t(weightedEigens))
+      XXWXX <- matrix(0,n*g,n*g)
+      for (ix in 1:g) {
+        for (iy in 1:g) {
+            XXWXX[((ix-1)*n+1):(ix*n), ((iy-1)*n+1):(iy*n)] <- 
+              fit@x %*% XWX.MP[((ix-1)*p+1):(ix*p), ((iy-1)*p+1):(iy*p)] %*% t(fit@x)
+        }
+      }
+      matrixW <- matrix(0,g,n*g)
+      for (ix in 1:g) matrixW[,((ix-1)*n+1):(ix*n)] <- -t(mu)
+      matrixW <- matrixW * (rep(1,g) %o% as.vector(mu))
+      for (ix in 1:g) matrixW[ix,((ix-1)*n+1):(ix*n)] <- matrixW[ix,((ix-1)*n+1):(ix*n)] + mu[,ix]
+      IminH <- matrix(0,n*g,n*g)
+      for (ix in 1:g) {
+        for (iy in 1:g) {
+          M <- matrix(0, n, n)
+          for (iz in 1:g) {
+            M <- M + XXWXX[((iz-1)*n+1):(iz*n), ((iy-1)*n+1):(iy*n)] * (matrixW[ix, ((iz-1)*n+1):(iz*n)] %o% rep(1,n))
+          }
+          IminH[((ix-1)*n+1):(ix*n), ((iy-1)*n+1):(iy*n)] <- -M
+        }
+      }
+      diag(IminH) <- diag(IminH) + 1
+    }
   }
   IminH
 }
+
+#==========================================================
+# The globaltest for a linear model; asymptotic distribution
+#==========================================================
+.linearglobaltest <- function (gt) {
+  Y <- fit(gt)$y - fitted.values(fit(gt))
+  mu2 <- sum(Y*Y)/df.residual(fit(gt))
+  n <- length(Y)
+  res <- t(sapply(.genesets(gt), function(tg) {
+    X <- gt@eX[tg,,drop=FALSE]
+    m <- length(tg)
+    if (m == 0) {
+      out <- rep(NA, 4)
+    } else {
+      if (m > n) {
+        XX <- crossprod(X) / m
+        if (.adjusted(gt)) {
+          R <- crossprod(.IminH(gt), XX) %*% .IminH(gt)
+        } else {
+          R <- XX
+        }
+        Q <- (crossprod(Y, XX) %*% Y) / mu2
+        lams <- eigen(R, symmetric = TRUE, only.values = TRUE)$values
+      } else {
+        if (.adjusted(gt)) {
+          otherR <- crossprod(t(X %*% .IminH(gt))) / m
+        } else {
+          otherR <- crossprod(t(X)) / m
+        }
+        Q <- crossprod(X %*% Y) / (m * mu2)
+        lams <- eigen(otherR, symmetric = TRUE, only.values = TRUE)$values
+      }
+      EQ <- sum(lams)
+      varQ <- 2*sum(lams * lams)
+      seQ <- sqrt(varQ)
+      p.value <- .pAsymptotic(Q, .weed(lams))
+      out <- c(Q, EQ, seQ, p.value)
+    }
+    out
+  }))
+  res
+}    
+
+     
+#==========================================================
+# The globaltest for the logistic model; asymptotic distribution
+#==========================================================
+.logisticglobaltest <- function (gt) {
+  Y <- fit(gt)$y - fitted.values(fit(gt))
+  n <- length(Y)
+  mu2 <- fit(gt)$weights
+  res <- t(sapply(.genesets(gt), function(set) {
+    X <- gt@eX[set,,drop=FALSE]
+    m <- length(set)
+    if (m == 0) {
+      out <- rep(NA, 4)
+    } else {
+      if (m > n) {
+        XX <- crossprod(X) / m
+        if (.adjusted(gt)) {
+          Q <- (crossprod(Y, XX) %*% Y)
+          R <- crossprod(.IminH(gt), XX) %*% .IminH(gt)
+          R <- R * (sqrt(mu2) %o% sqrt(mu2))
+        } else {
+          Q <- (crossprod(Y, XX) %*% Y) / mu2[1]
+          R <- XX
+        }
+        lams <- eigen(R, symmetric = TRUE, only.values = TRUE)$values
+      } else {
+        if (.adjusted(gt)) {
+          Q <- crossprod(X %*% Y) / m
+          XIminH <- (X %*% .IminH(gt)) * (rep(1,m) %o% sqrt(mu2))
+          otherR <- crossprod(t(XIminH)) / m
+        } else {
+          Q <- crossprod(X %*% Y) / (m * mu2[1])
+          otherR <- crossprod(t(X)) / m
+        }
+        lams <- eigen(otherR, symmetric = TRUE, only.values = TRUE)$values
+      }
+      EQ <- sum(lams)
+      varQ <- 2*sum(lams * lams)
+      seQ <- sqrt(varQ)
+      p.value <- .pAsymptotic(Q, .weed(lams))
+      out <- c(Q, EQ, seQ, p.value)
+    }
+    out
+  }))
+  res
+}    
+
+
+#==========================================================
+# The globaltest for the unadjusted multinomial model; asymptotic distribution
+#==========================================================
+.unadjustedmultinomialglobaltest <- function (gt) {
+  Y <- fit(gt)@y - fitted.values(fit(gt))
+  g <- ncol(Y)
+  n <- nrow(Y)
+  mu <- fitted.values(fit(gt))[1,]
+  matrixW <- -mu %o% mu + diag(mu)
+  lamsW <- eigen(matrixW, symmetric = TRUE, only.values = TRUE)$values
+  res <- t(sapply(.genesets(gt), function(set) {
+    X <- gt@eX[set,,drop=FALSE]
+    m <- length(set)
+    if (m == 0) {
+      out <- rep(NA, 4)
+    } else {
+      if (m > n) {
+        XX <- crossprod(X) / m
+        Q <- sum(sapply(1:g, function(out) crossprod(Y[,out], XX) %*% Y[,out]))
+        lamsR <- eigen(XX, symmetric = TRUE, only.values = TRUE)$values
+      } else {
+        Q <- sum(sapply(1:g, function(out) crossprod(X %*% Y[,out]))) / m
+        otherXX <- crossprod(t(X)) / m
+        lamsR <- eigen(otherXX, symmetric = TRUE, only.values = TRUE)$values
+      }
+      lams <- lamsW %x% lamsR
+      EQ <- sum(lams)
+      varQ <- 2*sum(lams * lams)
+      seQ <- sqrt(varQ)
+      p.value <- .pAsymptotic(Q, .weed(lams))
+      out <- c(Q, EQ, seQ, p.value)
+    }
+    out
+  }))
+  res
+}    
+
+
+#==========================================================
+# The globaltest for the adjusted multinomial model; asymptotic distribution
+#==========================================================
+.adjustedmultinomialglobaltest <- function (gt) {
+  mu <- fitted.values(fit(gt))
+  n <- nrow(mu)
+  g <- ncol(mu)
+  Y <- fit(gt)@y - mu
+  range <- lapply(as.list(1:g), function(ix) ((ix-1)*n+1):(ix*n))
+  matrixW <- matrix(0,g,n*g)
+  for (ix in 1:g) 
+    matrixW[,range[[ix]]] <- -t(mu)
+  matrixW <- matrixW * (rep(1,g) %o% as.vector(mu))
+  for (ix in 1:g) 
+    matrixW[ix,range[[ix]]] <- matrixW[ix,range[[ix]]] + mu[,ix]
+  res <- t(sapply(.genesets(gt), function(set) {
+    X <- gt@eX[set,,drop=FALSE]
+    m <- length(set)
+    if (m == 0) {
+      out <- rep(NA, 4)
+    } else {
+      IminH <- .IminH(gt)
+      if (m > n) {
+        XX <- crossprod(X) / m
+        Q <- sum(sapply(1:g, function(out) crossprod(Y[,out], XX) %*% Y[,out]))
+        R <- matrix(0,n*g,n*g)
+        for (ix in 1:g) {
+          for(iy in 1:g) {
+            M <- matrix(0,n,n)
+            for (iz in 1:g) {
+              M <- M + crossprod(IminH[range[[iz]],range[[ix]]], XX) %*% 
+                IminH[range[[iz]],range[[iy]]]
+            }
+            R[range[[ix]],range[[iy]]] <- M
+          }
+        }
+        RW <- matrix(0,n*g,n*g)
+        for (ix in 1:g) {
+          for (iy in 1:g) {
+            M <- matrix(0, n, n)
+            for (iz in 1:g) {
+              M <- M + R[range[[iz]], range[[iy]]] * (matrixW[ix, range[[iz]]] %o% rep(1,n))
+            }
+            RW[range[[ix]], range[[iy]]] <- M
+          }
+        }
+        lams <- svd(RW, nu=0, nv=0)$d
+      } else {
+        Q <- sum(sapply(1:g, function(out) crossprod(X %*% Y[,out]))) / m
+        XIminH <- matrix(0,m*g,n*g)
+        for (ix in 1:g) {
+          for (iy in 1:g) {
+            XIminH[((ix-1)*m+1):(ix*m),range[[iy]]] <- X %*% IminH[range[[ix]], range[[iy]]]
+          }
+        }
+        XIminHW <- matrix(0,m*g,n*g)
+        for (ix in 1:g) {
+          for (iy in 1:g) {
+            M <- matrix(0, m, n)
+            for (iz in 1:g) {
+              M <- M + XIminH[((ix-1)*m+1):(ix*m), range[[iz]]] * (rep(1,m) %o% matrixW[iz, range[[iy]]])
+            }
+            XIminHW[((ix-1)*m+1):(ix*m), range[[iy]]] <- M
+          }
+        }        
+        otherRW <- XIminHW %*% t(XIminH) / m
+        lams <- eigen(otherRW, symmetric = TRUE, only.values = TRUE)$values
+      }
+      EQ <- sum(lams)
+      varQ <- 2*sum(lams * lams)
+      seQ <- sqrt(varQ)
+      p.value <- .pAsymptotic(Q, .weed(lams))
+      out <- c(Q, EQ, seQ, p.value)
+    }
+    out
+  }))
+  res
+}    
+
 
 
 
@@ -194,15 +447,190 @@
   }))
   res
 }    
+ 
+ 
+#==========================================================
+# The globaltest for a multinomial model; gamma approximation
+#==========================================================
+.adjustedmultinomialglobaltestgamma <- function (gt) {
+  mu <- fitted.values(fit(gt))
+  n <- nrow(mu)
+  g <- ncol(mu)
+  kappai <- function(stuv) {
+    case <- rowSums(outer(1:g, stuv, "=="))
+    switch(sort(case, decreasing = TRUE)[1],
+      { # sort(case) = c(1,1,1,1)
+        muis <- mu[,case == 1][,1]
+        muit <- mu[,case == 1][,2]
+        muiu <- mu[,case == 1][,3]
+        muiv <- mu[,case == 1][,4]
+        -6*muis*muit*muiu*muiv
+      },
+      {
+      switch(sort(case, decreasing = TRUE)[2],
+        { # sort(case) = c(2,1,1,0) 
+          muis <- mu[,case == 2]
+          muit <- mu[,case == 1][,1]
+          muiu <- mu[,case == 1][,2]
+          2*muis*muit*muiu - 6*muis*muis*muit*muiu
+        },
+        { # sort(case) = c(2,2,0,0) 
+          muis <- mu[,case == 2][,1]
+          muit <- mu[,case == 2][,2]
+          -muis*muit + 2*muis*muit*muit + 2*muis*muis*muit - 6*muis*muis*muit*muit
+        })
+      },
+      { # sort(case) = c(3,1,0,0)
+        muis <- mu[,case == 3]
+        muit <- mu[,case == 1]
+        -muis*muit + 6*muit*muis*muis - 6*muit*muis*muis*muis
+      },
+      { # sort(case) = c(4,0,0,0)
+        muis <- mu[,case == 4]
+        muis - 7*muis*muis + 12*muis*muis*muis - 6*muis*muis*muis*muis
+      }
+    )
+  }
+  Y <- fit(gt)@y - mu
+  range <- lapply(as.list(1:g), function(ix) ((ix-1)*n+1):(ix*n))
+  matrixW <- matrix(0,g,n*g)
+  for (ix in 1:g) 
+    matrixW[,range[[ix]]] <- -t(mu)
+  matrixW <- matrixW * (rep(1,g) %o% as.vector(mu))
+  for (ix in 1:g) 
+    matrixW[ix,range[[ix]]] <- matrixW[ix,range[[ix]]] + mu[,ix]
+  res <- t(sapply(.genesets(gt), function(tg) {
+    X <- gt@eX[tg,,drop=FALSE]
+    m <- length(tg)
+    if (m == 0) {
+      out <- rep(NA, 4)
+    } else {
+      IminH <- .IminH(gt)
+      if (m > n) {
+        XX <- crossprod(X) / m
+        R <- matrix(0,n*g,n*g)
+        for (ix in 1:g) {
+          for(iy in 1:g) {
+            M <- matrix(0,n,n)
+            for (iz in 1:g) {
+              M <- M + crossprod(IminH[range[[iz]],range[[ix]]], XX) %*% 
+                IminH[range[[iz]],range[[iy]]]
+            }
+            R[range[[ix]],range[[iy]]] <- M
+          }
+        }
+        Q <- sum(sapply(1:g, function(out) crossprod(Y[,out], XX) %*% Y[,out]))
+        RW <- matrix(0,n*g,n*g)
+        for (ix in 1:g) {
+          for (iy in 1:g) {
+            M <- matrix(0, n, n)
+            for (iz in 1:g) {
+              M <- M + R[range[[iz]], range[[iy]]] * (matrixW[ix, range[[iz]]] %o% rep(1,n))
+            }
+            RW[range[[ix]], range[[iy]]] <- M
+          }
+        }
+        dRW <- sum(diag(RW))
+        dRWRW <- sum(RW*RW)
+        dRs <- lapply(as.list(1:g), function(out1) {
+          lapply(as.list(1:g), function(out2) {
+            diag(R[range[[out1]],range[[out2]]])
+          })
+        })
+      } else { 
+        Q <- sum(sapply(1:g, function(out) crossprod(X %*% Y[,out]))) / m
+        XIminH <- matrix(0,m*g,n*g)
+        for (ix in 1:g) {
+          for (iy in 1:g) {
+            XIminH[((ix-1)*m+1):(ix*m),range[[iy]]] <- X %*% IminH[range[[ix]], range[[iy]]]
+          }
+        }
+        XIminHW <- matrix(0,m*g,n*g)
+        for (ix in 1:g) {
+          for (iy in 1:g) {
+            M <- matrix(0, m, n)
+            for (iz in 1:g) {
+              M <- M + XIminH[((ix-1)*m+1):(ix*m), range[[iz]]] * (rep(1,m) %o% matrixW[iz, range[[iy]]])
+            }
+            XIminHW[((ix-1)*m+1):(ix*m), range[[iy]]] <- M
+          }
+        }        
+        otherRW <- XIminHW %*% t(XIminH) / m
+        dRW <- sum(diag(otherRW))
+        dRWRW <- sum(otherRW*otherRW)
+        XIminHXIminH <- XIminH*XIminH / m
+        dRs <- lapply(as.list(1:g), function(ix) {
+          lapply(as.list(1:g), function(iy) {
+            colSums(XIminHXIminH[((ix-1)*m+1):(ix*m), range[[iy]],drop=FALSE])
+          })
+        })
+      }
+      EQ <- dRW
+      varQ <- 2 * dRWRW + sum(sapply(1:g, function(out1) {
+        sum(sapply(1:g, function(out2) {
+          sum(sapply(1:g, function(out3) {
+            sum(sapply(1:g, function(out4) {
+              sum(dRs[[out1]][[out2]] * dRs[[out3]][[out4]] * kappai(c(out1, out2, out3, out4)))
+            }))
+          }))
+        }))
+      }))
+      seQ <- sqrt(varQ)
+      scl <- varQ / (2 * EQ)
+      dfr <- EQ / scl
+      p.value <- pchisq(Q / scl, dfr, lower.tail = FALSE)
+      out <- c(Q, EQ, seQ, p.value)
+    }
+    out
+  }))
+  res
+}      
    
    
 #==========================================================
-# The globaltest for a linear model; asymptotic distribution
+# The globaltest for an unadjusted multinomial model; gamma approximation
 #==========================================================
-.linearglobaltest <- function (gt) {
-  Y <- fit(gt)$y - fitted.values(fit(gt))
-  mu2 <- sum(Y*Y)/df.residual(fit(gt))
-  n <- length(Y)
+.unadjustedmultinomialglobaltestgamma <- function(gt) {
+  Y <- fit(gt)@y - fitted.values(fit(gt))
+  mu <- fitted.values(fit(gt))[1,]
+  n <- nrow(Y)
+  g <- ncol(Y)
+  kappa <- function(stuv) {
+    case <- rowSums(outer(1:g, stuv, "=="))
+    switch(sort(case, decreasing = TRUE)[1],
+      { # sort(case) = c(1,1,1,1)
+        muis <- mu[case == 1][1]
+        muit <- mu[case == 1][2]
+        muiu <- mu[case == 1][3]
+        muiv <- mu[case == 1][4]
+        -6*muis*muit*muiu*muiv
+      },
+      {
+      switch(sort(case, decreasing = TRUE)[2],
+        { # sort(case) = c(2,1,1,0) 
+          muis <- mu[case == 2]
+          muit <- mu[case == 1][1]
+          muiu <- mu[case == 1][2]
+          2*muis*muit*muiu - 6*muis*muis*muit*muiu
+        },
+        { # sort(case) = c(2,2,0,0) 
+          muis <- mu[case == 2][1]
+          muit <- mu[case == 2][2]
+          -muis*muit + 2*muis*muit*muit + 2*muis*muis*muit - 6*muis*muis*muit*muit
+        })
+      },
+      { # sort(case) = c(3,1,0,0)
+        muis <- mu[case == 3]
+        muit <- mu[case == 1]
+        -muis*muit + 6*muit*muis*muis - 6*muit*muis*muis*muis
+      },
+      { # sort(case) = c(4,0,0,0)
+        muis <- mu[case == 4]
+        muis - 7*muis*muis + 12*muis*muis*muis - 6*muis*muis*muis*muis
+      }
+    )
+  }
+  matrixW <- -mu %o% mu + diag(mu)
   res <- t(sapply(.genesets(gt), function(tg) {
     X <- gt@eX[tg,,drop=FALSE]
     m <- length(tg)
@@ -211,79 +639,40 @@
     } else {
       if (m > n) {
         XX <- crossprod(X) / m
-        if (.adjusted(gt)) {
-          R <- crossprod(.IminH(gt), XX) %*% .IminH(gt)
-        } else {
-          R <- XX
-        }
-        Q <- (crossprod(Y, XX) %*% Y) / mu2
-        lams <- eigen(R, symmetric = TRUE, only.values = TRUE)$values
-      } else {
-        if (.adjusted(gt)) {
-          otherR <- crossprod(t(X %*% .IminH(gt))) / m
-        } else {
-          otherR <- crossprod(t(X)) / m
-        }
-        Q <- crossprod(X %*% Y) / (m * mu2)
-        lams <- eigen(otherR, symmetric = TRUE, only.values = TRUE)$values
+        Q <- sum(sapply(1:g, function(out) crossprod(Y[,out], XX) %*% Y[,out]))
+        traceXX <- sum(diag(XX))
+        RW <- matrixW %x% XX
+        dRW <- sum(diag(matrixW)) * sum(diag(XX))
+        dRWRW <- sum(matrixW*matrixW) * sum(XX*XX)
+      } else { 
+        Q <- sum(sapply(1:g, function(out) crossprod(X %*% Y[,out]))) / m
+        otherXX <- crossprod(t(X)) / m
+        traceXX <- sum(diag(otherXX))
+        dRW <- sum(diag(matrixW)) * sum(diag(otherXX))
+        dRWRW <- sum(matrixW*matrixW) * sum(otherXX*otherXX)
       }
-      EQ <- sum(lams)
-      varQ <- 2*sum(lams * lams)
+      EQ <- dRW
+      varQ <- 2 * dRWRW + traceXX * sum(sapply(1:g, function(out1) {
+        sum(sapply(1:g, function(out2) {
+          sum(sapply(1:g, function(out3) {
+            sum(sapply(1:g, function(out4) {
+              matrixW[out1,out2] * matrixW[out3,out4] * kappa(c(out1, out2, out3, out4))
+            }))
+          }))
+        }))
+      }))
       seQ <- sqrt(varQ)
-      p.value <- .pAsymptotic(Q, .weed(lams))
+      scl <- varQ / (2 * EQ)
+      dfr <- EQ / scl
+      p.value <- pchisq(Q / scl, dfr, lower.tail = FALSE)
       out <- c(Q, EQ, seQ, p.value)
     }
     out
   }))
   res
-}    
+}     
 
-     
-#==========================================================
-# The globaltest for the logistic model; asymptotic distribution
-#==========================================================
-.logisticglobaltest <- function (gt) {
-  Y <- fit(gt)$y - fitted.values(fit(gt))
-  n <- length(Y)
-  mu2 <- fit(gt)$weights
-  res <- t(sapply(.genesets(gt), function(set) {
-    X <- gt@eX[set,,drop=FALSE]
-    m <- length(set)
-    if (m == 0) {
-      out <- rep(NA, 4)
-    } else {
-      if (m > n) {
-        XX <- crossprod(X) / m
-        if (.adjusted(gt)) {
-          Q <- (crossprod(Y, XX) %*% Y)
-          R <- crossprod(.IminH(gt), XX) %*% .IminH(gt)
-          R <- R * (sqrt(mu2) %o% sqrt(mu2))
-        } else {
-          Q <- (crossprod(Y, XX) %*% Y) / mu2[1]
-          R <- XX
-        }
-        lams <- eigen(R, symmetric = TRUE, only.values = TRUE)$values
-      } else {
-        if (.adjusted(gt)) {
-          Q <- crossprod(X %*% Y) / m
-          XIminH <- (X %*% .IminH(gt)) * (rep(1,m) %o% sqrt(mu2))
-          otherR <- crossprod(t(XIminH)) / m
-        } else {
-          Q <- crossprod(X %*% Y) / (m * mu2[1])
-          otherR <- crossprod(t(X)) / m
-        }
-        lams <- eigen(otherR, symmetric = TRUE, only.values = TRUE)$values
-      }
-      EQ <- sum(lams)
-      varQ <- 2*sum(lams * lams)
-      seQ <- sqrt(varQ)
-      p.value <- .pAsymptotic(Q, .weed(lams))
-      out <- c(Q, EQ, seQ, p.value)
-    }
-    out
-  }))
-  res
-}    
+   
  
        
 #==========================================================

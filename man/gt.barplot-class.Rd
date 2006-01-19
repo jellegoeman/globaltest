@@ -9,6 +9,7 @@
 \alias{result,gt.barplot-method}
 \alias{plot,gt.barplot-method}
 \alias{scale,gt.barplot-method}
+\alias{sort,gt.barplot-method}
 \alias{z.score,gt.barplot-method}
 \alias{names,gt.barplot-method}
 \alias{names<-,gt.barplot-method}
@@ -42,6 +43,7 @@
     \item{length}{(gt.barplot): The number of bars (genes or samples) in the object.}
     \item{scale}{(gt.barplot): Scales the bars to unit standard deviation.}
     \item{z.score}{(gt.barplot): Calculates the z.scores for each bar: (influence - expected inf) / sd(inf).}
+    \item{sort}{(gt.barplot): Sorts the bars to a decreasing z.score.}
     \item{names}{(gt.barplot): The names of the genes or samples.}
     \item{names<-}{(gt.result): Changes the names of the genes or samples.}
   }

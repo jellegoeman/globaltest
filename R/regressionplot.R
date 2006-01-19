@@ -23,9 +23,15 @@ regressionplot <- function(gt, geneset, sampleid, ...)
     # recreate matrix R and find S = Y %o% Y
     X <- gt@eX[geneset,,drop=FALSE]
     Y <- .Y(gt)
+    n <- .nSamples(gt)
     R <- as.vector(crossprod(X))
-    S <- as.vector(Y %o% Y)
-    n <- length(Y)
+    if (.model(gt) == "multinomial") {
+      S <- rep(0,n*n)
+      for (ix in 1:ncol(Y))
+        S <- S + as.vector(Y[,ix] %o% Y[,ix])
+    } else
+      S <- as.vector(Y %o% Y)
+    
     
     # Check correct input of sampleid
     if ( missing(sampleid) ) {
