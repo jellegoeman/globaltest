@@ -40,12 +40,15 @@ Globaltest.pdf that comes with this package.}
 \code{\link{sampleplot}}, \code{\link{geneplot}}.}
 
 \examples{
-    data(exampleX)      # Expression data (40 samples; 1000 genes)
-    data(exampleY)      # Clinical outcome for the 40 samples
-    pathway <- 1:25     # A pathway contains genes 1 to 25
+    # Breast cancer data (exprSet) from the Netherlands Cancer
+    # Institute with annotation:
+    data(vandeVijver)
+    data(RosettaAnnotation)
+    somePathways <- RosettaAnnotation[1:5]
 
-    gt <- sampling(globaltest(exampleX, exampleY, test.genes = pathway))
-    gt
+    gt <- globaltest(vandeVijver, "StGallen", somePathways)
+
+    sampling(gt)
 }
 
 \keyword{htest}

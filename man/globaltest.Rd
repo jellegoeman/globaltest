@@ -93,21 +93,44 @@ have been replaced by separate functions from version 3.0. See
 \value{The function returns an object of class
 \code{\link[gt.result-class]{gt.result}}.}
 
-\references{For references, type: citation("globaltest"). See also the vignette
-GlobalTest.pdf included with this package.}
+\references{For references, type: \code{citation("globaltest")}. See
+also the vignette GlobalTest.pdf included with this package.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 
-\seealso{\code{\link{geneplot}}, \code{\link{sampleplot}},
-\code{\link{sampling}}, \code{\link{permutations}},
+\seealso{Many more examples in the vignette! \code{\link{geneplot}},
+\code{\link{sampleplot}}, \code{\link{sampling}},
+\code{\link{gt.multtest}}, \code{\link{permutations}},
 \code{\link{checkerboard}}, \code{\link{regressionplot}}.}
 
 \examples{
-    data(exampleX)      # Expression data (40 samples; 1000 genes)
-    data(exampleY)      # Clinical outcome for the 40 samples
-    pathway1 <- 1:25    # A pathway contains genes 1 to 25
-    pathway2 <- 26:50   # another pathway
-    gt <- globaltest(exampleX, exampleY, list(pathway1,pathway2))
-    gt
+    # Breast cancer data (exprSet) from the Netherlands Cancer
+    # Institute with annotation:
+    data(vandeVijver)
+    data(RosettaAnnotation)
+    somePathways <- RosettaAnnotation[1:5]
+
+    # Many possible calls. See the vignette for more examples and explanation.
+    globaltest(vandeVijver, "StGallen")
+    globaltest(vandeVijver, "StGallen", somePathways)
+    globaltest(vandeVijver, "Surv(TIMEsurvival, EVENTdeath)", somePathways)
+    globaltest(vandeVijver, StGallen ~ Posnodes + StGallen, somePathways)
+    globaltest(vandeVijver, "StGallen", method = "p")
+
+    # Store the test result
+    # See help(gt.result) for more options
+    gt <- globaltest(vandeVijver, "StGallen", somePathways)
+    gt[1:2]
+    sort(gt)
+    p.value(gt)
+
+    # Also with simple vector/matrix input
+    X <- matrix(rnorm(3000), 100, 30)  # random expression data
+    Y <- 1:30                          # a response variable
+    pathway <- 1:40                    # a pathway
+
+    globaltest(X, Y)
+    globaltest(X, Y, pathway)
 }
+
 \keyword{htest}

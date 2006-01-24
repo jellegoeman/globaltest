@@ -1,6 +1,6 @@
 Package: globaltest
-Version: 4.1.0
-Date: 2006-01-19
+Version: 4.1.1
+Date: 2006-01-24
 Title: Testing Association of a Group of Genes with a Clinical Variable
 Author: Jelle Goeman <j.j.goeman@lumc.nl> and Jan Oosting <j.oosting@lumc.nl>
 Maintainer: Jelle Goeman <j.j.goeman@lumc.nl>
@@ -11,4 +11,5 @@ Description: Testing whether a group of genes (e.g. a pathway) is significantly 
 License: GPL version 2 or newer
 biocViews: Microarray, OneChannel, Statistics, DifferentialExpression, GO, Pathways
 SaveImage: yes
+ZipData: yes
 URL: http://clinicalresearch.nl/personalpage/View.aspx?person=Jelle%20Goeman

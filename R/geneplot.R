@@ -59,7 +59,7 @@ geneplot <- function(gt, geneset, genesubset, plot = TRUE, scale = FALSE, drawla
     covar <- gt@eX[geneset,] %*% Y 
     up <- apply(covar, 1, which.max)
   } else {
-    up <- 2 - ((gt@eX[geneset,] %*% .Y(gt)) >= 0) 
+    up <- 1 + ((gt@eX[geneset,] %*% .Y(gt)) <= 0) 
   }
   res <- cbind(res[,1:3,drop = FALSE], up)
   colnames(res) <- c("Influence", "Expected", "SD", "UP")
@@ -69,7 +69,7 @@ geneplot <- function(gt, geneset, genesubset, plot = TRUE, scale = FALSE, drawla
   if (model == 'linear') {
     nameY <- as.character(.formula(gt)[[2]])
     colourCode <- c("+", "-")
-    colour <- c(3,2)
+    colour <- 2:3
     if (adjusted) {
       legend <- c(paste("positive correlation with residual", nameY),
         paste("negative correlation with residual", nameY))
@@ -79,7 +79,7 @@ geneplot <- function(gt, geneset, genesubset, plot = TRUE, scale = FALSE, drawla
     }
   } else if (model == 'logistic') {
     colourCode <- c(paste("high in", .levels(gt)[1]), paste("high in", .levels(gt)[2]) )
-    colour <- c(3,2)
+    colour <- 2:3
     legend <- c(paste("higher expression in", .levels(gt)[1], "samples"), 
       paste("higher expression in", .levels(gt)[2], "samples"))
   } else if (model == 'survival') {

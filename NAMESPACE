@@ -13,4 +13,4 @@ exportMethods("[", show, result, p.value, length, names, "names<-",
 	fitted.values, coefficients)
 
 export(globaltest, permutations, sampling, geneplot, sampleplot, 
-	regressionplot, checkerboard, multtest, mlogit)
+	regressionplot, checkerboard, gt.multtest, mlogit)

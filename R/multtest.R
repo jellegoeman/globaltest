@@ -1,7 +1,7 @@
 #==========================================================
 # Adds multiple-testing-corrected p-values
 #==========================================================
-multtest <- function(gt, proc = c("FDR", "FWER")) {
+gt.multtest <- function(gt, proc = c("FDR", "FWER")) {
   if (!is(gt, "gt.result")) stop("gt must be a gt.result object")
   proc <- match.arg(proc)
   if (missing(proc) || (proc == "FDR")) {

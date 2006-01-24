@@ -38,15 +38,14 @@ the vignette GlobalTest.pdf included with this package.}
 \code{\link{geneplot}}.}
 
 \examples{
-    data(exampleX)      # Expression data (40 samples; 1000 genes)
-    data(exampleY)      # Clinical outcome for the 40 samples
-    pathway <- 1:25     # A pathway contains genes 1 to 25
+    # Breast cancer data (exprSet) from the Netherlands Cancer
+    # Institute with annotation:
+    data(vandeVijver)
+    data(RosettaAnnotation)
+    aPathway <- RosettaAnnotation[1]
 
-    gt <- globaltest(exampleX, exampleY, test.genes = pathway)
-    gt
-
+    gt <- globaltest(vandeVijver, "StGallen", aPathway)
     perm.gt <- permutations(gt)
-    perm.gt
 
     if (interactive()) {
       hist(perm.gt)

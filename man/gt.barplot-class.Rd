@@ -10,6 +10,7 @@
 \alias{plot,gt.barplot-method}
 \alias{scale,gt.barplot-method}
 \alias{sort,gt.barplot-method}
+\alias{gt.barplot}
 \alias{z.score,gt.barplot-method}
 \alias{names,gt.barplot-method}
 \alias{names<-,gt.barplot-method}

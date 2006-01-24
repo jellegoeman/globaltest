@@ -1,6 +1,6 @@
-\name{multtest}
+\name{gt.multtest}
 
-\alias{multtest}
+\alias{gt.multtest}
 
 \title{Correct globaltest results for multiple testing}
 
@@ -9,7 +9,7 @@
 Hochberg's False Discovery Rate or Holm's procedure for controlling
 the Family-Wise Error Rate.}
 
-\usage{multtest(gt, proc = c("FDR", "FWER"))}
+\usage{gt.multtest(gt, proc = c("FDR", "FWER"))}
 
 \arguments{
     \item{gt}{The output of a call to \code{\link{globaltest}}.}
@@ -35,13 +35,14 @@ the vignette GlobalTest.pdf included with this package.}
 \seealso{\code{\link{globaltest}}.}
 
 \examples{
-    data(exampleX)      # Expression data (40 samples; 1000 genes)
-    data(exampleY)      # Clinical outcome for the 40 samples
-    pathway1 <- 1:25    # A pathway contains genes 1 to 25
-    pathway2 <- 26:50   # another pathway
-    gt <- globaltest(exampleX, exampleY, list(pathway1,pathway2))
+    # Breast cancer data (exprSet) from the Netherlands Cancer
+    # Institute with annotation:
+    data(vandeVijver)
+    data(RosettaAnnotation)
+    somePathways <- RosettaAnnotation[1:20]
 
-    multtest(gt)
+    gt <- globaltest(vandeVijver, "StGallen", somePathways)
+    sort(gt.multtest(gt))
 }
 
 \keyword{htest}

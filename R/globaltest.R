@@ -26,9 +26,9 @@ globaltest <- function(X, Y, genesets,
     stop("Y should be of class formula, vector, factor or character", call. = FALSE)
   if (!(missing(genesets) || is.vector(genesets)))
     stop("genesets should be of class vector or list", call. = FALSE)
-  if (!(missing(levels) || (class(levels) %in% c("vector", "character")))) 
+  if (!(missing(levels) || is.vector(levels)))
     stop("levels should be of class vector", call. = FALSE)
-  if (!(missing(d) || (class(d) %in% c("vector", "character")))) 
+  if (!(missing(d) || is.vector(d))) 
     stop("d should be of class vector", call. = FALSE)
   if (length(event) > 1)
     stop("event should contain a single value", call. = FALSE)
@@ -71,7 +71,7 @@ globaltest <- function(X, Y, genesets,
       adjust <- names(adjust)
     }
   }
-  if (is.vector(Y) && (length(Y) > 1)) {
+  if ((!is(Y, "formula")) && (length(Y) > 1)) {
     if (is.null(pData)) {
       pDataNamesSupplied <- is.null(names(Y))
       pData <- data.frame(Y)
@@ -100,13 +100,10 @@ globaltest <- function(X, Y, genesets,
     }
     pData = data.frame(pData, d)
   }
-  if (is.null(pData)) {
-    stop("Unable to determine the necessary phenotype data. Please check your input of Y and/or pData(X)", call. = FALSE)
-  }
 
     
   # 3: check for sample size conflict between eX and pData
-  if (ncol(eX) != nrow(pData)) {
+  if ((!is.null(pData)) && (ncol(eX) != nrow(pData))) {
     if (nrow(eX == nrow(pData))) {
       eX <- t(eX)
     } else {

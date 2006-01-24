@@ -56,13 +56,21 @@ samplename to draw under the axis.}
 \code{\link{regressionplot}}, \code{\link{checkerboard}}.}
 
 \examples{
-    data(exampleX)      # Expression data (40 samples; 1000 genes)
-    data(exampleY)      # Clinical outcome for the 40 samples
-    pathway <- 1:25     # A pathway contains genes 1 to 25
-    gt <- globaltest(exampleX, exampleY, test.genes = pathway)
+    # Breast cancer data (exprSet) from the Netherlands Cancer
+    # Institute with annotation:
+    data(vandeVijver)
+    data(RosettaAnnotation)
+    somePathways <- RosettaAnnotation[1:5]
+
+    gt <- globaltest(vandeVijver, "StGallen", somePathways)
 
     if (interactive()){
-      sampleplot(gt)
+      sampleplot(gt[1])
+    }
+
+    sp <- sampleplot(gt[1], plot = FALSE)
+    if (interactive()){
+      plot(sort(sp))
     }
 }
 \keyword{hplot}

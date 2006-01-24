@@ -12,7 +12,7 @@ effect of specific samples on the test result produced by
 
 \arguments{
     \item{gt}{The output of a call to \code{\link{globaltest}}.}
-    \item{geneset}{The name or number of the geneset to be plotted 
+    \item{geneset}{The name or number of the geneset to be plotted
 (only necessary if multiple genesets were tested).}
     \item{sampleid}{An optional vector of names or numbers of the samples of interest.}
     \item{...}{Any extra arguments will be forwarded to the plotting function.}}
@@ -35,13 +35,13 @@ crosses.}
 
 \value{\code{NULL} (no output).}
 
-\note{Regressionplot does not work if the adjusted version of 
+\note{Regressionplot does not work if the adjusted version of
 globaltest was used.}
 
 \references{J. J. Goeman, S. A. van de Geer, F. de Kort and J. C.
-van Houwelingen, 2004, \emph{A global test for groups of genes: 
-testing association with a clinical outcome}, 
-\emph{Bioinformatics} 20 (1) 93--99. See also the How To 
+van Houwelingen, 2004, \emph{A global test for groups of genes:
+testing association with a clinical outcome},
+\emph{Bioinformatics} 20 (1) 93--99. See also the How To
 Globaltest.pdf included with this package.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
@@ -50,14 +50,17 @@ Globaltest.pdf included with this package.}
 \code{\link{geneplot}}.}
 
 \examples{
-if (interactive()) {
-    data(exampleX)      # Expression data (40 samples; 1000 genes)
-    data(exampleY)      # Clinical outcome for the 40 samples
-    pathway <- 1:25     # A pathway contains genes 1 to 25
-    gt <- globaltest(exampleX, exampleY, test.genes = pathway)
-    gt
-    regressionplot(gt)
-    regressionplot(gt, sampleid = 40)
-}
+    # Breast cancer data (exprSet) from the Netherlands Cancer
+    # Institute with annotation:
+    data(vandeVijver)
+    data(RosettaAnnotation)
+    somePathways <- RosettaAnnotation[1:5]
+
+    gt <- globaltest(vandeVijver, "ESR1", somePathways)
+
+    if (interactive()) {
+      regressionplot(gt[1])
+      regressionplot(gt[1], sampleid = "122")
+    }
 }
 \keyword{hplot}

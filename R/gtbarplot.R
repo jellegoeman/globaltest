@@ -18,9 +18,8 @@ setMethod("result", "gt.barplot",
             function(object) 
 {
     res <- object@res
-    colouring <- factor(res[,4])
-    levels(colouring) <- object@colourCode[2:1]
-    res <- data.frame(res[,1:3], z.score = z.score(object), colouring)
+    colouring <- factor(sapply(res[,4], function(col) object@colourCode[col]))
+    res <- data.frame(res[,1:3,drop=FALSE], z.score = z.score(object), colouring)
     res
 })
 
@@ -103,7 +102,7 @@ setMethod("show", "gt.barplot",
 setMethod("sort", matchSignature(signature(x = "gt.barplot"), sort),
   function(x, partial = NULL, na.last = NA, decreasing = TRUE, 
       method = c("shell", "quick", "radix"), index.return = FALSE) {
-    ix <- sort.list(p.value(x), partial, na.last, decreasing, method)
+    ix <- sort.list(z.score(x), partial, na.last, decreasing, method)
     x <- x[ix]
     if (index.return) 
       list(x = x, ix = ix)

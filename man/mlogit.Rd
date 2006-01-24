@@ -52,7 +52,7 @@ object.}
 \seealso{\code{\link{glm}}, \code{\link[nnet:multinom]{multinom}}.}
 
 \examples{
-  y <- factor(rep(1:4,5))
+  y <- factor(rep(1:4, 5))
   x <- 1:20
   fit <- mlogit(y ~ x)
   summary(fit)

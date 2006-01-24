@@ -19,7 +19,7 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
   geneset <- gt@genesets[[1]]
 
   # reconstruct X and Y
-  X <- as.matrix(gt@eX[geneset,])
+  X <- as.matrix(gt@eX[geneset,,drop=FALSE])
   n <- ncol(X)
   if (missing(samplesubset))
     samplesubset <- 1:n
@@ -44,6 +44,9 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
       mu2 <- sum(Y*Y)/df.residual(fit(gt))
       Y <- Y / sqrt(mu2)
     }  
+    if (model == "logistic") {
+       Y <- -Y
+    }
     if (adjusted) {
       adjX <- X %*% .IminH(gt)
       XXY <- crossprod(.IminH(gt), crossprod(X) %*% Y)
@@ -51,8 +54,8 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
       adjX <- X
       XXY <- crossprod(X) %*% Y
     }
-    influence <- (n/m) * Y * XXY
-    up <- 2 - (sign(Y) == 1) 
+    influence <- as.vector((n/m) * Y * XXY)
+    up <- 1 + (sign(Y) == 1) 
     R <- crossprod(adjX)
     if (model == 'logistic' && adjusted) {
       mu2 <- fit(gt)$weights
@@ -128,7 +131,7 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
     matrixW <- diag(rowSums(matrixPO)) - matrixPO %*% t(matrixPO)
     Y <- rowSums(matrixPO) - d
     influence <- colSums(crossprod(adjX, X) * (outer(Y,Y) - matrixW))
-    up <- 2 - (sign(Y) == 1) 
+    up <- 1 + (sign(Y) == 1) 
     eye <- diag(n)
     Evarinf <- sapply(1:n, function(i) {
       out <- numeric(2)

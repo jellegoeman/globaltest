@@ -3,25 +3,34 @@
 % \VignetteKeywords{Expression Analysis}
 % \VignettePackage{globaltest}
 
+\documentclass[a4paper]{article}
+\usepackage[sort]{natbib}
+
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
 \newcommand{\Rclass}[1]{{\textit{#1}}}
 \newcommand{\Rfunarg}[1]{{\textit{#1}}}
 
-\documentclass[a4paper]{article}
-
 \title{Testing association of a pathway with a clinical variable}
 
 \author{Jelle Goeman \and Jan Oosting}
 
 \date{Package \Rpackage{globaltest}, version
-\Sexpr{Biobase::package.version("globaltest")},\\
+\Sexpr{Biobase::package.version("globaltest")}.\\\ \\
 \today}
 
 \begin{document}
 
 \maketitle \tableofcontents \newpage
+
+\section*{Important Note}
+
+As of version 4.0.0 the default method for calculating the p-value
+has changed. To get exactly the same results as in earlier versions,
+add the option \Robject{method = "gamma"} to the
+\Rfunction{globaltest} function. See section \ref{method} for more
+details.
 
 \section{Introduction}
 
@@ -33,70 +42,108 @@ understand the idea and the mathematics behind the test, and
 for more details on how to interpret a test result, we refer to
 the papers (Goeman et al.\ 2004, 2005).
 
-In the last few years there has been a shift in focus from studying the
-effects of single genes to studying effects of multiple functionally
-related genes. Most of the current methods for studying pathways involve
-looking at increased proportions of differentially expressed genes in
-pathways of interest. These methods do not identify pathways where many genes
-have altered their expression in a small way. The globaltest was designed to
-address this issue.
+In recent years there has been a shift in focus from studying
+the effects of single genes to studying effects of multiple
+functionally related genes. Most of the current methods for studying
+pathways involve looking at increased proportions of differentially
+expressed genes in pathways of interest. These methods do not
+identify pathways where many genes have altered their expression in
+a small way. The globaltest was designed to address this issue.
 
-Essentially the globaltest is based on an empirical Bayesian
-generalized linear model where the regression coefficients between
-expression data and clinical outcome are the random variables. The
-test applies a goodness of fit test on this model. The globaltest is
-optimal when all coefficients show an effect, even if none of the
-individual coefficients shows a significant relation between
-expression and outcome. However the null hypothesis will also be
-rejected when there are 1 or a few coefficients with a significant
-relation.
+The globaltest method is based on a prediction model for predicting
+a response variable from the gene expression measurements of a set
+of genes. The null hypothesis to be tested is that expression
+profile of the genes in the gene set is not associated with the
+response variable. A significant test result has three equivalent
+interpretations (see Goeman et al.\ 2004, 2005, for more details).
+\begin{itemize}
+\item If the test is significant, part of the variance of the
+response variable can be predicted from the gene expression
+measurements of the gene set.
+\item If the test is significant, the genes in the gene set are, on
+average, more associated with the response variable than would be expected
+under the null hypothesis. These associations may be both positive
+(upregulation) and negative (downregulation). Typically, a
+significant pathway is a mix op positively and negatively associated
+genes.
+\item If the test is significant, samples with similar values of the
+response variable tend to have relatively similar expression
+profiles over the genes in the gene set. Therefore, in an
+unsupervised cluster analysis, samples with the same value of the
+response variable have a tendency to turn up in the same clusters.
+\end{itemize}
 
-By grouping together genes before testing usually the number of tests will
-decrease and amount of correction for multiple testing will be decreased. Genes can
-be grouped together in any meaningful way, for example based in function (KEGG, GO) or
-location (chromosome, cytoband).
+By grouping together genes before testing usually the number of
+tests will decrease and the severity of the correction for multiple
+testing will decrease. Genes can be grouped together into genesets
+in any meaningful way, for example based in function (KEGG, GO) or
+location (chromosome, cytoband). However, the choice of the gene
+sets may not be based in any way on the response variable that is
+used for testing.
 
-In our examples we use data sets that are available from the
-BioConductor web site. All the necessary packages to repeat the
-examples below are available from www.bioconductor.org.
+\section{Preparation}
 
-First we load some packages from BioConductor and load
-the data we'll use.
+In the examples that follow we use two data sets. Both use the
+dataformat use BioConductor \Rclass{exprSet} input, which is the
+standard format for storing gene expression data in BioConductor.
+The \Rclass{exprSet} is the preferred input format for data in
+\Rpackage{globaletest}, but simple vector/matrix input is also
+possible. See \Robject{help(globaltest)}.
 
-<<initialize, results=hide>>=
-library(globaltest)
+\subsection{Leukemia Data}
+
+The first data set is the famous Leukemia data set by Golub et al.
+(1999), that are available from the \Rpackage{golubEsets} package on
+BioConductor. We load the data and normalize them using
+\Rpackage{vsn}
+
+<<getGolubData, results=hide>>=
 library(golubEsets)
 library(vsn)
 data(golubMerge)
 golubM <- update2MIAME(golubMerge)
-golubX <- vsn(golubM)
+Golub <- vsn(golubM)
 @
 
-This gives us a data set \Robject{golubX}, which is of the format
+This gives us a data set \Robject{Golub}, which is of the format
 \Rclass{exprSet}, the standard format for gene expression data in
-BioConductor. It has 7,129 genes for 72 samples. We used
-\Rpackage{vsn} to normalize the data. Any other normalization method
-may be used instead. Several phenotype variables are available with
-\Robject{golubX}, among them ``ALL.AML'', the clinical variable that
-interests us.
+BioConductor. It has 7,129 genes for 72 samples on Affymetrix hu6800
+chips. We use \Rpackage{vsn} to normalize the data here, but any
+other normalization method may be used instead. Several phenotype
+variables are available with \Robject{Golub}, among them
+``ALL.AML'', the clinical variable that interests us, which
+separates the samples into Acute Lymphoblastic Leukemia and Acute
+Myelogenous Leukemia samples.
 
-In this document we use the globaltest based on BioConductor
-\Rclass{exprSet} input. For examples using simple vector or matrix input,
-see \Robject{help(globaltest)}.
+\subsection{Breast Cancer Data}
 
+The second data set is a breast cancer data set from the Dutch
+Cancer Institute (Van de Vijver et al., 2002), which we have have
+included (by kind permission) in the \Rpackage{globaltest} package.
 
-\section{Global Testing of a Single Pathway}
+<<getNKIData, results=hide>>=
+library(globaltest)
+data(vandeVijver)
+@
 
-Suppose we are interested in testing whether AML and ALL have
-different gene expression pattern for certain pathways from the
-KEGG database.
+This loads another \Rclass{exprSet}, called \Robject{vandeVijver},
+which contains data of 295 breast cancer patients with 4,919 genes
+preselected on quality criteria. The chip was done with Rosetta
+technology and the data are already normalized. The response of
+primary interest is the survival time, coded in variables
+``TIMEsurvival'' (the survival time) and ``EVENTdeath'' (which
+indicates whether the observed time indicates a death or a
+censoring).
 
-First we load all KEGG and GO pathways. This is most easily done
-using the various metadata annotation packages that are available on
-BioConductor. For the Golub data, which were made using an
-Affymetrix hu6800 chip, we use the \Rpackage{hu6800} metadata
-package. If no metadata package is available for the chip or
-organism used, users can make one with the \Rpackage{AnnBuilder}
+\subsection{Annotation} \label{annotation}
+
+To be able to use \Rpackage{globaltest} one must provide annotation
+to link the gene sets to be tested to the genes in the data.
+
+The easiest way to do this is to use the metadata packages provided
+in BioConductor. These are proved for most commercially available
+chips and for many organisms. For example, to get GO and KEGG
+annottation for the Leukemia data set, we use the \Rpackage{hu6800}
 package.
 
 <<loadKEGGandGO>>=
@@ -111,8 +158,8 @@ in these lists is a vector of gene names.
 
 In GO, it is sometimes wise to only consider annotations which were
 curated by experts and to exclude those inferred by electronic
-annotation. Excluding the electronic and unspecified GO-annotations
-can be done with
+annotation (IEA). Excluding the electronic and unspecified
+GO-annotations can be done with
 
 <<cleanGO>>=
 go <- lapply(go, function(x) x[!is.na(names(x)) & (names(x) != "IEA")])
@@ -121,262 +168,498 @@ go <- lapply(go, function(x) x[!is.na(names(x)) & (names(x) != "IEA")])
 We can now retrieve the Cell Cycle genes according to these two annotations.
 
 <<makeCellcycle>>=
-cellcycleGO <- go[["GO:0007049"]]
-cellcycle <- kegg[["04110"]]
+GO.cellcycle <- go[["GO:0007049"]]
+KEGG.cellcycle <- kegg[["04110"]]
 @
 
-The vectors \Robject{cellcycle} (\Sexpr{length(cellcycle)}
-probes) and \Robject{cellcycleGO} (\Sexpr{length(cellcycleGO)}
+The vectors \Robject{KEGG.cellcycle} (\Sexpr{length(KEGG.cellcycle)}
+probes) and \Robject{GO.cellcycle} (\Sexpr{length(GO.cellcycle)}
 probes) contain the probes on the hu6800 chip that are annotated to
-the Cell Cycle pathway. Suppose we are predominantly interested in
-this pathway. We want to know whether this group of genes is
-associated with the clinical outcome AML versus ALL.
+the Cell Cycle pathway.
 
-\subsection{Testing the pathway of all genes}
+There is no metaData package for the Rosetta chips used in the
+Breast Cancer Data. Some annotation has been included in the
+\Rpackage{globaltest} package (see
+\Robject{help(RosettaAnnotation)}), but we will not use it in this
+vignette.
 
-Always first test all genes to see if the overall gene expression
-pattern is different for different clinical outcomes. We can do
-this by saying
+
+\section{The Global Test}
+
+This section explains the options of the \Rfunction{globaltest}
+function, which is the main function of the package.
+
+\subsection{Testing a single pathway}
+
+Suppose we are interested in testing whether AML and ALL patients
+have different overall gene expression profiles. We can test this by saying
 
 <<all>>=
-gt.all <- globaltest(golubX, "ALL.AML")
+gt.all <- globaltest(Golub, "ALL.AML")
 @
 
-The first input \Rfunarg{X} should be the \Rclass{exprSet}
-object, the second input \Rfunarg{Y} the name of the clinical
-variable in \Robject{pData(X)}.
-Alternatively we can give a matrix of expressions as \Rfunarg{X} and
-a vector as \Rfunarg{Y}.
+The first input \Rfunarg{X} should be the object with the expression
+data (here the \Rclass{exprSet} object), the second input
+\Rfunarg{Y} should give the response variable. Because the call
+above provides an \Rclass{exprSet} for \Rfunarg{X}, we only need to
+specify the name of the repsonse variable in \Rfunarg{Y}.
+Alternatively, the user can provide the whole vector in \Rfunarg{Y}.
+In that case \Rfunarg{X} only needs to provide the matrix of gene
+expression measurements (but is may still be an \Rclass{exprSet}).
 
-The test result is stored in a \Rclass{gt.result} object, which
-also contains all the information needed to draw the plots.
+The third function argument should be the gene set(s) to be tested.
+The default is to test the gene set of all genes on the chip.
+
+The test result is stored in a \Rclass{gt.result} object, which also
+contains all the information needed to draw the diagnostic plots. Many methods
+offer access to the information contained in the gt.result. Type
+\Robject{help(gt.result)} for an overview.
 
 <<all.display>>=
 gt.all
 @
 
-We conclude that there is ample evidence that the
-overall gene expression profile for all 7,129 genes is associated
-with the clinical outcome: samples with similar AML/ALL status
-tend to have similar expression profiles. In cases such as this
-one, in which the overall expression pattern is associated with
-the clinical variable, we can expect most pathways (especially
-the larger ones) also to be associated with it.
+This gives a summary of test and its result. The model was
+``logistic'' because the response \Robject{ALL.AML} is two-valued,
+and the p-value was calculated using the asymptotic distribution
+(see section \ref{method} for details). Below it gives the test
+result. The gene set of all genes has 7,129 genes, which were all
+included in the test. Then it gives the test statistic $Q$, and its
+expectation and standard deviation under the null hypothesis, and
+finally the p-value.
 
-Because \Robject{golubX} is an \Rclass{exprSet}, we could simply
-give the name of the phenotype variable ``AML.ALL'' as our \Rfunarg{Y}
-input. Alternatively, we can give a vector here.
+From this we conclude that there is ample evidence that the overall
+gene expression profile for all 7,129 genes is associated with the
+clinical outcome. This means that samples with the same AML/ALL
+status tend to have similar expression profiles. It also means that
+the expression profile of a non-negligible proportion of the 7,129
+genes is differentially expressed between AML and ALL patients. And
+it also means that there is potential for prediction of ALL/AML
+status from the gene expression profile over all 7,129 genes.
 
+In cases such as this one, in which the overall expression pattern
+is (highly) associated with the response variable, we can expect
+many pathways (especially the larger ones) also to be associated
+with the response variable. See section \ref{comp.p} for a way to
+deal with this situation.
 
-\subsection{Different models}
-
-The Global Test allows three different kinds of clinical
-variables to be tested. \begin{itemize} \item A clinical variable
-defining two groups, i.e.\ having two values (using the logistic
-model). For a multi-valued clinical variable, the option
-\Rfunarg{levels} can be used to set which groups are to be tested
-against each other. \item A continuously distributed measurement
-(using the linear model). \item A survival time (using the Cox
-model). In that case \Rfunarg{Y} should contain the last
-observation time of each individual, and an extra argument
-\Rfunarg{d} should be supplied which contains the event
-indicator, which has value \Rfunarg{event} if an event occurred.
-\end{itemize} The function \Rfunction{globaltest} will
-automatically choose an appropriate model based on \Rfunarg{Y}.
-To override the automatic choice, use the option \Rfunarg{model}.
-
-The syntax in case of a survival model is as follows. The
-\Robject{pData} object of the \Rclass{exprSet} \Robject{X} object should contain
-a variable with the survival times (say ``time''), and a variable
-with the status (say ``status''), in which 1 indicates that the
-subject died and 0 that it was censored. \Rfunction{globaltest} can
-then be called with either
-
-<<Surv, eval = FALSE>>=
-gt <- globaltest(X, "Surv(time, status)")
-gt <- globaltest(X, "time", d = "status")
-@
-
-For more information see the function \Rfunction{Surv} in the
-\Rpackage{survival} package.
-
-\subsection{Testing a single pathway}
-
-Now we test the Cell Cycle pathway that interests us:
+To test a specific pathway, provide it as the third argument
+\Rfunarg{genesets} to \Rfunction{globaltest}.
 
 <<cellcycle>>=
-globaltest(golubX, "ALL.AML", cellcycleGO)
-gt.cc <- globaltest(golubX, "ALL.AML", cellcycle)
-gt.cc
+globaltest(Golub, "ALL.AML", GO.cellcycle)
 @
 
-Note from the results of the GO cell cycle pathway that
-\Rfunction{globaltest} automatically throws away duplicate probe
-ids. The vector \Robject{cellcycleGO} is of length
-\Sexpr{length(cellcycleGO)}, but only contains
-\Sexpr{length(unique(cellcycleGO))} unique probe ids.
+Just as with the gene set of all genes, we conclude from the test
+result that the expression profile of the cell cycle pathway (as
+defined by GO) is notably different between AML and ALL samples.
+Patients with AML tend to be more similar to other AML patients than
+to ALL patients, with respect to their cell cycle expression profile
+(and vice versa).
 
-We conclude from the test results that the expression pattern of the
-cellcycle pathway is notably different between AML and ALL samples.
-However, as the test on all genes was significant we can generally
-expect most pathways to be significant as well. To get an impression
-of how ``special'' this pathway is compared to other pathways in
-this data set, one can use the function \Rfunction{sampling}.
+Note that in the test result for the cell cycle pathway there is a
+difference between the values of ``Genes'' and ``Tested''. ``Genes''
+just gives the length of the input vector that defined the gene set,
+while ``Tested'' gives the number of unique probe ids that can be
+matched to probe ids in the gene expression matrix. The vector
+\Robject{GO.cellcycle} is of length \Sexpr{length(GO.cellcycle)},
+but only contains \Sexpr{length(unique(GO.cellcycle))} unique probe
+ids. Duplicate probe ids are automatically discarded by
+\Rfunction{globaltest}.
+
+
+\subsection{Multiple Global Testing}
+
+It is possible to test many pathways at once by providing a
+\Rclass{list} of pathways. For example:
+
+<<twocellcycle>>=
+cellcycle <- list(go = GO.cellcycle, kegg = KEGG.cellcycle)
+globaltest(Golub, "ALL.AML", cellcycle)
+@
+
+We have already made lists of all KEGG and GO pathways in the
+Section \ref{annotation}, and stored them as \Robject{kegg} and
+\Robject{go}. To test all KEGG pathways we say:
+
+<<kegg>>=
+gt.kegg <- globaltest(Golub, "ALL.AML", kegg)
+@
+
+We will not display the whole result \Robject{gt.kegg}, but we can
+display part of it. To get the cell cycle result (KEGG 04110), or to
+get the first ten results, we can say
+
+<<kegg.display, eval=FALSE>>=
+gt.kegg["04110"]
+gt.kegg[1:10]
+@
+
+We might also want to sort the pathways by their p-value, and show only
+the top five. This can be done as follows
+
+<<sort.by.p>>=
+sorted <- sort(gt.kegg)
+top5 <- sorted[1:5]
+top5
+@
+
+To make this list more readable, the pathway numbers can be replaced
+by the pathway names. For this we need the \Rpackage{KEGG} package,
+which contains the necessary information.
+
+<<kegg.numbers.to.names>>=
+library(KEGG)
+names(top5) <- as.list(KEGGPATHID2NAME)[names(top5)]
+top5
+@
+
+There are some other functions to extract useful information from a
+\Rclass{gt.result} object. See also \Robject{help(gt.result)}. The
+most important are:
+
+<<useful>>=
+p.value(top5)
+names(top5)
+result(top5)
+length(top5)
+@
+
+When testing more than one pathway, it is important to correct for
+multiple testing. The function \Rfunction{multtest} calculates
+multiplicity-adjusted p-values.
+
+<<multtest>>=
+sorted <- gt.multtest(sorted, "FWER")
+sorted[1:5]
+@
+
+The second option \Rfunarg{proc} takes values \Rfunarg{FWER} for the
+family-wise error rate (Holm's method), and \Rfunarg{FDR} for the
+false dicovery rate (Benjamini and Hochberg). Be careful not to
+apply the \Rfunction{multtest} function on a collection of pathways
+selected on their p-values. For more sophisticated multiple testing
+adjustments, see the \Rpackage{multtest} package.
+
+
+
+\subsection{Different types of response variable}
+
+The Global Test allows four different types of response variables to
+be tested. We give examples of each below. The statistical model
+that \Rfunction{globaltest} uses is usually determined from the
+input of the response variable, but the automatic choice can be
+overridden using the function argument \Rfunarg{model}.
+
+\paragraph{Two-valued response} This is the most common type of
+response variable in microarray data analysis. If the response
+variable takes only two values, \Rfunction{globaltest} automatically
+chooses the logistic regression model. See the examples in the
+previous two sections.
+
+A multi-valued response can be tarnsformed to a two-valued response
+with the option \Rfunarg{levels}. See Multi-valued Response, below.
+
+\paragraph{Multi-valued response} If the response is a
+\Rclass{factor} which takes more than two values,
+\Rfunction{globaltest} automatically chooses a multinomial logistic
+regression model. For example, in the Leukemia data, we might want
+to know whether the overall expression profile depends on the center
+the samples came from (coded as \Robject{Source}) in
+\Robject{Golub}. We can test this with
+
+<<golub:Source>>=
+globaltest(Golub, "Source")
+@
+
+It might have been expected that the expression profiles are
+different for different centers, as many centers provided only ALL
+or only AML samples. We can compare the samples from only the
+centers CALGB and CCG (which both provided only AML samples) using
+the option \Rfunarg{levels}:
+
+<<golub:Source:2levels>>=
+globaltest(Golub, "Source", levels = c("CALGB", "CCG"))
+@
+
+For a more sophisticated way of correcting for confounders (such as
+\Robject{ALL.AML} in this case), see Section \ref{confounders}.
+
+If only one level is given in \Rfunarg{levels}, that outcome
+category is tested against the other categories combined.
+
+<<golub:Source:1level>>=
+globaltest(Golub, "Source", levels = "St-Jude")
+@
+
+Note that if a multi-valued response is not explicitly coded as
+\Rclass{factor}, globaltest will see it as continuous. The easiest
+way to let globaltest know that the response should not be treated
+as continuous is to make it a factor. This can be done with
+
+<<golub:Source:factor, eval=FALSE>>=
+globaltest(Golub, "factor(Source)")
+@
+
+This is especially relevant for time series, as the time points in a
+time series should usually be tested with a multinomial model, while
+they are not usually coded as \Rclass{factor}.
+
+\paragraph{Continuous response} If the response is continuous,
+\Rfunction{globaltest} uses a linear model. For example, in the
+Leukemia data, the percentage of blast cells was measured for the 15
+AML samples from CALGB. To test whether this percentage is reflected
+in the overall expression profile, we can say:
+
+<<golub:pctBlasts>>=
+calgb <- pData(Golub)["Source"] == "CALGB"
+globaltest(Golub[,calgb], "pctBlasts")
+@
+
+\paragraph{Survival as response} The primary response in the Breast Cancer
+Data set is survival of patients. Survival time should be coded as a
+time for each patient (which is the last observation time for that
+patient) plus an \emph{event indicator}, a dummy that indicates
+whether the patient died (had an event) at that point or was still
+alive (censored) at the last observation time.
+
+<<vandeVijver:survival>>=
+globaltest(vandeVijver, "Surv(TIMEsurvival, EVENTdeath)")
+@
+
+By convention, the event indicator takes a 1 if the patient died,
+and zero otherwise. If the event indicator is coded differently, the
+value that indicates an event should be explicitly given. The
+following alternative calls give the same output as the above:
+
+<<vandeVijver:survival:alternatives, eval=FALSE>>=
+globaltest(vandeVijver, "Surv(TIMEsurvival, EVENTdeath == 1)")
+globaltest(vandeVijver, "TIMEsurvival", d = "EVENTdeath")
+globaltest(vandeVijver, "TIMEsurvival", d = "EVENTdeath", event = 1)
+@
+
+
+\subsection{Different methods for calculating the p-value}
+\label{method}
+
+The globaltest can calculate the p-value using different methods.
+The most important ones being permutations and the asymptotic
+distribution. The method to be used can be specified using the
+option \Rfunarg{method}.
+
+\paragraph{Asymptotic method} This method calculates the p-value
+based on the asymptotic distribution, using numerical methods of Box
+(1954) and Kotz, Johnson and Boyd (1967). This is the recommended
+method for large sample sizes. It can be slightly conservative for
+small samples. Except in the survival model, p-values below $10^-15$
+are reported as zero.
+
+\paragraph{Exact permutation method} If the number of possible
+permutations of the response values of the samples is small, it is
+possible to list all permutations and calculate an exact permutation
+based p-value.
+
+\paragraph{Random permutation method} If the number of possible
+permutations of the response values of the samples is large, one can
+take a random sample from all possible permutations. This gives an
+approximate permutation based p-value. This permutation p-value is
+not so accurate in the lower range as it is always a multiple of one
+over the number of permutations used. It also has some sampling
+variation, so that two calls to \Rfunction{globaltest} using this
+method will usually not give exactly the same p-values.
+
+\paragraph{Gamma method} This method uses the gamma distribution
+(also referred to as \emph{scaled chi-squared}) as an approximation
+to the asymptotic distribution. This has the advantage that it is
+quicker to calculate and that is is less conservative for small
+sample sizes. A drawback is that it can be slightly
+anti-conservative, especially for large gene sets. There is no gamma
+approximation if the response variable is a survival time.
+
+\paragraph{} The user chooses the
+method by specifying the arguments \Rfunarg{method} and
+\Rfunarg{nperm}. The default \Robject{method = "auto"} is to use the
+exact permutation method if the number of possible permutations is
+less than the option \Rfunarg{nperm} (default 10,000) and to use the
+asymptotic method otherwise. The threshold of 10,000 permutations is
+reached around 17 samples for a two-valued response and at 8 samples
+for a continuous or survival response. A second option is
+\Robject{method = "permutation"}, which also chooses the exact
+permutation method if the number of possible permutations is less
+than \Rfunarg{nperm} (or 10,000), but uses \Rfunarg{nperm} random
+permutations otherwise. Alternatively, \Robject{method =
+"asymptotic"} and \Robject{method = "gamma"} always use the
+asymptotic and gamma methods, respectively. Prior to version 4.0.0
+the default method was \Robject{method = "gamma"}.
+
+<<method>>=
+globaltest(Golub, "ALL.AML", GO.cellcycle, method = "p", nperm = 1000)
+@
+
+Note that the different methods also have different ways of
+calculating the mean and standard deviation of the test statistic
+$Q$.
+
+There is also a function called \Rfunction{permutations}, which
+recalculates the p-value using the permutation method, and which can
+also be used to later increase the number of permutations.
+
+<<permutations>>=
+gt <- globaltest(Golub, "ALL.AML", GO.cellcycle)
+permutations(gt, nperm = 20000)
+@
+
+All permutation test statistics are stored in the \Rclass{gt.result}
+object for later use (for example in the function \Rfunction{hist},
+see below). Using the permutation method on many
+pathways may therefore lead to memory problems.
+
+
+\subsection{Adjusting for the presence of covariates} \label{confounders}
+
+It is also possible to adjust the globaltest for confounders or for
+known risk factors. For example in the Leukemia Data we may be
+concerned about a possible disturbance due to that the fact that
+some samples were taken from peripheral blood while others were
+taken from bone marrow. We can correct for this by incorporating the
+covariate \Robject{BM.PB}, which codes for bone marrow or peripheral
+blood, into the null hypothesis.
+
+If covariates are incorporated into the null hypothesis of the
+Global Test, it tests whether the gene expression profile has an
+independent association with the response that cannot be explained
+away by the presence of the confounding covariates. For the
+statistical details of the model, see Goeman et al.\ (2005).
+
+The three interpretations of the resulting test are now as follows
+\begin{itemize}
+\item If the test is significant, part of the \emph{residual}
+variance of the response variable, \emph{that could not be predicted
+from the included covariates}, can be predicted from the gene
+expression measurements of the gene set.
+\item If the test is significant, the genes in the gene set are, on
+average, more associated with the \emph{residual} response variable
+than expected under the null hypothesis. These associations may be
+both positive (upregulation) and negative (downregulation).
+Typically, a significant pathway is a mix op positively and
+negatively associated genes. \emph{The associations between the
+genes and the response are therefore genuine and cannot be explained
+by confounding with the included covariates.}
+\item If the test is significant, samples with similar values of the
+\emph{residual} response variable tend to have relatively similar
+expression profiles over the genes in the gene set.
+\end{itemize}
+
+The Global Test will generally lose power if the covariate that is
+adjusted for is highly associated with the response variable. The
+test may also gain power if the confounding covariate is not
+associated with the response, but is a source of variation in the
+gene expression data.
+
+The easiest way to adjust for confounders is to use a
+\Rclass{formula} object. For example, in the Leukemia Data we can
+adjust for the confounder \Robject{BM.PB} with (note the absence of
+quotes!)
+
+<<golub:adjust:BM.PB>>=
+globaltest(Golub, ALL.AML ~ BM.PB, GO.cellcycle)
+@
+
+There is still proof of a large difference in the cell cycle gene
+expression profile between AML and ALL patients if we correct for
+the difference in the way the samples were obtained.
+
+In the linear, logistic and multinomial models
+\Rfunction{globaltest} will also give a percentage of the variance
+of the response variable that is lost in the adjustment. This gives
+an indication of amount of variation in the response variable that
+the confounder explains and of the power lost in the adjustment
+process.
+
+To adjust for more than one covariate or for interaction effects,
+one can use all possibilities offered by the \Rclass{formula}
+object. See \Robject{help(formula)} for more details. In the Breast
+Cancer Data we can test to see if the gene expression profiles have
+anything to add to the prediction of survival from the known risk
+indicators included in the data: \Robject{StGallen}, \Robject{NIH}
+and \Robject{ESR1} (oestrogen receptor status), and
+\Robject{Posnodes} (lymph node status):
+
+<<vijver:adjust:all>>=
+globaltest(vandeVijver, Surv(TIMEsurvival, EVENTdeath) ~ StGallen + NIH + ESR1 + Posnodes)
+@
+
+From the result we see that the microarray data do have additional
+predictive value. The p-value did, however, rise substantially
+relative to the unadjusted test, so at least one of these known risk
+factors is expected to be a confounder: it is strongly associated
+with survival and also with the gene expression data. This latter
+statement can be checked by using the covariate as the response
+
+<<vijver:esr1>>=
+globaltest(vandeVijver, "ESR1")
+@
+
+This shows that \Robject{ESR1} is clearly associated with gene
+expression.
+
+The model that was fitted under the null hypothesis of the test can
+be retrieved and displayed with the command \Rfunction{fit}.
+
+<<golub:adjust:AML.ALL>>=
+gt <- globaltest(vandeVijver, Surv(TIMEsurvival, EVENTdeath) ~ ESR1)
+fit(gt)
+@
+
+This shows that oestrogen receptor status is also clearly associated
+with survival. Try \Robject{summary(fit(gt))} for more detailed
+output.
+
+
+\section{The Comparative P} \label{comp.p}
+
+In some data sets, such as the two example data sets studied in this
+vignette, the Global Test for all genes is very significant. In this
+situation we can expect a substantial number of genes to be
+associated with the response variable. In that case, we can expect
+many gene sets, especially the larger ones, also to be associated
+with the response.
+
+A useful diagnostic to see whether a gene set is exceptionally
+significant is the ``comparative p'', which can be calculated using
+the function \Rfunction{sampling}.
 
 <<sampling>>=
-gt.cc <- sampling(gt.cc)
-gt.cc
+gt <- globaltest(Golub, "ALL.AML", KEGG.cellcycle)
+sampled.gt <- sampling(gt)
+sampled.gt
 @
 
 This gives an extra output column ``Comparative p'', which is the
 fraction of random genesets of the same size as the cell cycle
-pathway (\Sexpr{length(cellcycle)} genes) which have a larger
+pathway (\Sexpr{length(KEGG.cellcycle)} genes) which have a larger
 standardized test statistic than cell cycle pathway itself. Pathways
 of the same size with a larger standardized test statistic will
 almost invariably also have a lower p-value. In this case around
-\Sexpr{100*round(result(gt.cc)[,"Comparative p"],2)} \%\ of 1,000
-random `pathways' of size \Sexpr{length(cellcycle)} have a larger
+\Sexpr{100*round(result(sampled.gt)[,"Comparative p"],2)} \%\ of 1,000
+random `pathways' of size \Sexpr{length(KEGG.cellcycle)} have a larger
 standardized test statistic than the Cell Cycle pathway. This
 indicates that, although the cell cycle pathway is clearly
 differentially expressed between AML and ALL samples (low p-value),
 it is not exceptionally significant for a pathway of its size in
-this dataset. By default 1,000 random sets are sampled; this number
-can be changed with the option \Rfunarg{ndraws}.
+this dataset.
 
-The p-value of globaltest can be calculated using three different
-methods, and the user can specify which method to use with the
-argument \Rfunarg{method}. Setting \Rfunarg{method} to
-``asymptotic'' lets \Rfunction{globaltest} use the asymptotic
-distribution of the test statistic $Q$. This is best for large
-sample sizes, but the test will be conservative if the small sample
-size is small. Alternatively, setting \Rfunarg{method} to ``gamma''
-lets \Rfunction{globaltest} use the gamma approximation to the
-distribution of the test statistic. The gamma approximation is less
-conservative for small samples, but has a tendency to be
-anti-conservative in the extreme tails, especially for large
-pathways. The third option is \Rfunarg{method} ``permutation'',
-which uses permutations of the clinical variable to calculate the
-p-value. All possible permutations are used when (in a small data
-set) the number of possible permutations is smaller 10,000.
-Otherwise 10,000 random permutations are used. The default method is
-to use permutations if the number of possible permutations is less
-than 10,000 and to use the asymptotic distribution otherwise. Note
-that prior to version 4.0.0, the default of \Rfunarg{method} was
-``gamma''.
+Just like the p-value based on random permutations, the comparative
+p is a random quantity that has some sampling variation. It is
+always a multiple of one over the number of random pathways drawn;
+the accuracy can be increased by increasing that number. By default
+1,000 random sets are sampled; this number can be changed with the
+option \Rfunarg{ndraws}.
 
-It is also possible to recalculate a p-value with permutations that
-has already been calculated with another method. This can be done
-with the function \Rfunction{permutations}. This function has an
-argument \Rfunarg{nperm}, which can be used to set the number of
-permutations (default 10,000).
-
-<<permutations>>=
-permutations(gt.cc)
-@
-
-The permutation p-value is not so accurate in the lower range as it
-is always a multiple of one over the number of permutations. It also
-has some sampling variance if the permutations are random (as in
-this case). The permutations can also be visualized using
-\Rfunction{hist} (see below).
-
-
-\subsection{Adjusting for the presence of covariates}
-
-It is also possible to adjust the globaltest for confounders or
-for known risk factors. For example in the Golub Data set we
-may be afraid for a disturbance due to that the fact that some
-samples were taken from peripheral blood while others were taken
-from bone marrow. We can correct for this using the option
-\Rfunarg{adjust}. The option \Rfunarg{adjust} can also be used when the
-study design is different from the simple `two independent
-samples' design of the standard global test. In a paired design,
-for example, put the pair-id (as a factor) in \Rfunarg{adjust}.
-
-The user may supply one or more names of covariates in the option
-\Rfunarg{adjust} or supply \Rfunarg{adjust} as a
-\Rclass{data.frame}. The easiest way of adjustment, however, is by
-using a \Rclass{formula} object as input for \Rfunarg{Y}, as follows:
-
-<<adjust>>=
-globaltest(golubX, ALL.AML ~ BM.PB, cellcycle)
-@
-
-The test result now also gives the percentage of the variance in $Y$
-that was left after the adjustment. It is a crude measure like
-$1-R^2$. If the percentage is low, the adjustment already
-explained most of the variance of the outcome $Y$ and there was
-not much residual variance left to test the influence of the
-genes. To see an example, adjust for ``Source'' instead of
-``BM.PB''.
-
-The option \Rfunarg{adjust} may again be combined with the function
-\Rfunarg{sampling}, but (as yet) not with \Rfunarg{permutation}.
-
-
-
-\section{Multiple Global Testing}
-
-It is also possible to test many pathways at once. To test all
-KEGG pathways we proceed as follows:
-
-<<kegg>>=
-gt.kegg <- globaltest(golubX, "ALL.AML", kegg)
-@
-
-The result \Robject{gt.kegg} can be displayed and prints a matrix
-whose rows correspond to the KEGG pathways. It gives the test
-results for each pathway. We can also display only some of them:
-
-<<kegg.display>>=
-gt.kegg[1:10]
-gt.kegg["04110"]
-@
-
-The same options described above for
-the single pathway \Rfunction{globaltest} can be applied to the
-multiple pathway version of \Rfunction{globaltest} as well.
-
-Two functions allow further processing to be done on the test
-results. The function \Rfunction{result} extracts the whole matrix
-of test results, while the function \Rfunction{p.value} only
-extracts the vector of p-values. The latter function can be used
-for example when a correction for multiple testing is to be done.
-Note however that due to the extremely high correlations between
-the tests for different pathways, many multiple testing
-procedures are inappropriate for the Global Test. See the
-\Rpackage{multtest} package for details.
-
-We might want to sort the pathways by their p-value, and show the top
-five. This can be done as follows
-
-<<sort.by.p>>=
-sort.gt.kegg <- sort(gt.kegg)
-sort.gt.kegg[1:5]
-@
-
-To correct for multiple testing, the \Rpackage{globaltest} package
-contains a function \Rfunction{multtest}, which can calculates
-multiplicity-adjusted p-values using either the False Discovery Rate
-controlling procedure of Benjamini and Hochberg of the Family-wise
-Error rate controlling procedure of Holm. For more sophisticated
-multiple testing adjustments, see the \Rpackage{multtest} package.
-
-<<multtest>>=
-sort.gt.kegg <- multtest(sort.gt.kegg, "FWER")
-sort.gt.kegg[1:5]
-@
-
-To make this list more readable, the pathway numbers can be replaced
-by the pathway names:
-
-<<kegg.numbers.to.names>>=
-library(KEGG)
-names(sort.gt.kegg) <- as.list(KEGGPATHID2NAME)[names(sort.gt.kegg)]
-sort.gt.kegg[1:5]
-@
-
-
+The Comparative P is a very useful diagnostic. However, it is not a
+p-value in the classical statistical sense, because it is based on
+permuting genes, not biological samples. It should always be
+interpreted together with the regular p-value.
 
 
 \section{Diagnostic plots}
@@ -401,24 +684,20 @@ histogram. The observed value of $Q$ for the true values of the
 clinical outcome is marked with an arrow.
 
 <<hist, eval=FALSE, echo=TRUE>>=
-hist(permutations(gt.cc))
+gt <- globaltest(Golub, "ALL.AML", KEGG.cellcycle, method = "p")
+hist(gt)
 @
 
 \begin{center}
 <<hist-plot, fig=TRUE, echo=FALSE>>=
-hist(permutations(gt.cc))
+gt <- globaltest(Golub, "ALL.AML", KEGG.cellcycle, method = "p")
+hist(gt)
 @
 \end{center}
 
 The output can be interpreted as a plot of the distribution of
 the test statistic under the null hypothesis that the pathway is
-not associated with the clinical variable. Strictly speaking,
-however, the permutation version of the Global Test is a
-different test with different properties (especially for survival
-data). It may give different p-values for small samples.
-
-The function \Rfunction{permutations} may not be used when the
-adjusted version of \Rfunction{globaltest} was used.
+not associated with the clinical variable.
 
 
 \subsection{Gene Plot}
@@ -437,68 +716,87 @@ deviations (under the null) the bar exceeds the reference line.
 Finally the bars are coloured to indicate a positive or a
 negative association of the gene with the clinical outcome.
 
-The geneplot bars have two interpretations. In the first place,
-the bars are the Global Test statistic for the single gene
+The geneplot influence bars have two interpretations. In the first
+place, each bar is the Global Test statistic for the single gene
 pathway containing only that gene. A positive bar that is many
-standard deviations above the reference line therefore indicates
-a gene that is significantly associated with the clinical
-variable in \Rfunarg{Y}. Secondly, the bars indicate the
-influence of the gene on the test result of the whole pathway
-(the test statistic for the group is the average of the bars for
-the genes). Removing a gene with a low bar (relative to the
-reference line) or a negative bar from the pathway will result in
-a lower p-value for the pathway, removing a gene with a tall
-positive bar will have the opposite effect.
+standard deviations above the reference line therefore indicates a
+gene that is significantly associated with the clinical variable in
+\Rfunarg{Y}. Secondly, the bars indicate the influence of the gene
+on the test result of the whole pathway (the test statistic for the
+group is the average of the bars for the genes). Removing a gene
+with a low influence (relative to the reference line) or a negative
+influence from the pathway will generally result in a lower p-value
+for the pathway, removing a gene with a large positive influence
+will have the opposite effect.
 
-To plot the geneplot, use any of the commands below:
-
-<<geneplot>>=
-geneplot(gt.cc)
-geneplot(gt.kegg, "04110")
-geneplot(gt.kegg["04110"])
+<<geneplot, fig=FALSE>>=
+gt <- globaltest(Golub, "ALL.AML", kegg)
+geneplot(gt, "00561")
 @
 
-For a large number of genes the plot might become overcrowded.
-Use the option \Rfunarg{genesubset} to plot only a subset of the
-genes, \Rfunarg{labelsize} to resize the gene labels or
-\Rfunarg{drawlabels = FALSE} to remove them. Alternatively, we can
-plot part of the geneplot later, as follows
+The second argument of \Rfunction{geneplot} is the name of the gene
+set to be plotted. This can be left out if \Robject{gt} contains
+only one gene set. For a large number of genes the plot might become
+overcrowded. Use the option \Rfunarg{genesubset} to plot only a
+subset of the genes, \Rfunarg{labelsize} to resize the gene labels
+or \Rfunarg{drawlabels = FALSE} to remove them. Alternatively, one
+can store the geneplot to retrieve the numbers or to plot (part of)
+the plot later.
 
-<<geneplot.subset>>=
-gp.cc <- geneplot(gt.cc)
-plot(gp.cc[1:40])
+<<geneplot:store>>=
+myplot <- geneplot(gt, "00561", plot = FALSE)
 @
 
-This allows one to look at subsets of a large pathway more
-closely. The return of the \Rfunction{geneplot} is an object of
-type \Rclass{gt.barplot} containing the numbers and names
-appearing in the plot:
+The return of the \Rfunction{geneplot} is an object of type
+\Rclass{gt.barplot} containing the numbers and names appearing in
+the plot. This allows the user to customize the plot to his or her
+liking. For example, to increase interpretability, the probe
+identifiers appearing in the plot can be replaced by the gene
+symbols in this object and plotted again:
 
-<<geneplot.table>>=
-gp.cc[1:10]
+<<geneplot:changenames>>=
+names(myplot) <- as.list(hu6800SYMBOL)[names(myplot)]
+plot(myplot)
 @
 
-For interpretability, the probe identifiers appearing in the plot
-can be replaced by the gene symbols:
+\begin{figure}[!ht]
+\caption{Example geneplot}
+\centering
+<<geneplot:changenames, fig=TRUE, echo=FALSE>>=
+plot(myplot)
+@
+\end{figure}
 
-<<geneplot.table>>=
-names(gp.cc) <- as.list(hu6800SYMBOL)[names(gp.cc)]
-plot(gp.cc[1:40])
+The \Rclass{gt.barplot} object also allows one to look at subsets of
+a large pathway more closely. The gene plot can for example be
+sorted with the largest z-scores first. For example
+
+<<geneplot:sort>>=
+mysorted <- sort(myplot)
+top5 <- mysorted[1:5]
 @
 
-The option \Rfunarg{scale} can be used to rescale the bars to have
-unit standard deviation. Alternatively, this can be done later with
+The numbers can be retrieved with the following
+functions. \Rfunction{z.score} counts the number of standard
+deviations of the influence above the reference line. See
+\Robject{help(gt.barplot)} for more details.
+
+<<geneplot:utilities>>=
+z.score(top5)
+names(top5)
+result(top5)
+length(top5)
+@
+
+The option \Rfunarg{scale} of \Rfunction{geneplot} can be used to
+rescale the bars to have unit standard deviation (so that the
+z-scores are displayed). Alternatively, this can be done later with
 the command \Rfunction{scale}.
 
-\begin{center}
-<<geneplot-plot, fig=TRUE, echo=FALSE>>=
-plot(gp.cc[1:40])
-@
-\end{center}
 
 \subsection{Sample Plot}
 
-The Sample Plot looks very similar to the Gene Plot and
+The Sample Plot looks very similar to the Gene Plot. It
 visualizes the influence of the individual samples on the test
 result. It has a bar and a reference line for each sample tested.
 The bar indicates the influence of each sample on the test
@@ -526,35 +824,37 @@ mean from the values below the mean of $Y$. In an adjusted linear
 or the survival model they distinguish positive from negative
 residuals after fitting the null model.
 
-Again, either of the commands below gives the same output.
-
 <<sampleplot>>=
-sampleplot(gt.cc)
-sampleplot(gt.kegg, "04110")
-sampleplot(gt.kegg["04110"])
+gt <- globaltest(Golub, "ALL.AML", KEGG.cellcycle)
+sampleplot(gt)
 @
 
-The options of \Rfunction{sampleplot} and the resulting
-\Rclass{gt.barplot} object are be handled in the same way as
-described under ``geneplot''. The difference is that the option
-\Rfunarg{scale} defaults to \Robject{TRUE} in
-\Rfunction{sampleplot}.
+The \Rfunction{sampleplot} result can be stored in a
+\Rclass{gt.barplot} object just as with \Rfunction{geneplot}. The
+function arguments and the handling of the \Rclass{gt.barplot}
+object are the same as for ``geneplot'' above. One important
+difference is that the option \Rfunarg{scale} defaults to
+\Robject{TRUE} in \Rfunction{sampleplot}.
 
-\begin{center}
+\begin{figure}[!ht]
+\caption{Example sampleplot}
+\centering
 <<sampleplot-plot,fig=TRUE,echo=FALSE>>=
-sampleplot(gt.cc)
+sampleplot(gt)
 @
-\end{center}
+\end{figure}
 
-\subsection{Checkerboard plot}
+\subsection{Other plots}
 
-The fourth and fifth diagnostic plot can both also be used to
+The checkerboard and regression plots are two alternative plots to
 assess the influence of each of the samples on the test result.
-The checkerboard plot visualizes the similarity between samples.
-It makes a square figure with the samples both on the X and on
-the Y-axis, so that it has all comparisons between the samples.
-Samples which are relatively similar are coded white and samples
-which are relatively dissimilar are coded black.
+
+\paragraph{Checkerboard plot}
+The checkerboard plot visualizes the similarity between samples. It
+makes a square figure with the samples both on the X and on the
+Y-axis, so that it has all comparisons between the samples. Samples
+which are relatively similar are coded white and samples which are
+relatively dissimilar are coded black.
 
 For easier interpretation the samples are sorted by their clinical
 outcome. If the test was (very) significant and the clinical
@@ -567,7 +867,7 @@ at samples which deviate from the main pattern, outlying samples
 can be detected.
 
 <<checkerboard>>=
-checkerboard(gt.cc)
+gt <- globaltest(Golub, "ALL.AML", kegg)
 checkerboard(gt.kegg, "04110")
 @
 
@@ -576,24 +876,21 @@ The function \Rfunction{checkerboard} also has options
 to link the numbers appearing in the plot if \Rfunarg{drawlabels =
 FALSE} to the sample names.
 
-\begin{center}
+\begin{figure}[!ht]
+\caption{Example checkerboard plot}
+\centering
 <<checkerboard-plot, fig=TRUE, echo=FALSE>>=
-checkerboard(gt.kegg, "04110")
+checkerboard(gt, "04110")
 @
-\end{center}
+\end{figure}
 
 
-\subsection{Regression Plot}
-
-Using the regression plot an assessment can be made of the
-influence of each sample on the result of the test. It is an
-alternative visualization of the \Rfunction{sampleplot}.
-
-The regression plot plots all pairs of samples, just like the
-checkerboard plot, but now showing the covariance between their
-clinical outcomes on the X-axis and the covariance between their
-gene expression patterns on the Y-axis. The comparisons of each
-sample with itself have been excluded.
+\paragraph{Regression Plot}
+The regression plot plots all pairs of samples,
+just like the checkerboard plot, but now showing the covariance
+between their clinical outcomes on the X-axis and the covariance
+between their gene expression patterns on the Y-axis. The
+comparisons of each sample with itself have been excluded.
 
 The test statistic of the Global Test can be seen as a
 regression-coefficient for this plot, so it is visualized by
@@ -617,37 +914,67 @@ clinical outcome.
 If we want to test sample \Robject{"1"}, we say:
 
 <<regressionplot>>=
-regressionplot(gt.cc, sampleid = "1")
-regressionplot(gt.kegg, "04110", sampleid = "1")
+gt <- globaltest(Golub, "ALL.AML", kegg)
+regressionplot(gt, "04110", sampleid = "1")
 @
 
 We can also use this plot for a group of samples, saying for
 example:
 
 <<regressionplot2>>=
-regressionplot(gt.cc, sampleid = c("1","2"))
+regressionplot(gt, "04110", sampleid = c("1","2"))
 @
 
-\begin{center}
+\begin{figure}[!ht]
+\caption{Example regressionplot}
+\centering
 <<regressionplot-plot, fig=TRUE, echo=FALSE>>=
-regressionplot(gt.kegg, "04110", c("2"))
+regressionplot(gt, "04110", "1")
 @
-\end{center}
+\end{figure}
 
 
-\section{References}
-\begin{itemize}
-\item
-J. J. Goeman, F. de Kort, S. A. van de Geer and J. C. van
-Houwelingen, 2004, `A global test for groups of genes: testing
-association with a clinical outcome' \emph{Bioinformatics} 20 (1)
-93--99.
-\item
-J. J. Goeman, J. Oosting, A. Cleton-Jansen, J.~K. Anninga and J. C.
-van Houwelingen, 2005, `Testing association of a pathway with
-survival' \emph{Bioinformatics} 21 (9) 1950-1957.
-\end{itemize}
+\begin{thebibliography}{}
 
+\bibitem[\protect\citeauthoryear{Goeman, Oosting, Cleton-Jansen, Anninga, and
+  van Houwelingen}{Goeman et~al.}{2005}]{Goeman2005}
+Goeman, J.~J., J.~Oosting, A.~M. Cleton-Jansen, J.~K. Anninga, and J.~C. van
+  Houwelingen (2005).
+\newblock Testing association of a pathway with survival using gene expression
+  data.
+\newblock {\em Bioinformatics\/}~{\em 21\/}(9), 1950--1957.
+
+\bibitem[\protect\citeauthoryear{Goeman, van~de Geer, de~Kort, and van
+  Houwelingen}{Goeman et~al.}{2004}]{Goeman2004}
+Goeman, J.~J., S.~A. van~de Geer, F.~de~Kort, and J.~C. van Houwelingen (2004).
+\newblock A global test for groups of genes: testing association with a
+  clinical outcome.
+\newblock {\em Bioinformatics\/}~{\em 20\/}(1), 93--99.
+
+\bibitem[\protect\citeauthoryear{Golub, Slonim, Tamayo, Huard, Gaasenbeek,
+  Mesirov, Coller, Loh, Downing, Caligiuri, Bloomfield, and Lander}{Golub
+  et~al.}{1999}]{Golub1999}
+Golub, T.~R., D.~K. Slonim, P.~Tamayo, C.~Huard, M.~Gaasenbeek, J.~P. Mesirov,
+  H.~Coller, M.~L. Loh, J.~R. Downing, M.~A. Caligiuri, C.~D. Bloomfield, and
+  E.~S. Lander (1999).
+\newblock Molecular classification of cancer: Class discovery and class
+  prediction by gene expression monitoring.
+\newblock {\em Science\/}~{\em 286\/}(5439), 531--537.
+
+\bibitem[\protect\citeauthoryear{Van~de Vijver, He, van~'t Veer, Dai, Hart,
+  Voskuil, Schreiber, Peterse, Roberts, Marton, Parrish, Atsma, Witteveen,
+  Glas, Delahaye, van~der Velde, Bartelink, Rodenhuis, Rutgers, Friend, and
+  Bernards}{Van~de Vijver et~al.}{2002}]{Vijver2002}
+Van~de Vijver, M.~J., Y.~D. He, L.~J. van~'t Veer, H.~Dai, A.~A.~M. Hart, D.~W.
+  Voskuil, G.~J. Schreiber, J.~L. Peterse, C.~Roberts, M.~J. Marton,
+  M.~Parrish, D.~Atsma, A.~Witteveen, A.~Glas, L.~Delahaye, T.~van~der Velde,
+  H.~Bartelink, S.~Rodenhuis, E.~T. Rutgers, S.~H. Friend, and R.~Bernards
+  (2002).
+\newblock A gene-expression signature as a predictor of survival in breast
+  cancer.
+\newblock {\em New England Journal of Medicine\/}~{\em 347\/}(25), 1999--2009.
+
+\end{thebibliography}
 
 
 \end{document}
