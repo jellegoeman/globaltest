@@ -47,8 +47,8 @@ Globaltest.pdf included with this package.}
     # Breast cancer data (exprSet) from the Netherlands Cancer
     # Institute with annotation:
     data(vandeVijver)
-    data(RosettaAnnotation)
-    aPathway <- RosettaAnnotation[1]
+    data(annotation.vandeVijver)
+    aPathway <- annotation.vandeVijver[1]
 
     gt <- globaltest(vandeVijver, "ESR1", aPathway)
 

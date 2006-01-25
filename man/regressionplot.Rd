@@ -53,10 +53,9 @@ Globaltest.pdf included with this package.}
     # Breast cancer data (exprSet) from the Netherlands Cancer
     # Institute with annotation:
     data(vandeVijver)
-    data(RosettaAnnotation)
-    somePathways <- RosettaAnnotation[1:5]
+    data(annotation.vandeVijver)
 
-    gt <- globaltest(vandeVijver, "ESR1", somePathways)
+    gt <- globaltest(vandeVijver, "ESR1", annotation.vandeVijver)
 
     if (interactive()) {
       regressionplot(gt[1])

@@ -120,6 +120,9 @@ Myelogenous Leukemia samples.
 The second data set is a breast cancer data set from the Dutch
 Cancer Institute (Van de Vijver et al., 2002), which we have have
 included (by kind permission) in the \Rpackage{globaltest} package.
+To keep the package small we have restricted the data set to only
+407 probes (those probes annotated to 15 pathways contained in our
+example annotation \Robject{annotation.vandeVijver}).
 
 <<getNKIData, results=hide>>=
 library(globaltest)
@@ -127,13 +130,12 @@ data(vandeVijver)
 @
 
 This loads another \Rclass{exprSet}, called \Robject{vandeVijver},
-which contains data of 295 breast cancer patients with 4,919 genes
-preselected on quality criteria. The chip was done with Rosetta
-technology and the data are already normalized. The response of
-primary interest is the survival time, coded in variables
-``TIMEsurvival'' (the survival time) and ``EVENTdeath'' (which
-indicates whether the observed time indicates a death or a
-censoring).
+which contains data of 295 breast cancer patients with 407 selected
+genes on quality criteria. The chip was done with Rosetta technology
+and the data are already normalized. The response of primary
+interest is the survival time, coded in variables ``TIMEsurvival''
+(the survival time) and ``EVENTdeath'' (which indicates whether the
+observed time indicates a death or a censoring).
 
 \subsection{Annotation} \label{annotation}
 
@@ -180,8 +182,8 @@ the Cell Cycle pathway.
 There is no metaData package for the Rosetta chips used in the
 Breast Cancer Data. Some annotation has been included in the
 \Rpackage{globaltest} package (see
-\Robject{help(RosettaAnnotation)}), but we will not use it in this
-vignette.
+\Robject{help(annotation.vandeVijver)}), but we will not use it in
+this vignette. See the help files.
 
 
 \section{The Global Test}

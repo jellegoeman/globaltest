@@ -38,10 +38,9 @@ the vignette GlobalTest.pdf included with this package.}
     # Breast cancer data (exprSet) from the Netherlands Cancer
     # Institute with annotation:
     data(vandeVijver)
-    data(RosettaAnnotation)
-    somePathways <- RosettaAnnotation[1:20]
+    data(annotation.vandeVijver)
 
-    gt <- globaltest(vandeVijver, "StGallen", somePathways)
+    gt <- globaltest(vandeVijver, "StGallen", annotation.vandeVijver)
     sort(gt.multtest(gt))
 }
 

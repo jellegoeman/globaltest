@@ -107,19 +107,18 @@ also the vignette GlobalTest.pdf included with this package.}
     # Breast cancer data (exprSet) from the Netherlands Cancer
     # Institute with annotation:
     data(vandeVijver)
-    data(RosettaAnnotation)
-    somePathways <- RosettaAnnotation[1:5]
+    data(annotation.vandeVijver)
 
     # Many possible calls. See the vignette for more examples and explanation.
     globaltest(vandeVijver, "StGallen")
-    globaltest(vandeVijver, "StGallen", somePathways)
-    globaltest(vandeVijver, "Surv(TIMEsurvival, EVENTdeath)", somePathways)
-    globaltest(vandeVijver, StGallen ~ Posnodes + StGallen, somePathways)
+    globaltest(vandeVijver, "StGallen", annotation.vandeVijver)
+    globaltest(vandeVijver, "Surv(TIMEsurvival, EVENTdeath)", annotation.vandeVijver)
+    globaltest(vandeVijver, StGallen ~ Posnodes + StGallen, annotation.vandeVijver)
     globaltest(vandeVijver, "StGallen", method = "p")
 
     # Store the test result
     # See help(gt.result) for more options
-    gt <- globaltest(vandeVijver, "StGallen", somePathways)
+    gt <- globaltest(vandeVijver, "StGallen", annotation.vandeVijver)
     gt[1:2]
     sort(gt)
     p.value(gt)

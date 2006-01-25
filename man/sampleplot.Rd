@@ -59,10 +59,9 @@ samplename to draw under the axis.}
     # Breast cancer data (exprSet) from the Netherlands Cancer
     # Institute with annotation:
     data(vandeVijver)
-    data(RosettaAnnotation)
-    somePathways <- RosettaAnnotation[1:5]
+    data(annotation.vandeVijver)
 
-    gt <- globaltest(vandeVijver, "StGallen", somePathways)
+    gt <- globaltest(vandeVijver, "StGallen", annotation.vandeVijver)
 
     if (interactive()){
       sampleplot(gt[1])

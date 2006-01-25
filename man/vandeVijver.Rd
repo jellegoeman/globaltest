@@ -4,11 +4,11 @@
 
 \alias{vandeVijver}
 
-\title{Breast cancer data from Rosetta Inpharmatics LLC and
+\title{A subset of the Breast cancer data from Rosetta Inpharmatics LLC and
 Netherlands Cancer Institute.}
 
 \description{An \code{\link[Biobase:exprSet-class]{exprSet}}
-containing expression data of 295 breast cancer patients on 4919
+containing expression data of 295 breast cancer patients on 407
 selected genes plus the following phenotype data.
   \describe{
   \item{SampleID}{Sample ID given by NKI for 295 samples in cohort
@@ -65,7 +65,7 @@ is 0.4 and that for samples with conservFlag = -1 and 1 is 0.55.}
 
 \usage{data(vandeVijver)}
 
-\seealso{\code{\link{RosettaAnnotation}}, \code{\link{contig2genbank}}.}
+\seealso{\code{\link{annotation.vandeVijver}}.}
 
 \format{An \code{\link[Biobase:exprSet-class]{exprSet}}. See the Biobase package}
 
