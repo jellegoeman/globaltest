@@ -100,7 +100,7 @@ setMethod("show", "gt.barplot",
 
 #==========================================================
 setMethod("sort", matchSignature(signature(x = "gt.barplot"), sort),
-  function(x, partial = NULL, na.last = NA, decreasing = TRUE, 
+  function(x, partial = NULL, na.last = TRUE, decreasing = TRUE, 
       method = c("shell", "quick", "radix"), index.return = FALSE) {
     ix <- sort.list(z.score(x), partial, na.last, decreasing, method)
     x <- x[ix]

@@ -798,7 +798,7 @@
 .weed <- function(lams, thresh = 10^-2) {
   lams <- -sort(-lams)
   m <- length(lams)
-  while (lams[m] / lams[1] < thresh) {
+  while ((lams[1] > 0) && (lams[m] / lams[1] < thresh)) {
     q <- m-1
     r <- m-2
     lams[q] <- lams[q] + lams[m]
@@ -819,47 +819,51 @@
 .pAsymptotic <- function(x, lams, bet) {
   m <- length(lams)
   accuracy <- .Machine$double.neg.eps * 10
-  if (m == 1) {
-    upper <- pchisq(x / lams[1], df = 1, lower.tail = FALSE)
+  if (lams[1] == 0) {
+    upper <- 1
   } else {
-    # get the tuning parameter beta
-    if (missing(bet)) {
-      lams <- sort(lams)
-      ruben <- 2 * lams[1] * lams[m] / (lams[1] + lams[m])
-      harmonic <- 1/mean(1/lams)
-      bet <- min(ruben, harmonic) * (1 - 10^-15)
-    }
-    # get an upper bound to the number of iterations needed
-    A <- qnorm(.Machine$double.neg.eps)^2
-    B <- x/bet
-    maxiter <- trunc(0.5 * (A + B + sqrt(A*A + 2*A*B) - m))
-    # starting values
-    d <- numeric(maxiter)
-    c <- numeric(maxiter+1)
-    c[1] <- prod(sqrt(bet / lams))
-    sumc <- c[1]
-    chi <- pchisq(x / bet, df = m, lower.tail = FALSE) 
-    partialsum <- c[1] * chi
-    dbase <- (1 - bet /lams)
-    ready <- FALSE
-    mixture <- TRUE
-    ix <- 1
-    # iterate!
-    while (!ready) {
-      d[ix] <- 0.5 * sum(dbase^ix)
-      c[ix+1] <- mean(c[1:ix] * d[ix:1])
-      if (c[ix+1] < 0)
-        mixture <- FALSE
-      sumc <- sumc + c[ix+1]
-      partialsum <- partialsum + c[ix+1] * chi
-      chi <- pchisq(x / bet, df = m + 2 * ix + 2, lower.tail = FALSE)
-      lower <- partialsum + (1 - sumc) * chi
-      upper <- partialsum + 1 - sumc
-      if (mixture)
-        ready <- ((upper - lower) / (upper + lower) < 10^-5) || (ix == maxiter) || (upper < accuracy)
-      else
-        ready <- ix == maxiter
-      ix <- ix + 1
+    if (m == 1) {
+        upper <- pchisq(x / lams, df = 1, lower.tail = FALSE)
+    } else {
+      # get the tuning parameter beta
+      if (missing(bet)) {
+        lams <- sort(lams)
+        ruben <- 2 * lams[1] * lams[m] / (lams[1] + lams[m])
+        harmonic <- 1/mean(1/lams)
+        bet <- min(ruben, harmonic) * (1 - 10^-15)
+      }
+      # get an upper bound to the number of iterations needed
+      A <- qnorm(.Machine$double.neg.eps)^2
+      B <- x/bet
+      maxiter <- trunc(0.5 * (A + B + sqrt(A*A + 2*A*B) - m))
+      # starting values
+      d <- numeric(maxiter)
+      c <- numeric(maxiter+1)
+      c[1] <- prod(sqrt(bet / lams))
+      sumc <- c[1]
+      chi <- pchisq(x / bet, df = m, lower.tail = FALSE) 
+      partialsum <- c[1] * chi
+      dbase <- (1 - bet /lams)
+      ready <- FALSE
+      mixture <- TRUE
+      ix <- 1
+      # iterate!
+      while (!ready) {
+        d[ix] <- 0.5 * sum(dbase^ix)
+        c[ix+1] <- mean(c[1:ix] * d[ix:1])
+        if (c[ix+1] < 0)
+          mixture <- FALSE
+        sumc <- sumc + c[ix+1]
+        partialsum <- partialsum + c[ix+1] * chi
+        chi <- pchisq(x / bet, df = m + 2 * ix + 2, lower.tail = FALSE)
+        lower <- partialsum + (1 - sumc) * chi
+        upper <- partialsum + 1 - sumc
+        if (mixture)
+          ready <- ((upper - lower) / (upper + lower) < 10^-5) || (ix == maxiter) || (upper < accuracy)
+        else
+          ready <- ix == maxiter
+        ix <- ix + 1
+      }
     }
   }
   if (upper < accuracy)

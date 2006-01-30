@@ -140,7 +140,7 @@ setMethod("names<-", "gt.result",
 # A sort method for "gt.result"
 #==========================================================
 setMethod("sort", matchSignature(signature(x = "gt.result"), sort),
-  function(x, partial = NULL, na.last = NA, decreasing = FALSE, 
+  function(x, partial = NULL, na.last = TRUE, decreasing = FALSE, 
       method = c("shell", "quick", "radix"), index.return = FALSE) {
     ix <- sort.list(p.value(x), partial, na.last, decreasing, method)
     x <- x[ix]
