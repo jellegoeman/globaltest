@@ -78,6 +78,11 @@ setMethod("z.score", "gt.result",
 
 
 #==========================================================
+setMethod("size", "gt.result",
+            function(object, ... ) object@res[,2])
+
+
+#==========================================================
 # Function "fit" extracts the fitted adjustmodel
 #==========================================================
 setMethod("fit", "gt.result", 

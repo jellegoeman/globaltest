@@ -84,6 +84,7 @@ geneplot <- function(gt, geneset, genesubset, plot = TRUE, scale = FALSE, drawla
       paste("higher expression in", .levels(gt)[2], "samples"))
   } else if (model == 'survival') {
     colourCode <- c("+", "-")
+    colour <- 2:3
     legend <- c(paste("positively associated with survival"), 
       paste("negatively associated with survival"))
   } else if (model == "multinomial") {

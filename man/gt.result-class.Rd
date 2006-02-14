@@ -3,8 +3,10 @@
 \alias{p.value}
 \alias{gt.result}
 \alias{result}
+\alias{size}
 \alias{gt.result-class}
 \alias{show,gt.result-method}
+\alias{size,gt.result-method}
 \alias{[,gt.result-method}
 \alias{length,gt.result-method}
 \alias{hist,gt.result-method}
@@ -48,6 +50,7 @@ functions to visualize the test result. }
     \item{"["}{(gt.result): Extracts results of one or more
     pathways if multiple pathways were tested.}
     \item{length}{(gt.result): The number of pathways tested.}
+    \item{size}{(gt.result): Extracts a vector with the number of genes tested for each pathway.}
     \item{p.value}{(gt.result): Extracts the p-values.}
     \item{z.score}{(gt.result): Extracts z-score (Q - EQ) / sd(Q).}
     \item{sort}{(gt.result): Sorts the pathways to increasing p-values.}

@@ -17,7 +17,7 @@
 
 \title{Class "gt.barplot" for results of the functions geneplot and sampleplot}
 
-\description{The class gt.result stores the output of a call to
+\description{The class gt.barplot stores the output of a call to
 \code{\link{geneplot}} or \code{\link{sampleplot}}.}
 
 \section{Slots}{

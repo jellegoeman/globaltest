@@ -24,3 +24,5 @@ if( !isGeneric("plot") )
     setGeneric("plot", function(x, y, ...) standardGeneric("plot"))
 
 if( !isGeneric("coefficients") ) setGeneric("coefficients")
+
+setGeneric("size", function(object, ...) standardGeneric("size"))
