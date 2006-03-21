@@ -73,7 +73,7 @@ globaltest <- function(X, Y, genesets,
   }
   if ((!is(Y, "formula")) && (length(Y) > 1)) {
     if (is.null(pData)) {
-      pDataNamesSupplied <- is.null(names(Y))
+      pDataNamesSupplied <- !is.null(names(Y))
       pData <- data.frame(Y)
     } else {
       if ("Y" %in% names(pData)) {
@@ -142,6 +142,7 @@ globaltest <- function(X, Y, genesets,
   # 7: Extract the formula object
   if (is(Y, "formula")) {
     ff <- Y
+    remove(Y)
   } else {
     if (!missing(adjust) && is(adjust, "formula")) {
       ff <- adjust

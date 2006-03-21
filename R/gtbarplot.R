@@ -19,7 +19,12 @@ setMethod("result", "gt.barplot",
 {
     res <- object@res
     colouring <- factor(sapply(res[,4], function(col) object@colourCode[col]))
-    res <- data.frame(res[,1:3,drop=FALSE], z.score = z.score(object), colouring)
+    name <- rownames(res)
+    if (is.null(name)) {
+      res <- data.frame(res[,1:3,drop=FALSE], z.score = z.score(object), colouring, row.names = 1:length(object))
+    } else {
+      res <- data.frame(name, res[,1:3,drop=FALSE], z.score = z.score(object), colouring, row.names = 1:length(object))
+    }
     res
 })
 
@@ -70,7 +75,7 @@ setMethod("[", "gt.barplot",
 setMethod("length", "gt.barplot", 
             function(x) 
 {
-  nrow(result(x))
+  nrow(x@res)
 })            
 
 #==========================================================
