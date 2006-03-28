@@ -35,12 +35,12 @@ details.
 \section{Introduction}
 
 This document shows the functionality of the R-package
-\Rpackage{globaltest}. The main function tests whether a given
-group of genes is significantly associated with a clinical outcome.
-The explanation here focuses on practical use of the test. To
-understand the idea and the mathematics behind the test, and
-for more details on how to interpret a test result, we refer to
-the papers (Goeman et al.\ 2004, 2005).
+\Rpackage{globaltest}. The main function tests whether a given group
+of genes is significantly associated with a response. The
+explanation here focuses on practical use of the test. To understand
+the idea and the mathematics behind the test, and for more details
+on how to interpret a test result, we refer to the papers (Goeman et
+al.\ 2004, 2005).
 
 In recent years there has been a shift in focus from studying
 the effects of single genes to studying effects of multiple
@@ -120,9 +120,10 @@ Myelogenous Leukemia samples.
 The second data set is a breast cancer data set from the Dutch
 Cancer Institute (Van de Vijver et al., 2002), which we have have
 included (by kind permission) in the \Rpackage{globaltest} package.
-To keep the package small we have restricted the data set to only
-407 probes (those probes annotated to 15 pathways contained in our
-example annotation \Robject{annotation.vandeVijver}).
+To keep the package small we have reduced the data set to only 407
+probes (those probes annotated to 15 pathways contained in our
+example annotation \Robject{annotation.vandeVijver}) and only 100
+random patients.
 
 <<getNKIData, results=hide>>=
 library(globaltest)
@@ -232,12 +233,12 @@ finally the p-value.
 
 From this we conclude that there is ample evidence that the overall
 gene expression profile for all 7,129 genes is associated with the
-clinical outcome. This means that samples with the same AML/ALL
-status tend to have similar expression profiles. It also means that
-the expression profile of a non-negligible proportion of the 7,129
-genes is differentially expressed between AML and ALL patients. And
-it also means that there is potential for prediction of ALL/AML
-status from the gene expression profile over all 7,129 genes.
+response. This means that samples with the same AML/ALL status tend
+to have similar expression profiles. It also means that the
+expression profile of a non-negligible proportion of the 7,129 genes
+is differentially expressed between AML and ALL patients. And it
+also means that there is potential for prediction of ALL/AML status
+from the gene expression profile over all 7,129 genes.
 
 In cases such as this one, in which the overall expression pattern
 is (highly) associated with the response variable, we can expect
@@ -680,10 +681,10 @@ useful.
 
 \subsection{Permutations histogram}
 
-The permutations histogram plots the values of the test statistic $Q$
-calculated for permutations of the clinical outcome in a
-histogram. The observed value of $Q$ for the true values of the
-clinical outcome is marked with an arrow.
+The permutations histogram plots the values of the test statistic
+$Q$ calculated for permutations of the response in a histogram. The
+observed value of $Q$ for the true values of the response is marked
+with an arrow.
 
 <<hist, eval=FALSE, echo=TRUE>>=
 gt <- globaltest(Golub, "ALL.AML", KEGG.cellcycle, method = "p")
@@ -710,13 +711,13 @@ Gene Plot gives a bar and a reference line for each gene tested.
 The bar indicates the influence of each gene on the test
 statistic.
 
-A reference line for each bar gives the expected height of the
-bar under the null hypothesis that the gene is not associated
-with the clinical outcome (except in a survival model, where the
-expected height is zero). Marks indicate with how many standard
-deviations (under the null) the bar exceeds the reference line.
-Finally the bars are coloured to indicate a positive or a
-negative association of the gene with the clinical outcome.
+A reference line for each bar gives the expected height of the bar
+under the null hypothesis that the gene is not associated with the
+response (except in a survival model, where the expected height is
+zero). Marks indicate with how many standard deviations (under the
+null) the bar exceeds the reference line. Finally the bars are
+coloured to indicate a positive or a negative association of the
+gene with the response.
 
 The geneplot influence bars have two interpretations. In the first
 place, each bar is the Global Test statistic for the single gene
@@ -741,9 +742,12 @@ set to be plotted. This can be left out if \Robject{gt} contains
 only one gene set. For a large number of genes the plot might become
 overcrowded. Use the option \Rfunarg{genesubset} to plot only a
 subset of the genes, \Rfunarg{labelsize} to resize the gene labels
-or \Rfunarg{drawlabels = FALSE} to remove them. Alternatively, one
-can store the geneplot to retrieve the numbers or to plot (part of)
-the plot later.
+or \Rfunarg{drawlabels = FALSE} to remove them. Similarly, the
+legend can be suppressed with \Rfunarg{addlegend = FALSE}.
+Alternatively, one can store the geneplot as a \Rclass{gt.barplot}
+object to retrieve the numbers or to plot (part of) the plot later,
+optionally with the option \Rfunarg{plot = FALSE} to suppress
+plotting at this point.
 
 <<geneplot:store>>=
 myplot <- geneplot(gt, "00561", plot = FALSE)
@@ -760,6 +764,10 @@ symbols in this object and plotted again:
 names(myplot) <- as.list(hu6800SYMBOL)[names(myplot)]
 plot(myplot)
 @
+
+It is possible to supply new values for \Rfunarg{genesubset},
+\Rfunarg{labelsize}, \Rfunarg{drawlabels} or \Rfunarg{addlegend}
+when plotting a \Rclass{gt.barplot} object.
 
 \begin{figure}[!ht]
 \caption{Example geneplot}
@@ -858,15 +866,14 @@ Y-axis, so that it has all comparisons between the samples. Samples
 which are relatively similar are coded white and samples which are
 relatively dissimilar are coded black.
 
-For easier interpretation the samples are sorted by their clinical
-outcome. If the test was (very) significant and the clinical
-outcome has two values, a typical block-like structure will
-appear. If the clinical outcome was continuous and the test is
-significant, the black squares will tend to stick together around
-the corners. By looking at these patterns some things can be
-learned about the structure of the data. For example, by looking
-at samples which deviate from the main pattern, outlying samples
-can be detected.
+For easier interpretation the samples are sorted by their response
+value. If the test was (very) significant and the response has two
+values, a typical block-like structure will appear. If the response
+was continuous and the test is significant, the black squares will
+tend to stick together around the corners. By looking at these
+patterns some things can be learned about the structure of the data.
+For example, by looking at samples which deviate from the main
+pattern, outlying samples can be detected.
 
 <<checkerboard>>=
 gt <- globaltest(Golub, "ALL.AML", kegg)
@@ -888,11 +895,11 @@ checkerboard(gt, "04110")
 
 
 \paragraph{Regression Plot}
-The regression plot plots all pairs of samples,
-just like the checkerboard plot, but now showing the covariance
-between their clinical outcomes on the X-axis and the covariance
-between their gene expression patterns on the Y-axis. The
-comparisons of each sample with itself have been excluded.
+The regression plot plots all pairs of samples, just like the
+checkerboard plot, but now showing the covariance between their
+response values on the X-axis and the covariance between their gene
+expression patterns on the Y-axis. The comparisons of each sample
+with itself have been excluded.
 
 The test statistic of the Global Test can be seen as a
 regression-coefficient for this plot, so it is visualized by
@@ -901,17 +908,16 @@ is steep, the test statistic has a large value (and is possibly
 significant).
 
 The influence of specific samples can be assessed by drawing a
-second regression line through only those points in the plot,
-which are comparisons involving the sample of interest. For
-example if we are interested the sample with sample name
-\Robject{"1"}, we take the points corresponding to the pairs (1,2)
-up to (1,72). If the regression line drawn through only these
-points deviates much from the general line, the sample deviates
-from the general pattern. This is especially the case if this
-line has a negative slope, which means that the sample is more
-similar (in its gene expression pattern) to the samples with a
-different clinical outcome than to samples with a similar
-clinical outcome.
+second regression line through only those points in the plot, which
+are comparisons involving the sample of interest. For example if we
+are interested the sample with sample name \Robject{"1"}, we take
+the points corresponding to the pairs (1,2) up to (1,72). If the
+regression line drawn through only these points deviates much from
+the general line, the sample deviates from the general pattern. This
+is especially the case if this line has a negative slope, which
+means that the sample is more similar (in its gene expression
+pattern) to the samples with a different response than to samples
+with a similar response.
 
 If we want to test sample \Robject{"1"}, we say:
 

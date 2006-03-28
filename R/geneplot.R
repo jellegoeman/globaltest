@@ -4,7 +4,8 @@
 # See help(geneplot) for details
 #==========================================================
 
-geneplot <- function(gt, geneset, genesubset, plot = TRUE, scale = FALSE, drawlabels = TRUE, labelsize = 0.6, ...)
+geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE, 
+  labelsize = 0.6,  plot = TRUE, addlegend = TRUE, ...)
 {
   # check correct input of gt
   if ( !is(gt, "gt.result"))
@@ -97,7 +98,7 @@ geneplot <- function(gt, geneset, genesubset, plot = TRUE, scale = FALSE, drawla
     res = res,
     labelsize = labelsize, 
     drawlabels = drawlabels,
-    legend = legend,
+    legend = ifelse(addlegend, legend, numeric(0)),
     colour = colour,
     colourCode = colourCode)
   if (scale)

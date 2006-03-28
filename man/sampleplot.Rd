@@ -7,8 +7,8 @@
 \description{Produces a plot to show the influence of individual
 samples on the test result produced by \code{\link{globaltest}}.}
 
-\usage{sampleplot(gt, geneset, samplesubset, plot = TRUE, scale = TRUE,
-        drawlabels = TRUE, labelsize = 0.6, ...)}
+\usage{sampleplot(gt, geneset, samplesubset, scale = TRUE, drawlabels = TRUE,
+  labelsize = 0.6, plot = TRUE, addlegend = TRUE, ...)}
 
 \arguments{
     \item{gt}{The output of a call to \code{\link{globaltest}}.}
@@ -16,12 +16,14 @@ samples on the test result produced by \code{\link{globaltest}}.}
       (only necessary if multiple genesets were tested).}
     \item{samplesubset}{A vector of names or numbers of samples to be plotted.
       Default: plot all samples}
-    \item{plot}{If \code{FALSE}: does not plot, but only returns a
-      \code{\link[gt.barplot-class]{gt.barplot}} object.}
     \item{scale}{Logical: should the bars be scaled to unit standard deviation?}
     \item{drawlabels}{Logical value to control drawing of the samplenames on the x-axis of the plot.}
     \item{labelsize}{Relative size of the labels on the x-axis. If it is \code{NULL} ,
         the current value for \code{\link[graphics:par]{par("cex.axis")}} is used}
+    \item{plot}{If \code{FALSE}: does not plot, but only returns a
+      \code{\link[gt.barplot-class]{gt.barplot}} object.}
+    \item{addlegend}{If \code{FALSE}: does not add a legend to the plot
+        or to the \code{\link[gt.barplot-class]{gt.barplot}} object.}
     \item{...}{Any extra arguments will be forwarded to the plotting
 function.}}
 

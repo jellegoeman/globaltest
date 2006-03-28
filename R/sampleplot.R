@@ -3,7 +3,8 @@
 #   of the test statistic
 # See help(sampleplot) for details
 #==========================================================
-sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, drawlabels = TRUE, labelsize = 0.6,...)
+sampleplot <- function(gt, geneset, samplesubset, scale = TRUE, drawlabels = TRUE, 
+  labelsize = 0.6, plot = TRUE, addlegend = TRUE,...)
 {
   # check correct input of gt
   if ( !is(gt, "gt.result"))
@@ -210,7 +211,7 @@ sampleplot <- function(gt, geneset, samplesubset, plot = TRUE, scale = TRUE, dra
     drawlabels = drawlabels,
     colour = colour,
     colourCode = colourCode,
-    legend = legend)
+    legend = ifelse(addlegend, legend, numeric(0)))
   gtbar <- gtbar[samplesubset]
   if (scale)
     gtbar <- scale(gtbar)

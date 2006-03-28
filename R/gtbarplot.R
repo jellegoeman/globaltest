@@ -62,8 +62,10 @@ setMethod("z.score", "gt.barplot",
 setMethod("[", "gt.barplot", 
             function(x, i, j,...,drop) 
 {
-  if (all(i %in% rownames(x@res)) | all(i %in% 1:nrow(x@res))
-    | (is.logical(i) & (length(i) == nrow(x@res)))) {
+  if (all(i %in% rownames(x@res))) {
+    i <- (rownames(x@res) %in% i)
+  }
+  if (all(i %in% 1:nrow(x@res)) | (is.logical(i) & (length(i) == nrow(x@res)))) {
       x@res <- x@res[i, ,drop = FALSE] 
       x
   } else {
@@ -120,7 +122,7 @@ setMethod("sort", matchSignature(signature(x = "gt.barplot"), sort),
 #==========================================================
 setMethod("plot", "gt.barplot",
   function(x,y,...) {
-    plot.gt.barplot <- function(x, genesubset, drawlabels, labelsize, addLegend = TRUE, ...) {
+    plot.gt.barplot <- function(x, genesubset, drawlabels, labelsize, addlegend = TRUE, ...) {
       if (!missing(genesubset))
         x <- x[genesubset]
       if (missing(drawlabels))
@@ -163,7 +165,7 @@ setMethod("plot", "gt.barplot",
         segments( 1:m - 0.4, high, 1:m + 0.4, high)
       }
       # write the legend
-      if (addLegend) { 
+      if (addlegend && (length(x@legend) > 0)) { 
         legend(1/2, maxplot, x@legend, fil = x@colour)
       }  
       invisible(NULL)

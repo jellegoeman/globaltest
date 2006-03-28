@@ -8,7 +8,7 @@
 Netherlands Cancer Institute.}
 
 \description{An \code{\link[Biobase:exprSet-class]{exprSet}}
-containing expression data of 295 breast cancer patients on 407
+containing expression data of 100 breast cancer patients on 407
 selected genes plus the following phenotype data.
   \describe{
   \item{SampleID}{Sample ID given by NKI for 295 samples in cohort
