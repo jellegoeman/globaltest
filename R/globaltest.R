@@ -10,7 +10,8 @@ globaltest <- function(X, Y, genesets,
                         adjust, 
                         method = c("auto", "asymptotic", "permutations", "gamma"),
                         nperm = 10^4,
-                        scaleX = TRUE, ...)
+                        scaleX = TRUE, 
+                        accuracy = 50, ...)
 
 
 {
@@ -36,6 +37,8 @@ globaltest <- function(X, Y, genesets,
     stop("adjust should be of class character, formula, vector or data.frame", call. = FALSE)
   if (!(class(scaleX) %in% c("logical"))) 
     stop("scaleX should be either TRUE or FALSE", call. = FALSE)
+  if (accuracy <= 1)
+    stop("accuracy should be greater than 1")
  
   
   # 1: extract the expression matrix:
@@ -402,9 +405,9 @@ globaltest <- function(X, Y, genesets,
   } else if (method == "asymptotic") {  
     gt@method <- 3
     if (model == "logistic") {
-      res <- .logisticglobaltest(gt)
+      res <- .logisticglobaltest(gt, accuracy)
     } else if (model == "linear") {
-      res <- .linearglobaltest(gt)
+      res <- .linearglobaltest(gt, accuracy)
     } else  if (model == "survival") {
       if (adjusted) {
         res <- .adjustedsurvivalglobaltest(gt)
@@ -413,9 +416,9 @@ globaltest <- function(X, Y, genesets,
       }
     } else if (model == "multinomial") {
       if (adjusted) {
-        res <- .adjustedmultinomialglobaltest(gt)
+        res <- .adjustedmultinomialglobaltest(gt, accuracy)
       } else {
-        res <- .unadjustedmultinomialglobaltest(gt)
+        res <- .unadjustedmultinomialglobaltest(gt, accuracy)
       }
     }
   }

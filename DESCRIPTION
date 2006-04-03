@@ -1,6 +1,6 @@
 Package: globaltest
-Version: 4.1.5
-Date: 2006-03-28
+Version: 4.1.6
+Date: 2006-04-03
 Title: Testing Association of Groups of Genes with a Clinical Variable
 Author: Jelle Goeman <j.j.goeman@lumc.nl> and Jan Oosting <j.oosting@lumc.nl>
 Maintainer: Jelle Goeman <j.j.goeman@lumc.nl>

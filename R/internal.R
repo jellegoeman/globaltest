@@ -99,7 +99,7 @@
 #==========================================================
 # The globaltest for a linear model; asymptotic distribution
 #==========================================================
-.linearglobaltest <- function (gt) {
+.linearglobaltest <- function (gt, accuracy = 50) {
   Y <- fit(gt)$y - fitted.values(fit(gt))
   mu2 <- sum(Y*Y)/df.residual(fit(gt))
   n <- length(Y)
@@ -130,7 +130,7 @@
       EQ <- sum(lams)
       varQ <- 2*sum(lams * lams)
       seQ <- sqrt(varQ)
-      p.value <- .pAsymptotic(Q, .weed(lams))
+      p.value <- .pAsymptotic(Q, .weed(lams, accuracy))
       out <- c(Q, EQ, seQ, p.value)
     }
     out
@@ -142,7 +142,7 @@
 #==========================================================
 # The globaltest for the logistic model; asymptotic distribution
 #==========================================================
-.logisticglobaltest <- function (gt) {
+.logisticglobaltest <- function (gt, accuracy = 50) {
   Y <- fit(gt)$y - fitted.values(fit(gt))
   n <- length(Y)
   mu2 <- fit(gt)$weights
@@ -177,7 +177,7 @@
       EQ <- sum(lams)
       varQ <- 2*sum(lams * lams)
       seQ <- sqrt(varQ)
-      p.value <- .pAsymptotic(Q, .weed(lams))
+      p.value <- .pAsymptotic(Q, .weed(lams, accuracy))
       out <- c(Q, EQ, seQ, p.value)
     }
     out
@@ -189,7 +189,7 @@
 #==========================================================
 # The globaltest for the unadjusted multinomial model; asymptotic distribution
 #==========================================================
-.unadjustedmultinomialglobaltest <- function (gt) {
+.unadjustedmultinomialglobaltest <- function (gt, accuracy = 50) {
   Y <- fit(gt)@y - fitted.values(fit(gt))
   g <- ncol(Y)
   n <- nrow(Y)
@@ -215,7 +215,7 @@
       EQ <- sum(lams)
       varQ <- 2*sum(lams * lams)
       seQ <- sqrt(varQ)
-      p.value <- .pAsymptotic(Q, .weed(lams))
+      p.value <- .pAsymptotic(Q, .weed(lams, accuracy))
       out <- c(Q, EQ, seQ, p.value)
     }
     out
@@ -227,7 +227,7 @@
 #==========================================================
 # The globaltest for the adjusted multinomial model; asymptotic distribution
 #==========================================================
-.adjustedmultinomialglobaltest <- function (gt) {
+.adjustedmultinomialglobaltest <- function (gt, accuracy = 50) {
   mu <- fitted.values(fit(gt))
   n <- nrow(mu)
   g <- ncol(mu)
@@ -295,7 +295,7 @@
       EQ <- sum(lams)
       varQ <- 2*sum(lams * lams)
       seQ <- sqrt(varQ)
-      p.value <- .pAsymptotic(Q, .weed(lams))
+      p.value <- .pAsymptotic(Q, .weed(lams, accuracy))
       out <- c(Q, EQ, seQ, p.value)
     }
     out
@@ -795,7 +795,12 @@
 #==========================================================
 # Removes extremely small eigenvalues 
 #==========================================================
-.weed <- function(lams, thresh = 10^-2) {
+.weed <- function(lams, accuracy) {
+  if (missing(accuracy)) {
+    thresh <- 1/50
+  } else {
+    thresh <- 1/accuracy
+  }
   lams <- -sort(-lams)
   m <- length(lams)
   while ((lams[1] > 0) && (lams[m] / lams[1] < thresh)) {
@@ -818,7 +823,7 @@
 #==========================================================
 .pAsymptotic <- function(x, lams, bet) {
   m <- length(lams)
-  accuracy <- .Machine$double.neg.eps * 10
+  accuracy <- 10^-12
   if (lams[1] == 0) {
     upper <- 1
   } else {
@@ -865,61 +870,6 @@
         ix <- ix + 1
       }
     }
-  }
-  if (upper < accuracy)
-    upper <- 0
-  upper
-}
-
-#==========================================================
-# Calculates the asymptotic p-value using methods of
-# Kotz, Johnson and Boyd (1967)
-# Box (1954)
-#==========================================================
-.pAsymptotic2 <- function(x, lams, bet) {
-  m <- length(lams)
-  accuracy <- .Machine$double.neg.eps * 10
-  if (m == 1) {
-    upper <- pchisq(x / lams[1], df = 1, lower.tail = FALSE)
-  } else {
-    # get the tuning parameter beta
-    if (missing(bet)) {
-      lams <- sort(lams)
-      ruben <- 2 * lams[1] * lams[m] / (lams[1] + lams[m])
-      harmonic <- 1/mean(1/lams)
-      bet <- min(ruben, harmonic) * (1 - 10^-8)
-    }
-    # get an upper bound to the number of iterations needed
-    A <- qnorm(.Machine$double.neg.eps)^2
-    B <- x/bet
-    maxiter <- trunc(0.5 * (A + B + sqrt(A*A + 2*A*B) - m))
-    # starting values
-    d <- numeric(maxiter)
-    c <- numeric(maxiter+1)
-    c[1] <- prod(sqrt(bet / lams))
-    sumc <- c[1]
-    chi <- pchisq(x / bet, df = m, lower.tail = FALSE) 
-    partialsum <- c[1] * chi
-    dbase <- (1 - bet /lams)
-    ready <- FALSE
-    mixture <- TRUE
-    ix <- 1
-    # iterate!
-    while (!ready) {
-      d[ix] <- 0.5 * sum(dbase^ix)
-      c[ix+1] <- mean(c[1:ix] * d[ix:1])
-      if (c[ix+1] < 0)
-        mixture <- FALSE
-      sumc <- sumc + c[ix+1]
-      partialsum <- partialsum + c[ix+1] * chi
-      chi <- pchisq(x / bet, df = m + 2 * ix + 2, lower.tail = FALSE)
-      lower <- partialsum + (1 - sumc) * chi
-      upper <- partialsum + 1 - sumc
-      ready <- (c[ix+1] < 0) || ((upper - lower) / (upper + lower) < 10^-5) || (ix == maxiter) || (upper < accuracy)
-      ix <- ix + 1
-    }
-    if (c[ix] < 0)
-      upper <- .pAsymptotic(x, lams, min(lams) * (1 - 10^-8))
   }
   if (upper < accuracy)
     upper <- 0

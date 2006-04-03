@@ -10,8 +10,7 @@ genes for significant association with a given clinical variable.}
 \usage{globaltest(X, Y, genesets, model,
     levels, d, event = 1, adjust,
     method = c("auto", "asymptotic", "permutations", "gamma"),
-    nperm = 10^4,
-    scaleX = TRUE, ...) }
+    nperm = 10^4, scaleX = TRUE, accuracy = 50, ...) }
 
 \arguments{
     \item{X}{Either a matrix of gene expression data, where columns correspond to
@@ -72,6 +71,12 @@ permutations to be used if \code{method = "permutations"} or
 all test statistics. The expression matrix \code{X} is multiplied by a constant
 in such a way that the expected value EQ of the test statistic for the global test
 becomes exactly 10. This rescaling has no effect on the p-values.}
+    \item{accuracy}{Numerical tuning parameter useable only with
+the asymptotic method and a non-survival response. Determines how
+much small eigenvalues of the \code{R} matrix are smoothed away to
+increase computation speed. Choose smaller values for quicker
+computations but conservative p-values; choose larger values for
+slower calculations but more accuracy.}
     \item{...}{Captures deprecated input for compatibility with older versions of
 globaltest.} }
 

@@ -106,11 +106,10 @@ Golub <- vsn(golubM)
 @
 
 This gives us a data set \Robject{Golub}, which is of the format
-\Rclass{exprSet}, the standard format for gene expression data in
-BioConductor. It has 7,129 genes for 72 samples on Affymetrix hu6800
-chips. We use \Rpackage{vsn} to normalize the data here, but any
-other normalization method may be used instead. Several phenotype
-variables are available with \Robject{Golub}, among them
+\Rclass{exprSet}. It has 7,129 genes for 72 samples on Affymetrix
+hu6800 chips. We use \Rpackage{vsn} to normalize the data here, but
+any other normalization method may be used instead. Several
+phenotype variables are available with \Robject{Golub}, among them
 ``ALL.AML'', the clinical variable that interests us, which
 separates the samples into Acute Lymphoblastic Leukemia and Acute
 Myelogenous Leukemia samples.
@@ -119,11 +118,11 @@ Myelogenous Leukemia samples.
 
 The second data set is a breast cancer data set from the Dutch
 Cancer Institute (Van de Vijver et al., 2002), which we have have
-included (by kind permission) in the \Rpackage{globaltest} package.
-To keep the package small we have reduced the data set to only 407
-probes (those probes annotated to 15 pathways contained in our
-example annotation \Robject{annotation.vandeVijver}) and only 100
-random patients.
+included (by kind permission from the authors) in the
+\Rpackage{globaltest} package. To keep the package small we have
+reduced the data set to only 407 probes (those probes annotated to
+15 pathways contained in our example annotation
+\Robject{annotation.vandeVijver}) and only 100 random patients.
 
 <<getNKIData, results=hide>>=
 library(globaltest)
@@ -133,10 +132,11 @@ data(vandeVijver)
 This loads another \Rclass{exprSet}, called \Robject{vandeVijver},
 which contains data of 295 breast cancer patients with 407 selected
 genes on quality criteria. The chip was done with Rosetta technology
-and the data are already normalized. The response of primary
-interest is the survival time, coded in variables ``TIMEsurvival''
-(the survival time) and ``EVENTdeath'' (which indicates whether the
-observed time indicates a death or a censoring).
+and the data are already normalized by Rosetta. The response of
+primary interest is the survival time, coded in variables
+``TIMEsurvival'' (the survival time) and ``EVENTdeath'' (which
+indicates whether the observed time indicates a death or a
+censoring).
 
 \subsection{Annotation} \label{annotation}
 
@@ -144,9 +144,9 @@ To be able to use \Rpackage{globaltest} one must provide annotation
 to link the gene sets to be tested to the genes in the data.
 
 The easiest way to do this is to use the metadata packages provided
-in BioConductor. These are proved for most commercially available
+in BioConductor. These are provided for most commercially available
 chips and for many organisms. For example, to get GO and KEGG
-annottation for the Leukemia data set, we use the \Rpackage{hu6800}
+annotation for the Leukemia data set, we use the \Rpackage{hu6800}
 package.
 
 <<loadKEGGandGO>>=
@@ -222,12 +222,12 @@ offer access to the information contained in the gt.result. Type
 gt.all
 @
 
-This gives a summary of test and its result. The model was
-``logistic'' because the response \Robject{ALL.AML} is two-valued,
-and the p-value was calculated using the asymptotic distribution
-(see section \ref{method} for details). Below it gives the test
+This gives a summary of the test and its result. The model was
+``logistic'' because the response \Robject{ALL.AML} is two-valued.
+The p-value was calculated using the asymptotic distribution (see
+section \ref{method} for details). The bottom part is the test
 result. The gene set of all genes has 7,129 genes, which were all
-included in the test. Then it gives the test statistic $Q$, and its
+included in the test. Then it gives the test statistic $Q$, its
 expectation and standard deviation under the null hypothesis, and
 finally the p-value.
 
@@ -267,7 +267,7 @@ while ``Tested'' gives the number of unique probe ids that can be
 matched to probe ids in the gene expression matrix. The vector
 \Robject{GO.cellcycle} is of length \Sexpr{length(GO.cellcycle)},
 but only contains \Sexpr{length(unique(GO.cellcycle))} unique probe
-ids. Duplicate probe ids are automatically discarded by
+ids. Duplicate probe ids are automatically found and left out by
 \Rfunction{globaltest}.
 
 
@@ -340,9 +340,9 @@ sorted[1:5]
 The second option \Rfunarg{proc} takes values \Rfunarg{FWER} for the
 family-wise error rate (Holm's method), and \Rfunarg{FDR} for the
 false dicovery rate (Benjamini and Hochberg). Be careful not to
-apply the \Rfunction{multtest} function on a collection of pathways
-selected on their p-values. For more sophisticated multiple testing
-adjustments, see the \Rpackage{multtest} package.
+apply the \Rfunction{gt.multtest} function on a collection of
+pathways selected on their p-values. For more sophisticated multiple
+testing adjustments, see the \Rpackage{multtest} package.
 
 
 
@@ -360,7 +360,7 @@ variable takes only two values, \Rfunction{globaltest} automatically
 chooses the logistic regression model. See the examples in the
 previous two sections.
 
-A multi-valued response can be tarnsformed to a two-valued response
+A multi-valued response can be transformed to a two-valued response
 with the option \Rfunarg{levels}. See Multi-valued Response, below.
 
 \paragraph{Multi-valued response} If the response is a
@@ -405,7 +405,7 @@ globaltest(Golub, "factor(Source)")
 @
 
 This is especially relevant for time series, as the time points in a
-time series should usually be tested with a multinomial model, while
+time series should usually be tested with a multinomial model, but
 they are not usually coded as \Rclass{factor}.
 
 \paragraph{Continuous response} If the response is continuous,
@@ -445,17 +445,32 @@ globaltest(vandeVijver, "TIMEsurvival", d = "EVENTdeath", event = 1)
 \subsection{Different methods for calculating the p-value}
 \label{method}
 
-The globaltest can calculate the p-value using different methods.
+The global test can calculate the p-value using different methods.
 The most important ones being permutations and the asymptotic
 distribution. The method to be used can be specified using the
 option \Rfunarg{method}.
 
 \paragraph{Asymptotic method} This method calculates the p-value
-based on the asymptotic distribution, using numerical methods of Box
-(1954) and Kotz, Johnson and Boyd (1967). This is the recommended
-method for large sample sizes. It can be slightly conservative for
-small samples. Except in the survival model, p-values below $10^-15$
-are reported as zero.
+based on the asymptotic distribution. This is the recommended method
+for large sample sizes. It can be slightly conservative for small
+samples.
+
+For survival as response this uses the normal distribution as
+described in the paper.
+
+For continuous, two-valued and multi-valued response the asymptotic
+method uses numerical methods of Box (1954) and Kotz, Johnson and
+Boyd (1967) for calculating the distribution of non-chi-squared
+distributed quadratic forms. The calculation of the p-values
+involves a step that smoothes away very small eigenvalues. An extra
+function argument \Rfunarg{accuracy} can be given when calling
+globaltest to control the degree of smoothing. Low values of
+\Rfunarg{accuracy} speed up the calculations but may result in
+somewhat conservative p-values. High values of \Rfunarg{accuracy}
+result in slow calculations but accurate p-values. At the default
+value \Rfunarg{accuracy = 50} the conservativeness of the p-value is
+less than 0.1\%. P-values below $10^{-12}$ are numerically
+inaccurate for this method and are reported as zero.
 
 \paragraph{Exact permutation method} If the number of possible
 permutations of the response values of the samples is small, it is
@@ -474,7 +489,7 @@ method will usually not give exactly the same p-values.
 \paragraph{Gamma method} This method uses the gamma distribution
 (also referred to as \emph{scaled chi-squared}) as an approximation
 to the asymptotic distribution. This has the advantage that it is
-quicker to calculate and that is is less conservative for small
+quicker to calculate and that it is less conservative for small
 sample sizes. A drawback is that it can be slightly
 anti-conservative, especially for large gene sets. There is no gamma
 approximation if the response variable is a survival time.
@@ -494,6 +509,8 @@ permutations otherwise. Alternatively, \Robject{method =
 "asymptotic"} and \Robject{method = "gamma"} always use the
 asymptotic and gamma methods, respectively. Prior to version 4.0.0
 the default method was \Robject{method = "gamma"}.
+
+An example using the permutations method:
 
 <<method>>=
 globaltest(Golub, "ALL.AML", GO.cellcycle, method = "p", nperm = 1000)
@@ -575,8 +592,8 @@ the difference in the way the samples were obtained.
 In the linear, logistic and multinomial models
 \Rfunction{globaltest} will also give a percentage of the variance
 of the response variable that is lost in the adjustment. This gives
-an indication of amount of variation in the response variable that
-the confounder explains and of the power lost in the adjustment
+an indication of the amount of variation in the response variable
+that the confounder explains and of the power lost in the adjustment
 process.
 
 To adjust for more than one covariate or for interaction effects,
@@ -615,7 +632,7 @@ fit(gt)
 @
 
 This shows that oestrogen receptor status is also clearly associated
-with survival. Try \Robject{summary(fit(gt))} for more detailed
+with survival. Try \Robject{summary(fit(gt))} for a more detailed
 output.
 
 
@@ -624,9 +641,9 @@ output.
 In some data sets, such as the two example data sets studied in this
 vignette, the Global Test for all genes is very significant. In this
 situation we can expect a substantial number of genes to be
-associated with the response variable. In that case, we can expect
-many gene sets, especially the larger ones, also to be associated
-with the response.
+associated with the response variable. As a consequence, we can also
+expect many gene sets, especially the larger ones, also to be
+associated with the response.
 
 A useful diagnostic to see whether a gene set is exceptionally
 significant is the ``comparative p'', which can be calculated using
@@ -641,16 +658,16 @@ sampled.gt
 This gives an extra output column ``Comparative p'', which is the
 fraction of random genesets of the same size as the cell cycle
 pathway (\Sexpr{length(KEGG.cellcycle)} genes) which have a larger
-standardized test statistic than cell cycle pathway itself. Pathways
-of the same size with a larger standardized test statistic will
-almost invariably also have a lower p-value. In this case around
-\Sexpr{100*round(result(sampled.gt)[,"Comparative p"],2)} \%\ of 1,000
-random `pathways' of size \Sexpr{length(KEGG.cellcycle)} have a larger
-standardized test statistic than the Cell Cycle pathway. This
-indicates that, although the cell cycle pathway is clearly
-differentially expressed between AML and ALL samples (low p-value),
-it is not exceptionally significant for a pathway of its size in
-this dataset.
+standardized test statistic than the cell cycle pathway itself.
+Pathways of the same size with a larger standardized test statistic
+will almost invariably also have a lower p-value. In this case
+around \Sexpr{100*round(result(sampled.gt)[,"Comparative p"],2)} \%\
+of 1,000 random `pathways' of size \Sexpr{length(KEGG.cellcycle)}
+have a larger standardized test statistic than the cell cycle
+pathway. This indicates that, although the cell cycle pathway is
+clearly differentially expressed between AML and ALL samples (low
+p-value), it is not exceptionally significant for a pathway of its
+size in this dataset.
 
 Just like the p-value based on random permutations, the comparative
 p is a random quantity that has some sampling variation. It is
@@ -675,8 +692,7 @@ size was large enough not to use the permutation version of
 influence of individual genes on the test result. The three plots
 \Rfunction{sampleplot}, \Rfunction{checkerboard} and
 \Rfunction{regressionplot} all visualize the influence of individual
-samples. Of these three, \Rfunction{sampleplot} is probably the most
-useful.
+samples.
 
 
 \subsection{Permutations histogram}
@@ -715,9 +731,9 @@ A reference line for each bar gives the expected height of the bar
 under the null hypothesis that the gene is not associated with the
 response (except in a survival model, where the expected height is
 zero). Marks indicate with how many standard deviations (under the
-null) the bar exceeds the reference line. Finally the bars are
-coloured to indicate a positive or a negative association of the
-gene with the response.
+null hypothesis) the bar exceeds the reference line. Finally the
+bars are coloured to indicate a positive or a negative association
+of the gene with the response.
 
 The geneplot influence bars have two interpretations. In the first
 place, each bar is the Global Test statistic for the single gene
