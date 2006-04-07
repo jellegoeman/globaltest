@@ -561,7 +561,7 @@ expression measurements of the gene set.
 average, more associated with the \emph{residual} response variable
 than expected under the null hypothesis. These associations may be
 both positive (upregulation) and negative (downregulation).
-Typically, a significant pathway is a mix op positively and
+Typically, a significant pathway is a mix of positively and
 negatively associated genes. \emph{The associations between the
 genes and the response are therefore genuine and cannot be explained
 by confounding with the included covariates.}

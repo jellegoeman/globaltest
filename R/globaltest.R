@@ -191,7 +191,7 @@ globaltest <- function(X, Y, genesets,
   }
   
   
-  # 10: adept the formula in case of a survival model
+  # 10: adept the formula in case of a survival or logistic model
   if ((model == "survival") && !is(outcome, "Surv")) {
     if (!missing(d)) {
       if (length(d) == 1) {
@@ -203,7 +203,9 @@ globaltest <- function(X, Y, genesets,
         ff <- formula(paste("Surv(", ff[[2]], ")~", ff[[3]]))
     } 
   }  
- 
+  if ((model == "logistic") && is.numeric(outcome) && !all(outcome %in% 0:1)) {
+    ff <- formula(paste("factor(", ff[[2]], ")~", ff[[3]]))
+  }
      
   # 11: Preparation of eX and pData in the logistic model using option levels
   if (model == 'logistic') {
