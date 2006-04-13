@@ -98,7 +98,7 @@ geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE,
     res = res,
     labelsize = labelsize, 
     drawlabels = drawlabels,
-    legend = ifelse(addlegend, legend, numeric(0)),
+    legend = if (addlegend) legend else numeric(0),
     colour = colour,
     colourCode = colourCode)
   if (scale)

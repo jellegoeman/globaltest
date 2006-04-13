@@ -37,29 +37,6 @@ microarray (0 = no, 1 = yes)}
 risk, 0 = high risk}
   \item{St Gallen}{Patient characteristics according to St. Gallen
 criteria, 1 = low risk, 0 = intermediate/high risk}
-  \item{conservFlag}{29 samples with conservFlag = -1 were profiled in our
-first study (Nature 415, p530, 2002) and repeatedly profiled in this
-study. 32 samples with conservFlag = 1 were profiled only in our
-first study (Nature 415, p530, 2002), not repeated in this study. In
-both conservFlag = 1 and conservFlag = -1, conservC1should be used.}
-  \item{C1fromData}{Correlation coefficient of each 70-gene based profile to
-the average template of 70 genes for good outcome patients
-(EVENTmeta = 0) defined from our first study (Nature 415, p530,
-2002). We used profiles from this study to calculate the correlation
-coefficient for samples with conservFlag = 0 and -1. We used
-profiles from our first study to calculate the correlation
-coefficient for samples with conservFlag = 1 (32 samples).}
-  \item{C1crossvalid}{Conservative correlation coefficient with good outcome
-patients (EVENTmeta = 0) calculated using a cross-validation method
-from our first study (Nature 415, p530, 2002) for 61 samples that
-were included in our first study (conservFlag = -1 and 1).}
-  \item{C1used}{Correlation coefficient with good outcome patients
-(EVENTmeta = 0) finally used to group patients into "good-prognosis
-signature group" and "poor-prognosis signature group".  The value
-for C1used is C1fromData for samples with conservFlag = 0 and
-C1crossvalid for samples with conservFlag = -1 and 1. Note that as
-stated in the paper, the threshold for samples with conservFlag = 0
-is 0.4 and that for samples with conservFlag = -1 and 1 is 0.55.}
   }
 }
 
