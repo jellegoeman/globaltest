@@ -26,3 +26,5 @@ if( !isGeneric("plot") )
 if( !isGeneric("coefficients") ) setGeneric("coefficients")
 
 setGeneric("size", function(object, ...) standardGeneric("size"))
+
+setGeneric("genesets", function(object, ...) standardGeneric("genesets"))

@@ -32,7 +32,7 @@ the vignette GlobalTest.pdf included with this package.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 
-\seealso{\code{\link{globaltest}}.}
+\seealso{\code{\link{globaltest}}, \code{\link{gtGO}}.}
 
 \examples{
     # Breast cancer data (exprSet) from the Netherlands Cancer

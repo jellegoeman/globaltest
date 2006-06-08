@@ -97,6 +97,62 @@
 }
 
 #==========================================================
+# A quick globaltest function for already prepared data
+# This fuction chooses the appropriate globaltest function based 
+# on the chosen model (asymptotic or gamma). 
+#==========================================================
+.globaltest <- function(gt, genesets, accuracy = 50) {
+  if (!missing(genesets)) {
+    gt@genesets <- genesets
+  }
+  model <- .model(gt)
+  adjusted <- .adjusted(gt)
+  if (gt@method == 2) {
+    if (model == "linear") {
+      res <- .linearglobaltestgamma(gt)
+    } else if (model == "logistic") {
+      if (adjusted) {
+        res <- .adjustedlogisticglobaltestgamma(gt)
+      } else {
+        res <- .unadjustedlogisticglobaltestgamma(gt)
+      }
+    } else if (model == "survival") {
+      if (adjusted) {
+        res <- .adjustedsurvivalglobaltest(gt)
+      } else {
+        res <- .unadjustedsurvivalglobaltest(gt)
+      }
+    } else if (model == "multinomial") {
+      if (adjusted) {
+        res <- .adjustedmultinomialglobaltestgamma(gt)
+      } else {
+        res <- .unadjustedmultinomialglobaltestgamma(gt)
+      }
+    }
+  } else if (gt@method == 3) {  
+    if (model == "logistic") {
+      res <- .logisticglobaltest(gt, accuracy)
+    } else if (model == "linear") {
+      res <- .linearglobaltest(gt, accuracy)
+    } else  if (model == "survival") {
+      if (adjusted) {
+        res <- .adjustedsurvivalglobaltest(gt)
+      } else {
+        res <- .unadjustedsurvivalglobaltest(gt)
+      }
+    } else if (model == "multinomial") {
+      if (adjusted) {
+        res <- .adjustedmultinomialglobaltest(gt, accuracy)
+      } else {
+        res <- .unadjustedmultinomialglobaltest(gt, accuracy)
+      }
+    }
+  }
+  res
+}
+
+
+#==========================================================
 # The globaltest for a linear model; asymptotic distribution
 #==========================================================
 .linearglobaltest <- function (gt, accuracy = 50) {

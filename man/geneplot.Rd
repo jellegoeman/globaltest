@@ -59,10 +59,10 @@ the vignette GlobalTest.pdf included with this package.}
     gt <- globaltest(vandeVijver, "StGallen", annotation.vandeVijver)
 
     if (interactive()){
-      geneplot(gt["DNA replication"])
+      geneplot(gt["cell cycle checkpoint"])
     }
 
-    gp <- geneplot(gt["DNA replication"], plot = FALSE)
+    gp <- geneplot(gt["cell cycle checkpoint"], plot = FALSE)
     if (interactive()){
       plot(sort(gp))
     }

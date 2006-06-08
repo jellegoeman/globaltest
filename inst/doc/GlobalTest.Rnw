@@ -1,5 +1,5 @@
 % \VignetteIndexEntry{GlobalTest}
-% \VignetteDepends{globaltest, vsn, hu6800, golubEsets, KEGG}
+% \VignetteDepends{globaltest, vsn, hu6800, golubEsets, KEGG, GOstats, Rgraphviz}
 % \VignetteKeywords{Expression Analysis}
 % \VignettePackage{globaltest}
 
@@ -90,6 +90,10 @@ The \Rclass{exprSet} is the preferred input format for data in
 \Rpackage{globaletest}, but simple vector/matrix input is also
 possible. See \Robject{help(globaltest)}.
 
+<<options, echo=FALSE>>=
+options(continue = "  ")
+@
+
 \subsection{Leukemia Data}
 
 The first data set is the famous Leukemia data set by Golub et al.
@@ -120,9 +124,10 @@ The second data set is a breast cancer data set from the Dutch
 Cancer Institute (Van de Vijver et al., 2002), which we have have
 included (by kind permission from the authors) in the
 \Rpackage{globaltest} package. To keep the package small we have
-reduced the data set to only 407 probes (those probes annotated to
-15 pathways contained in our example annotation
-\Robject{annotation.vandeVijver}) and only 100 random patients.
+reduced the data set to only 230 probes (those probes annotated to
+64 pathways (all related to cell cycle) contained in our example
+annotation \Robject{annotation.vandeVijver}) and only 100 random
+patients.
 
 <<getNKIData, results=hide>>=
 library(globaltest)
@@ -130,8 +135,7 @@ data(vandeVijver)
 @
 
 This loads another \Rclass{exprSet}, called \Robject{vandeVijver},
-which contains data of 295 breast cancer patients with 407 selected
-genes on quality criteria. The chip was done with Rosetta technology
+which contains the data. The chip was done with Rosetta technology
 and the data are already normalized by Rosetta. The response of
 primary interest is the survival time, coded in variables
 ``TIMEsurvival'' (the survival time) and ``EVENTdeath'' (which
@@ -342,7 +346,8 @@ family-wise error rate (Holm's method), and \Rfunarg{FDR} for the
 false dicovery rate (Benjamini and Hochberg). Be careful not to
 apply the \Rfunction{gt.multtest} function on a collection of
 pathways selected on their p-values. For more sophisticated multiple
-testing adjustments, see the \Rpackage{multtest} package.
+testing adjustments, see the \Rpackage{multtest} package, and
+Section \ref{gtGO}.
 
 
 
@@ -470,7 +475,7 @@ somewhat conservative p-values. High values of \Rfunarg{accuracy}
 result in slow calculations but accurate p-values. At the default
 value \Rfunarg{accuracy = 50} the conservativeness of the p-value is
 less than 0.1\%. P-values below $10^{-12}$ are numerically
-inaccurate for this method and are reported as zero.
+inaccurate for the asymptotic method and are reported as zero.
 
 \paragraph{Exact permutation method} If the number of possible
 permutations of the response values of the samples is small, it is
@@ -634,6 +639,125 @@ fit(gt)
 This shows that oestrogen receptor status is also clearly associated
 with survival. Try \Robject{summary(fit(gt))} for a more detailed
 output.
+
+
+\section{Multiple testing on the GO graph} \label{gtGO}
+
+When testing Gene Ontology terms with the \Rpackage{globaltest}
+package, it is possible to make a more sophisticated multiple
+testing adjustment than the one offered by the
+\Rfunction{gt.multtest} function.
+
+The \emph{focus level procedure} implemented in the function
+\Rfunction{gtGO} is a multiple testing procedure that controls the
+family-wise error rate while preserving the structure of the GO
+graph. It returns a significant subgraph of the GO graph in which
+the probability of any error in that graph is controlled at level
+$\alpha$.
+
+First, the GO graph must be prepared for the data set at hand.
+
+<<makeGOstructure>>=
+bp <- makeGOstructure(Golub, "hu6800", unreliable = "IEA")
+bp
+@
+
+This created a \Rclass{GOstructure} object for the Golub data, using
+the annotation package \Rpackage{hu6800}. It has \Sexpr{length(bp)}
+GO terms. By default the Biological Process subgraph of GO is used.
+This can be changed with by setting \Rfunarg{ontology = "CC"} or
+\Rfunarg{ontology = "MF"}. The \Rfunarg{unreliable} argument can be
+used, as above, to specify that some evidence codes should be
+considered unreliable. Further, the graph can be made smaller by
+specifying a different top node in \Rfunarg{top}, in which case only
+the descendants of that top node are used. Alternatively, by
+specifying \Rfunarg{only.nodes} the GO structure is restricted to
+only the nodes specified.
+
+The focus level procedure requires the specification of a
+\emph{focus level}. This is the level in the GO graph at which the
+focus level starts looking for significant GO terms. Only after
+finding significant terms at the focus level will the procedure
+expand its scope to higher or lower level terms. The focus level can
+therefore be used to determine the level of specificity of the GO
+terms that are of most interest. A focus level can be specified as
+any vector if GO identifiers, but a useful automated way to make the
+focus level is by using the function \Rfunction{getFocus}, which
+ensures a certain level of generality, while keeping computation
+time limited.
+
+<<getFocus>>=
+focusBP <- getFocus(bp)
+@
+
+The \Rfunction{getFocus} function accepts an extra argument
+\Rfunarg{maxatoms} (default: 10), which determines the maximum
+complexity of the subgraphs of all descendants of focus level nodes.
+Lower values of \Rfunarg{maxatoms} lead to more specific GO terms in
+the focus level and quicker calculations, while higher values lead
+to more general GO terms in the focus level and slower calculations.
+
+The significant subgraph of size 60 can be calculated with
+
+<<gtGO, results=hide>>=
+go60 <- gtGO(Golub, "ALL.AML", focus = focusBP, GO = bp, stopafter = 60)
+@
+
+Any arguments that can be given to \Rfunction{globaltest} can also
+be given to \Rfunction{gtGO} to specify the test that should be done
+on each GO term. The arguments \Rfunarg{stopafter} and
+\Rfunarg{maxalpha} govern when to stop the algorithm: it stops
+either when a certain number of significant GO terms is found, or
+when certain alpha-level is reached.
+
+To visualize the result we can use the \Rpackage{GOstats} and
+\Rpackage{Rgraphviz} packages, which offer many possibilities. For
+example, we can plot the significant GO graph with numbers and a
+legend and colour in grey all nodes corresponding to the focus
+level.
+
+<<visualizeGO>>=
+library(GOstats)
+library(Rgraphviz)
+sigGO <- GOGraph(names(go60), GOBPPARENTS)
+sigGO <- removeNode("all", sigGO)
+sigGO <- as(t(as(sigGO, "matrix")),"graphNEL")
+nodes <- buildNodeList(sigGO)
+focusnode <- sapply(nodes, name) %in% focusBP
+names(focusnode) <- names(nodes)
+nodefill <- ifelse(focusnode, "#BBBBBB", "white")
+nAttrs <- list()
+nAttrs$fillcolor <- nodefill
+nAttrs$label <- 1:length(go60)
+names(nAttrs$label) <- names(nodes)
+pg <- plot(sigGO, nodeAttrs = nAttrs)
+x <- getNodeXY(pg)$x
+y <- getNodeXY(pg)$y
+ordering <- sort.list(order(-y,x))
+nAttrs$label <- ordering
+names(nAttrs$label) <- names(nodes)
+plot(sigGO, nodeAttrs = nAttrs)
+Terms <- sapply(lookUp(names(nodes)[sort.list(ordering)], "GO", "TERM"), Term)
+names(Terms) <- NULL
+legend <- data.frame(Terms)
+@
+
+
+\begin{figure}[!ht]
+\caption{A significant GO subgraph for the Golub data}
+\centering
+<<graph-plot, fig=TRUE, echo=FALSE>>=
+plot(sigGO, nodeAttrs = nAttrs)
+@
+\end{figure}
+
+
+\begin{tiny}
+<<graphlegend>>=
+legend
+@
+\end{tiny}
+
 
 
 \section{The Comparative P} \label{comp.p}

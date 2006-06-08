@@ -103,11 +103,10 @@ globaltest <- function(X, Y, genesets,
     }
     pData = data.frame(pData, d)
   }
-
     
   # 3: check for sample size conflict between eX and pData
   if ((!is.null(pData)) && (ncol(eX) != nrow(pData))) {
-    if (nrow(eX == nrow(pData))) {
+    if (nrow(eX) == nrow(pData)) {
       eX <- t(eX)
     } else {
       stop("Number of samples in X or exprs(X) conflicts with number of samples in Y, pData(X) or adjust", call. = FALSE)
@@ -383,47 +382,10 @@ globaltest <- function(X, Y, genesets,
   # 19: Calculate the test results for each geneset and add them to gt
   if ((method == "gamma") || (method == "permutations")) {
     gt@method <- 2
-    if (model == "linear") {
-      res <- .linearglobaltestgamma(gt)
-    } else if (model == "logistic") {
-      if (adjusted) {
-        res <- .adjustedlogisticglobaltestgamma(gt)
-      } else {
-        res <- .unadjustedlogisticglobaltestgamma(gt)
-      }
-    } else if (model == "survival") {
-      if (adjusted) {
-        res <- .adjustedsurvivalglobaltest(gt)
-      } else {
-        res <- .unadjustedsurvivalglobaltest(gt)
-      }
-    } else if (model == "multinomial") {
-      if (adjusted) {
-        res <- .adjustedmultinomialglobaltestgamma(gt)
-      } else {
-        res <- .unadjustedmultinomialglobaltestgamma(gt)
-      }
-    }
-  } else if (method == "asymptotic") {  
+  } else {
     gt@method <- 3
-    if (model == "logistic") {
-      res <- .logisticglobaltest(gt, accuracy)
-    } else if (model == "linear") {
-      res <- .linearglobaltest(gt, accuracy)
-    } else  if (model == "survival") {
-      if (adjusted) {
-        res <- .adjustedsurvivalglobaltest(gt)
-      } else {
-        res <- .unadjustedsurvivalglobaltest(gt)
-      }
-    } else if (model == "multinomial") {
-      if (adjusted) {
-        res <- .adjustedmultinomialglobaltest(gt, accuracy)
-      } else {
-        res <- .unadjustedmultinomialglobaltest(gt, accuracy)
-      }
-    }
   }
+  res <- .globaltest(gt, accuracy = accuracy)
   if (ncol(res) > 0) {
     colnames(res) <- c("Statistic Q","Expected Q","sd of Q","P-value")
     gt@res <- cbind(gt@res, res)
