@@ -105,8 +105,7 @@ BioConductor. We load the data and normalize them using
 library(golubEsets)
 library(vsn)
 data(golubMerge)
-golubM <- update2MIAME(golubMerge)
-Golub <- vsn(golubM)
+Golub <- vsn(golubMerge)
 @
 
 This gives us a data set \Robject{Golub}, which is of the format
