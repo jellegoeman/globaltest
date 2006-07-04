@@ -39,8 +39,16 @@ This document shows the functionality of the R-package
 of genes is significantly associated with a response. The
 explanation here focuses on practical use of the test. To understand
 the idea and the mathematics behind the test, and for more details
-on how to interpret a test result, we refer to the papers (Goeman et
-al.\ 2004, 2005).
+on how to interpret a test result, we refer to the following papers
+(see Section \ref{references} for full references).
+\begin{itemize}
+  \item Goeman et al.\ (2004) introduces the principle of global
+  testing in microarray data analysis.
+  \item Goeman et al.\ (2005) extends the approach to a survival time
+  response and explains how to deal with covariates.
+  \item Goeman et al.\ (2006) derives the mathematical properties of
+  the test and proves its optimality under some conditions.
+\end{itemize}
 
 In recent years there has been a shift in focus from studying
 the effects of single genes to studying effects of multiple
@@ -1080,8 +1088,16 @@ regressionplot(gt, "04110", "1")
 @
 \end{figure}
 
+\section{References} \label{references}
 
 \begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Goeman, van~de Geer, de~Kort, and van
+  Houwelingen}{Goeman et~al.}{2004}]{Goeman2004}
+Goeman, J.~J., S.~A. van~de Geer, F.~de~Kort, and J.~C. van Houwelingen (2004).
+\newblock A global test for groups of genes: testing association with a
+  clinical outcome.
+\newblock {\em Bioinformatics\/}~{\em 20\/}(1), 93--99.
 
 \bibitem[\protect\citeauthoryear{Goeman, Oosting, Cleton-Jansen, Anninga, and
   van Houwelingen}{Goeman et~al.}{2005}]{Goeman2005}
@@ -1091,12 +1107,12 @@ Goeman, J.~J., J.~Oosting, A.~M. Cleton-Jansen, J.~K. Anninga, and J.~C. van
   data.
 \newblock {\em Bioinformatics\/}~{\em 21\/}(9), 1950--1957.
 
-\bibitem[\protect\citeauthoryear{Goeman, van~de Geer, de~Kort, and van
-  Houwelingen}{Goeman et~al.}{2004}]{Goeman2004}
-Goeman, J.~J., S.~A. van~de Geer, F.~de~Kort, and J.~C. van Houwelingen (2004).
-\newblock A global test for groups of genes: testing association with a
-  clinical outcome.
-\newblock {\em Bioinformatics\/}~{\em 20\/}(1), 93--99.
+\bibitem[\protect\citeauthoryear{Goeman, van de Geer, and
+  van Houwelingen}{Goeman et~al.}{2005}]{Goeman2005}
+Goeman, J.~J., S.~A. van de Geer, and J.~C. van
+  Houwelingen (2006).
+\newblock Testing against a high dimensional alternative.
+\newblock {\em Journal of the Royal Statistical Society, Series B\/}~{\em 68\/}(3), 477--493.
 
 \bibitem[\protect\citeauthoryear{Golub, Slonim, Tamayo, Huard, Gaasenbeek,
   Mesirov, Coller, Loh, Downing, Caligiuri, Bloomfield, and Lander}{Golub

@@ -67,6 +67,7 @@ makeGOstructure <- function(data, annotation, top, only.ids, ontology = c("BP", 
 
   # Find ancestors and offspring
   ancestors <- lookUp(ids, "GO", ONancestor)
+  ancestors <- lapply(ancestors, function(anc) setdiff(anc, "all"))
   offspring <- lookUp(ids, "GO", ONoffspring)
   offspring <- lapply(offspring, function(off) intersect(off, ids))
   
