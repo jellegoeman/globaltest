@@ -16,8 +16,7 @@
 
 \author{Jelle Goeman \and Jan Oosting}
 
-\date{Package \Rpackage{globaltest}, version
-\Sexpr{Biobase::package.version("globaltest")}.\\\ \\
+\date{Package \Rpackage{globaltest}.\\\ \\
 \today}
 
 \begin{document}
@@ -1139,5 +1138,12 @@ Van~de Vijver, M.~J., Y.~D. He, L.~J. van~'t Veer, H.~Dai, A.~A.~M. Hart, D.~W.
 
 \end{thebibliography}
 
+\section{Session Information}
+
+The version number of R and packages loaded for generating the vignette were:
+
+<<echo=FALSE,results=tex>>=
+toLatex(sessionInfo())
+@
 
 \end{document}
