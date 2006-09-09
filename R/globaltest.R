@@ -21,8 +21,8 @@ globaltest <- function(X, Y, genesets,
   # formula ff
   
   # 0: check whether the input is in the permitted classes
-  if (!(class(X) %in% c("exprSet", "matrix"))) 
-    stop("X should be of class exprSet or matrix", call. = FALSE)
+  if (!(class(X) %in% c("exprSet", "matrix","ExpressionSet"))) 
+    stop("X should be of class exprSet, ExpressionSet or matrix", call. = FALSE)
   if (!((class(Y) %in% c("factor", "formula")) || is.vector(Y) ))
     stop("Y should be of class formula, vector, factor or character", call. = FALSE)
   if (!(missing(genesets) || is.vector(genesets)))
@@ -42,7 +42,7 @@ globaltest <- function(X, Y, genesets,
  
   
   # 1: extract the expression matrix:
-  if (is(X, "exprSet")) {
+  if (class(X) %in% c("exprSet", "ExpressionSet")) {
     eX <- exprs(X)
   } else {
     if (is.data.frame(X) || is.vector(X)) {
@@ -57,7 +57,7 @@ globaltest <- function(X, Y, genesets,
   # 2: extract the phenoData from X, adjust and/or Y
   pDataNamesSupplied <- TRUE
   pData <- NULL
-  if (is(X, "exprSet")) {
+  if (class(X) %in% c("exprSet", "ExpressionSet")) {
     pData <- pData(X)
   }
   if (!missing(adjust) && is.data.frame(adjust)) {

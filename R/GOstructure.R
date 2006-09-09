@@ -39,8 +39,8 @@ makeGOstructure <- function(data, annotation, top, only.ids, ontology = c("BP", 
     unreliable <- match.arg(unreliable, c("IC","IDA","IEA","IEP","IGI","IMP","IPI","ISS","NAS","ND","RCA","TAS","NR"), several.ok = TRUE)
     allgenes <- allgenes[!(names(allgenes) %in% unreliable)]
   }
-  if (is(data, "exprSet")) {
-    allgenes <- intersect(allgenes, geneNames(data))
+  if (class(data) %in% c("exprSet","ExpressionSet")) {
+    allgenes <- intersect(allgenes, featureNames(data))
   } else if (is.character(data)) {
     allgenes <- intersect(allgenes, data)
   } else {

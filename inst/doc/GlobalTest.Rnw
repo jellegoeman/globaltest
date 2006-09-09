@@ -111,12 +111,14 @@ BioConductor. We load the data and normalize them using
 <<getGolubData, results=hide>>=
 library(golubEsets)
 library(vsn)
-data(golubMerge)
-Golub <- vsn(golubMerge)
+data(Golub_Merge)
+#TEMPORARY: until vsn supports ExpressionSet: Golub <- vsn(Golub_Merge)
+Golub<-Golub_Merge
+exprs(Golub)<-exprs(vsn(exprs(Golub_Merge)))
 @
 
 This gives us a data set \Robject{Golub}, which is of the format
-\Rclass{exprSet}. It has 7,129 genes for 72 samples on Affymetrix
+\Rclass{ExpressionSet}. It has 7,129 genes for 72 samples on Affymetrix
 hu6800 chips. We use \Rpackage{vsn} to normalize the data here, but
 any other normalization method may be used instead. Several
 phenotype variables are available with \Robject{Golub}, among them
