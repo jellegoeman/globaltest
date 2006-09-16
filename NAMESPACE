@@ -1,4 +1,6 @@
-importFrom(graphics, plot, hist)
+importFrom(multtest, plot)
+
+importFrom(graphics, hist)
 
 importFrom(survival, Surv, coxph, coxph.fit, basehaz, coxph.control)
 

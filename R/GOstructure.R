@@ -34,6 +34,7 @@ makeGOstructure <- function(data, annotation, top, only.ids, ontology = c("BP", 
   
   # Get the genes and remove unreliable annotations
   allgenes <- lookUp(top, annotation, "GO2ALLPROBES")
+  if (is.list(allgenes)) allgenes<-allgenes[[1]]
   if (!missing(unreliable)) {
     allgenes <- allgenes[!is.na(names(allgenes))]
     unreliable <- match.arg(unreliable, c("IC","IDA","IEA","IEP","IGI","IMP","IPI","ISS","NAS","ND","RCA","TAS","NR"), several.ok = TRUE)
@@ -48,11 +49,14 @@ makeGOstructure <- function(data, annotation, top, only.ids, ontology = c("BP", 
   }
 
   # Get all GO IDs
-  ids <- c(top, lookUp(top, "GO", ONoffspring))
+  ids <- lookUp(top, "GO", ONoffspring)
+  if (is.list(ids)) ids<-ids[[1]]
+  ids <- c(top, ids)
   if (!missing(only.ids)) {
     ids <- intersect(ids, only.ids)
   }
   # Find the sets and remove terms with empty sets
+
   genesets <- lookUp(ids, annotation, "GO2ALLPROBES")
   genesets <- lapply(genesets, function(set) intersect(set, allgenes))
   setsize <- sapply(genesets, length)

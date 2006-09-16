@@ -1,7 +1,7 @@
-% \VignetteIndexEntry{GlobalTest}
-% \VignetteDepends{globaltest, vsn, hu6800, golubEsets, KEGG, GOstats, Rgraphviz}
-% \VignetteKeywords{Expression Analysis}
-% \VignettePackage{globaltest}
+%\VignetteIndexEntry{GlobalTest}
+%\VignetteDepends{globaltest, graphics, vsn, hu6800, golubEsets, KEGG, GOstats, Rgraphviz, multtest}
+%\VignetteKeywords{Expression Analysis}
+%\VignettePackage{globaltest}
 
 \documentclass[a4paper]{article}
 \usepackage[sort]{natbib}
@@ -99,6 +99,8 @@ possible. See \Robject{help(globaltest)}.
 
 <<options, echo=FALSE>>=
 options(continue = "  ")
+library(graphics)
+library(methods)
 @
 
 \subsection{Leukemia Data}
@@ -920,7 +922,7 @@ when plotting a \Rclass{gt.barplot} object.
 \begin{figure}[!ht]
 \caption{Example geneplot}
 \centering
-<<geneplot:changenames, fig=TRUE, echo=FALSE>>=
+<<geneplot:changenames2, fig=TRUE, echo=FALSE>>=
 plot(myplot)
 @
 \end{figure}

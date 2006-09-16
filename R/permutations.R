@@ -1,9 +1,6 @@
 #==========================================================
 # Histogram method for permutations of "gt.result"
 #==========================================================
-if( !isGeneric("hist") )
-    setGeneric("hist", function(x,...) standardGeneric("hist"))
-
 setMethod("hist", "gt.result",
             function(x, ...) 
 {

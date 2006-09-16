@@ -20,8 +20,11 @@ if( !isGeneric("scale")) setGeneric("scale")
 
 setGeneric("combine")
 
-if( !isGeneric("plot") )
-    setGeneric("plot", function(x, y, ...) standardGeneric("plot"))
+if( !isGeneric("plot")) 
+setGeneric("plot", function(x, y, ...) standardGeneric("plot"))
+
+if( !isGeneric("hist") )
+    setGeneric("hist", function(x,...) standardGeneric("hist"))
 
 if( !isGeneric("coefficients") ) setGeneric("coefficients")
 

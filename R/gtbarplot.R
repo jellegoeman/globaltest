@@ -107,21 +107,16 @@ setMethod("show", "gt.barplot",
 
 #==========================================================
 setMethod("sort", matchSignature(signature(x = "gt.barplot"), sort),
-  function(x, partial = NULL, na.last = TRUE, decreasing = TRUE, 
-      method = c("shell", "quick", "radix"), index.return = FALSE) {
-    ix <- sort.list(z.score(x), partial, na.last, decreasing, method)
-    x <- x[ix]
-    if (index.return) 
-      list(x = x, ix = ix)
-    else
-      x
+  function(x, decreasing = FALSE ) {
+    ix <- sort.list(z.score(x), decreasing=decreasing)
+    x[ix]
   }
 )
 
 
 #==========================================================
-setMethod("plot", "gt.barplot",
-  function(x,y,...) {
+setMethod("plot", signature(x="gt.barplot",y="ANY"),
+  function(x, y, ...) {
     plot.gt.barplot <- function(x, genesubset, drawlabels, labelsize, addlegend = TRUE, ...) {
       if (!missing(genesubset))
         x <- x[genesubset]
