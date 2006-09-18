@@ -616,16 +616,16 @@ one can use all possibilities offered by the \Rclass{formula}
 object. See \Robject{help(formula)} for more details. In the Breast
 Cancer Data we can test to see if the gene expression profiles have
 anything to add to the prediction of survival from the known risk
-indicators included in the data: \Robject{StGallen}, \Robject{NIH}
+indicators included in the data: \Robject{NIH}
 and \Robject{ESR1} (oestrogen receptor status), and
 \Robject{Posnodes} (lymph node status):
 
 <<vijver:adjust:all>>=
-globaltest(vandeVijver, Surv(TIMEsurvival, EVENTdeath) ~ StGallen + NIH + ESR1 + Posnodes)
+globaltest(vandeVijver, Surv(TIMEsurvival, EVENTdeath) ~ NIH + ESR1 + Posnodes)
 @
 
-From the result we see that the microarray data do have additional
-predictive value. The p-value did, however, rise substantially
+From the result we see that the microarray data do not seem to have any 
+additional predictive value in this reduced data set. The p-value rose substantially
 relative to the unadjusted test, so at least one of these known risk
 factors is expected to be a confounder: it is strongly associated
 with survival and also with the gene expression data. This latter
