@@ -1111,7 +1111,7 @@ Goeman, J.~J., J.~Oosting, A.~M. Cleton-Jansen, J.~K. Anninga, and J.~C. van
 \newblock {\em Bioinformatics\/}~{\em 21\/}(9), 1950--1957.
 
 \bibitem[\protect\citeauthoryear{Goeman, van de Geer, and
-  van Houwelingen}{Goeman et~al.}{2005}]{Goeman2005}
+  van Houwelingen}{Goeman et~al.}{2006}]{Goeman2006}
 Goeman, J.~J., S.~A. van de Geer, and J.~C. van
   Houwelingen (2006).
 \newblock Testing against a high dimensional alternative.
