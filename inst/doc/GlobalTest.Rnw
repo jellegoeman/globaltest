@@ -4,7 +4,8 @@
 %\VignettePackage{globaltest}
 
 \documentclass[a4paper]{article}
-\usepackage[sort]{natbib}
+\usepackage{natbib}
+\bibliographystyle{chicago}
 
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
@@ -39,13 +40,13 @@ of genes is significantly associated with a response. The
 explanation here focuses on practical use of the test. To understand
 the idea and the mathematics behind the test, and for more details
 on how to interpret a test result, we refer to the following papers
-(see Section \ref{references} for full references).
+(see page \pageref{references} for full references).
 \begin{itemize}
-  \item Goeman et al.\ (2004) introduces the principle of global
+  \item \cite{Goeman2004} introduces the principle of global
   testing in microarray data analysis.
-  \item Goeman et al.\ (2005) extends the approach to a survival time
+  \item \cite{Goeman2005} extends the approach to a survival time
   response and explains how to deal with covariates.
-  \item Goeman et al.\ (2006) derives the mathematical properties of
+  \item \cite{Goeman2006} derives the mathematical properties of
   the test and proves its optimality under some conditions.
 \end{itemize}
 
@@ -62,7 +63,7 @@ a response variable from the gene expression measurements of a set
 of genes. The null hypothesis to be tested is that expression
 profile of the genes in the gene set is not associated with the
 response variable. A significant test result has three equivalent
-interpretations (see Goeman et al.\ 2004, 2005, for more details).
+interpretations \citep[see][for more details]{Goeman2004, Goeman2005}.
 \begin{itemize}
 \item If the test is significant, part of the variance of the
 response variable can be predicted from the gene expression
@@ -105,8 +106,8 @@ library(methods)
 
 \subsection{Leukemia Data}
 
-The first data set is the famous Leukemia data set by Golub et al.
-(1999), that are available from the \Rpackage{golubEsets} package on
+The first data set is the famous Leukemia data set by \cite{Golub1999}, 
+that is available from the \Rpackage{golubEsets} package on
 BioConductor. We load the data and normalize them using
 \Rpackage{vsn}
 
@@ -131,7 +132,7 @@ Myelogenous Leukemia samples.
 \subsection{Breast Cancer Data}
 
 The second data set is a breast cancer data set from the Dutch
-Cancer Institute (Van de Vijver et al., 2002), which we have have
+Cancer Institute \citep{Vijver2002}, which we have have
 included (by kind permission from the authors) in the
 \Rpackage{globaltest} package. To keep the package small we have
 reduced the data set to only 230 probes (those probes annotated to
@@ -386,7 +387,7 @@ to know whether the overall expression profile depends on the center
 the samples came from (coded as \Robject{Source}) in
 \Robject{Golub}. We can test this with
 
-<<golub:Source>>=
+<<golub_Source>>=
 globaltest(Golub, "Source")
 @
 
@@ -396,7 +397,7 @@ or only AML samples. We can compare the samples from only the
 centers CALGB and CCG (which both provided only AML samples) using
 the option \Rfunarg{levels}:
 
-<<golub:Source:2levels>>=
+<<golub_Source_2levels>>=
 globaltest(Golub, "Source", levels = c("CALGB", "CCG"))
 @
 
@@ -406,7 +407,7 @@ For a more sophisticated way of correcting for confounders (such as
 If only one level is given in \Rfunarg{levels}, that outcome
 category is tested against the other categories combined.
 
-<<golub:Source:1level>>=
+<<golub_Source_1level>>=
 globaltest(Golub, "Source", levels = "St-Jude")
 @
 
@@ -415,7 +416,7 @@ Note that if a multi-valued response is not explicitly coded as
 way to let globaltest know that the response should not be treated
 as continuous is to make it a factor. This can be done with
 
-<<golub:Source:factor, eval=FALSE>>=
+<<golub_Source_factor, eval=FALSE>>=
 globaltest(Golub, "factor(Source)")
 @
 
@@ -429,7 +430,7 @@ Leukemia data, the percentage of blast cells was measured for the 15
 AML samples from CALGB. To test whether this percentage is reflected
 in the overall expression profile, we can say:
 
-<<golub:pctBlasts>>=
+<<golub_pctBlasts>>=
 calgb <- pData(Golub)["Source"] == "CALGB"
 globaltest(Golub[,calgb], "pctBlasts")
 @
@@ -441,7 +442,7 @@ patient) plus an \emph{event indicator}, a dummy that indicates
 whether the patient died (had an event) at that point or was still
 alive (censored) at the last observation time.
 
-<<vandeVijver:survival>>=
+<<vandeVijver_survival>>=
 globaltest(vandeVijver, "Surv(TIMEsurvival, EVENTdeath)")
 @
 
@@ -450,7 +451,7 @@ and zero otherwise. If the event indicator is coded differently, the
 value that indicates an event should be explicitly given. The
 following alternative calls give the same output as the above:
 
-<<vandeVijver:survival:alternatives, eval=FALSE>>=
+<<vandeVijver_survival_alternatives, eval=FALSE>>=
 globaltest(vandeVijver, "Surv(TIMEsurvival, EVENTdeath == 1)")
 globaltest(vandeVijver, "TIMEsurvival", d = "EVENTdeath")
 globaltest(vandeVijver, "TIMEsurvival", d = "EVENTdeath", event = 1)
@@ -468,14 +469,15 @@ option \Rfunarg{method}.
 \paragraph{Asymptotic method} This method calculates the p-value
 based on the asymptotic distribution. This is the recommended method
 for large sample sizes. It can be slightly conservative for small
-samples.
+samples. This new asymptotic method supersedes the Gamma approximation 
+described in \cite{Goeman2004}.
 
 For survival as response this uses the normal distribution as
-described in the paper.
+described in \cite{Goeman2005}.
 
 For continuous, two-valued and multi-valued response the asymptotic
-method uses numerical methods of Box (1954) and Kotz, Johnson and
-Boyd (1967) for calculating the distribution of non-chi-squared
+method uses numerical methods of \cite{Box1954} and \cite{Kotz1967} 
+for calculating the distribution of non-chi-squared
 distributed quadratic forms. The calculation of the p-values
 involves a step that smoothes away very small eigenvalues. An extra
 function argument \Rfunarg{accuracy} can be given when calling
@@ -503,11 +505,14 @@ method will usually not give exactly the same p-values.
 
 \paragraph{Gamma method} This method uses the gamma distribution
 (also referred to as \emph{scaled chi-squared}) as an approximation
-to the asymptotic distribution. This has the advantage that it is
+to the asymptotic distribution. This has the advantage that it is slightly
 quicker to calculate and that it is less conservative for small
-sample sizes. A drawback is that it can be slightly
-anti-conservative, especially for large gene sets. There is no gamma
-approximation if the response variable is a survival time.
+sample sizes. A drawback is that it can be
+anti-conservative, especially for large gene sets. This is the distribution 
+that was used in \cite{Goeman2004}. We recommend using the new asymptotic 
+method instead. See above. There is no gamma
+approximation if the response variable is a survival time. 
+
 
 \paragraph{} The user chooses the
 method by specifying the arguments \Rfunarg{method} and
@@ -564,7 +569,7 @@ If covariates are incorporated into the null hypothesis of the
 Global Test, it tests whether the gene expression profile has an
 independent association with the response that cannot be explained
 away by the presence of the confounding covariates. For the
-statistical details of the model, see Goeman et al.\ (2005).
+statistical details of the model, see \cite{Goeman2005}.
 
 The three interpretations of the resulting test are now as follows
 \begin{itemize}
@@ -596,7 +601,7 @@ The easiest way to adjust for confounders is to use a
 adjust for the confounder \Robject{BM.PB} with (note the absence of
 quotes!)
 
-<<golub:adjust:BM.PB>>=
+<<golub_adjust_BM.PB>>=
 globaltest(Golub, ALL.AML ~ BM.PB, GO.cellcycle)
 @
 
@@ -620,7 +625,7 @@ indicators included in the data: \Robject{NIH}
 and \Robject{ESR1} (oestrogen receptor status), and
 \Robject{Posnodes} (lymph node status):
 
-<<vijver:adjust:all>>=
+<<vijver_adjust_all>>=
 globaltest(vandeVijver, Surv(TIMEsurvival, EVENTdeath) ~ NIH + ESR1 + Posnodes)
 @
 
@@ -631,7 +636,7 @@ factors is expected to be a confounder: it is strongly associated
 with survival and also with the gene expression data. This latter
 statement can be checked by using the covariate as the response
 
-<<vijver:esr1>>=
+<<vijver_esr1>>=
 globaltest(vandeVijver, "ESR1")
 @
 
@@ -641,7 +646,7 @@ expression.
 The model that was fitted under the null hypothesis of the test can
 be retrieved and displayed with the command \Rfunction{fit}.
 
-<<golub:adjust:AML.ALL>>=
+<<golub_adjust_AML.ALL>>=
 gt <- globaltest(vandeVijver, Surv(TIMEsurvival, EVENTdeath) ~ ESR1)
 fit(gt)
 @
@@ -899,7 +904,7 @@ object to retrieve the numbers or to plot (part of) the plot later,
 optionally with the option \Rfunarg{plot = FALSE} to suppress
 plotting at this point.
 
-<<geneplot:store>>=
+<<geneplot_store>>=
 myplot <- geneplot(gt, "00561", plot = FALSE)
 @
 
@@ -910,7 +915,7 @@ liking. For example, to increase interpretability, the probe
 identifiers appearing in the plot can be replaced by the gene
 symbols in this object and plotted again:
 
-<<geneplot:changenames>>=
+<<geneplot_changenames>>=
 names(myplot) <- as.list(hu6800SYMBOL)[names(myplot)]
 plot(myplot)
 @
@@ -922,7 +927,7 @@ when plotting a \Rclass{gt.barplot} object.
 \begin{figure}[!ht]
 \caption{Example geneplot}
 \centering
-<<geneplot:changenames2, fig=TRUE, echo=FALSE>>=
+<<geneplot_changenames2, fig=TRUE, echo=FALSE>>=
 plot(myplot)
 @
 \end{figure}
@@ -931,7 +936,7 @@ The \Rclass{gt.barplot} object also allows one to look at subsets of
 a large pathway more closely. The gene plot can for example be
 sorted with the largest z-scores first. For example
 
-<<geneplot:sort>>=
+<<geneplot_sort>>=
 mysorted <- sort(myplot)
 top5 <- mysorted[1:5]
 @
@@ -941,7 +946,7 @@ functions. \Rfunction{z.score} counts the number of standard
 deviations of the influence above the reference line. See
 \Robject{help(gt.barplot)} for more details.
 
-<<geneplot:utilities>>=
+<<geneplot_utilities>>=
 z.score(top5)
 names(top5)
 result(top5)
@@ -1091,57 +1096,6 @@ regressionplot(gt, "04110", "1")
 @
 \end{figure}
 
-\section{References} \label{references}
-
-\begin{thebibliography}{}
-
-\bibitem[\protect\citeauthoryear{Goeman, van~de Geer, de~Kort, and van
-  Houwelingen}{Goeman et~al.}{2004}]{Goeman2004}
-Goeman, J.~J., S.~A. van~de Geer, F.~de~Kort, and J.~C. van Houwelingen (2004).
-\newblock A global test for groups of genes: testing association with a
-  clinical outcome.
-\newblock {\em Bioinformatics\/}~{\em 20\/}(1), 93--99.
-
-\bibitem[\protect\citeauthoryear{Goeman, Oosting, Cleton-Jansen, Anninga, and
-  van Houwelingen}{Goeman et~al.}{2005}]{Goeman2005}
-Goeman, J.~J., J.~Oosting, A.~M. Cleton-Jansen, J.~K. Anninga, and J.~C. van
-  Houwelingen (2005).
-\newblock Testing association of a pathway with survival using gene expression
-  data.
-\newblock {\em Bioinformatics\/}~{\em 21\/}(9), 1950--1957.
-
-\bibitem[\protect\citeauthoryear{Goeman, van de Geer, and
-  van Houwelingen}{Goeman et~al.}{2006}]{Goeman2006}
-Goeman, J.~J., S.~A. van de Geer, and J.~C. van
-  Houwelingen (2006).
-\newblock Testing against a high dimensional alternative.
-\newblock {\em Journal of the Royal Statistical Society, Series B\/}~{\em 68\/}(3), 477--493.
-
-\bibitem[\protect\citeauthoryear{Golub, Slonim, Tamayo, Huard, Gaasenbeek,
-  Mesirov, Coller, Loh, Downing, Caligiuri, Bloomfield, and Lander}{Golub
-  et~al.}{1999}]{Golub1999}
-Golub, T.~R., D.~K. Slonim, P.~Tamayo, C.~Huard, M.~Gaasenbeek, J.~P. Mesirov,
-  H.~Coller, M.~L. Loh, J.~R. Downing, M.~A. Caligiuri, C.~D. Bloomfield, and
-  E.~S. Lander (1999).
-\newblock Molecular classification of cancer: Class discovery and class
-  prediction by gene expression monitoring.
-\newblock {\em Science\/}~{\em 286\/}(5439), 531--537.
-
-\bibitem[\protect\citeauthoryear{Van~de Vijver, He, van~'t Veer, Dai, Hart,
-  Voskuil, Schreiber, Peterse, Roberts, Marton, Parrish, Atsma, Witteveen,
-  Glas, Delahaye, van~der Velde, Bartelink, Rodenhuis, Rutgers, Friend, and
-  Bernards}{Van~de Vijver et~al.}{2002}]{Vijver2002}
-Van~de Vijver, M.~J., Y.~D. He, L.~J. van~'t Veer, H.~Dai, A.~A.~M. Hart, D.~W.
-  Voskuil, G.~J. Schreiber, J.~L. Peterse, C.~Roberts, M.~J. Marton,
-  M.~Parrish, D.~Atsma, A.~Witteveen, A.~Glas, L.~Delahaye, T.~van~der Velde,
-  H.~Bartelink, S.~Rodenhuis, E.~T. Rutgers, S.~H. Friend, and R.~Bernards
-  (2002).
-\newblock A gene-expression signature as a predictor of survival in breast
-  cancer.
-\newblock {\em New England Journal of Medicine\/}~{\em 347\/}(25), 1999--2009.
-
-\end{thebibliography}
-
 \section{Session Information}
 
 The version number of R and packages loaded for generating the vignette were:
@@ -1149,5 +1103,11 @@ The version number of R and packages loaded for generating the vignette were:
 <<echo=FALSE,results=tex>>=
 toLatex(sessionInfo())
 @
+
+\addcontentsline{toc}{section}{References} \label{references}
+\bibliography{GlobalTest}
+
+
+
 
 \end{document}
