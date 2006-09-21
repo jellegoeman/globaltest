@@ -17,7 +17,8 @@
 
 \author{Jelle Goeman \and Jan Oosting}
 
-\date{Package \Rpackage{globaltest}.\\\ \\
+\date{Package \Rpackage{globaltest}.\\\ \\ 
+version \Sexpr{Biobase::package.version("globaltest")} \\\ \\
 \today}
 
 \begin{document}
