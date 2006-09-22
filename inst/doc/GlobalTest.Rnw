@@ -5,7 +5,7 @@
 
 \documentclass[a4paper]{article}
 \usepackage{natbib}
-\bibliographystyle{chicago}
+\bibliographystyle{apalike}
 
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
