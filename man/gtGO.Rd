@@ -30,7 +30,8 @@ procedure that preserves the structure of the GO graph.}
     \item{data}{The data set for which the \code{\link{GOstructure}} object is to be made. Can be either an
     \code{\link[Biobase:exprSet-class]{exprSet}} or a vector of
     probe indicators.}
-    \item{annotation}{The name of the metaData annotation package to be used.}
+    \item{annotation}{The name of the metaData annotation package to be used, or a vector of EntrezGene ids with the same
+    length as the number of genes in \code{data}.}
     \item{top}{The node to be used as top node of the \code{\link{GOstructure}}. Defaults
     to one of "GO:0008150", "GO:0005575", "GO:0003674", depending on he ontology chosen. The
     \code{\link{GOstructure}} object will only contain offspring of the chosen top node.}
