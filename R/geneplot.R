@@ -70,7 +70,7 @@ geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE,
   if (model == 'linear') {
     nameY <- as.character(.formula(gt)[[2]])
     colourCode <- c("+", "-")
-    colour <- 2:3
+    colour <- 3:2
     if (adjusted) {
       legend <- c(paste("positive correlation with residual", nameY),
         paste("negative correlation with residual", nameY))
@@ -85,7 +85,7 @@ geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE,
       paste("higher expression in", .levels(gt)[2], "samples"))
   } else if (model == 'survival') {
     colourCode <- c("+", "-")
-    colour <- 2:3
+    colour <- 3:2
     legend <- c(paste("positively associated with survival"), 
       paste("negatively associated with survival"))
   } else if (model == "multinomial") {

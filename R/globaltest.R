@@ -114,8 +114,11 @@ globaltest <- function(X, Y, genesets,
   }
   n <- ncol(eX)
   p <- nrow(eX)
-  
-  
+  if (is.null(pData)) {
+    pData <- as.data.frame(matrix(,n,0))
+    pDataNamesSupplied <- FALSE
+  } 
+
   # 4: Synchronize sample names between eX and pData
   if (pDataNamesSupplied && !is.null(colnames(eX))) {
     if (!all(rownames(pData) == colnames(eX))) {
@@ -131,15 +134,14 @@ globaltest <- function(X, Y, genesets,
     }
   }
   
-  
   # 5: remove the input X to free memory
   remove(X)
   
-  
   # 6: Remove redundant levels from factor variables in pData
-  pData <- data.frame(lapply(as.list(pData), function(x) { if (is.factor(x)) factor(x) else x}))
+  if (ncol(pData) > 0) {
+    pData <- data.frame(lapply(as.list(pData), function(x) { if (is.factor(x)) factor(x) else x}))
+  }
   rownames(pData) <- colnames(eX)
-
 
   # 7: Extract the formula object
   if (is(Y, "formula")) {
@@ -154,16 +156,21 @@ globaltest <- function(X, Y, genesets,
       } else {
         ffstart = "Y ~"
       }
-      if (!missing(adjust) && is.character(adjust)) {
-        ff <- formula(paste(ffstart, paste(adjust, collapse = "+")))
+      if (!missing(adjust)) {
+        if (is.character(adjust)) {
+          ff <- formula(paste(ffstart, paste(adjust, collapse = "+")))
+        } else if (is.data.frame(adjust)) {
+          ff <- formula(paste(ffstart, paste(names(adjust), collapse = "+")))
+        }
       } else {
         ff <- formula(paste(ffstart, "1"))
       }
     }
   }
-  covariates <- c(names(pData), names(as.list(sys.frame())))
-  if (!all(all.vars(ff) %in% covariates)) {
-    absent <- all.vars(ff)[!(all.vars(ff) %in% covariates)]
+  absent <- all.vars(ff)[sapply(all.vars(ff), function(vr) {
+    (length(find(vr)) == 0) && !(vr %in% names(pData))
+  })]
+  if (length(absent) > 0) {
     stop(paste("Variable(s)", paste(absent, collapse = ", "), "not found"), call. = FALSE)
   }
 
@@ -262,7 +269,7 @@ globaltest <- function(X, Y, genesets,
 
 
   # 13: Calculate IminH
-  IminH = .getIminH(fit)
+  IminH <- .getIminH(fit)
   adjusted <- !is.null(IminH)
 
 

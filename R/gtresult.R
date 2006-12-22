@@ -146,7 +146,7 @@ setMethod("names<-", "gt.result",
 #==========================================================
 setMethod("sort", matchSignature(signature(x = "gt.result"), sort),
   function(x, decreasing = FALSE ) {
-    ix <- sort.list(p.value(x), decreasing=decreasing)
+    ix <- order(p.value(x), -z.score(x), decreasing=decreasing)
     x[ix]
   }
 )

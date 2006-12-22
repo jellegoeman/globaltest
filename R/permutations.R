@@ -319,7 +319,7 @@ permutations <- function(gt, geneset, nperm = 10^4)
     counts <- sapply(unique(Y), function(ix) sum(Y == ix))
     out <- .nPermsG(counts, counts)
   } else {
-    out <- factorial(n)
+    out <- ifelse(n<=100, factorial(n), Inf)
   }
   out
 }

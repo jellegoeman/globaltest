@@ -1,6 +1,6 @@
 Package: globaltest
-Version: 4.5.1
-Date: 2006-12-07
+Version: 4.5.2
+Date: 2006-12-22
 Title: Testing Association of Groups of Genes with a Clinical Variable
 Author: Jelle Goeman <j.j.goeman@lumc.nl> and Jan Oosting <j.oosting@lumc.nl>
 Maintainer: Jelle Goeman <j.j.goeman@lumc.nl>
@@ -17,4 +17,4 @@ Collate: 000.R gtresult.R gtbarplot.R mlogit.R GOstructure.R
 SaveImage: yes
 LazyLoad: yes
 ZipData: yes
-URL: http://clinicalresearch.nl/personalpage/View.aspx?person=Jelle%20Goeman
+URL: http://www.msbi.nl/goeman
