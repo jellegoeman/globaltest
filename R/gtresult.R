@@ -39,9 +39,9 @@ setMethod("show", "gt.result", function(object)
 
   cat("Global Test result:\n")
   if (npathways == 1)
-    cat("Data:", nsamples, "samples with", ngenes, "genes; 1 pathway tested\n")
+    cat("Data:", nsamples, "samples with", ngenes, "genes; 1 gene set\n")
   else
-    cat("Data:", nsamples, "samples with", ngenes, "genes;", npathways, "pathways tested\n")
+    cat("Data:", nsamples, "samples with", ngenes, "genes;", npathways, "gene sets\n")
   if (!is.null(fit(object))) {
     cat("Model:", .model(object))
     if (.adjusted(object)) {

@@ -89,6 +89,7 @@ permutations <- function(gt, geneset, nperm = 10^4)
   
     # Make the permutations of Y
     if (nperm >= .nPerms(gt)) { # Use all possible permutations
+      nperm <- .nPerms(gt)
       gt@method <- 4
       gt@PermQs <- matrix(,.nPathways(gt),0)
       if ((model == "logistic") && !adjusted) {
@@ -202,7 +203,9 @@ permutations <- function(gt, geneset, nperm = 10^4)
     })) 
     gt@PermQs <- cbind(gt@PermQs, QQs)
     EQ <- apply(gt@PermQs, 1, mean)
+    EQ[nTested == 0] <- NA
     seQ <- apply(gt@PermQs, 1, sd)
+    seQ[nTested == 0] <- NA
     p.value <- apply(gt@PermQs > .Q(gt) * 0.999999, 1, mean)
     gt@res[,4:6] <- cbind(EQ, seQ, p.value)
     gt@res <- gt@res[,1:6, drop = FALSE]
