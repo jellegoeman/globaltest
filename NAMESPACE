@@ -13,7 +13,7 @@ import(Biobase)
 exportClasses(gt.result, gt.barplot, mlogit, GOstructure)
 
 exportMethods("[", show, result, p.value, length, names, "names<-", 
-	sort, hist, z.score, scale, plot, combine, fit, summary, residuals, 
+	sort, size, hist, z.score, scale, plot, combine, fit, summary, residuals, 
 	fitted.values, coefficients, genesets)
 
 export(globaltest, permutations, sampling, geneplot, sampleplot, 

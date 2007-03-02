@@ -19,7 +19,7 @@ globaltest <- function(X, Y, genesets,
   # matrix eX
   # data.frame pData
   # formula ff
-  
+
   # 0: check whether the input is in the permitted classes
   if (!(class(X) %in% c("exprSet", "matrix","ExpressionSet"))) 
     stop("X should be of class exprSet, ExpressionSet or matrix", call. = FALSE)
@@ -239,6 +239,13 @@ globaltest <- function(X, Y, genesets,
       ff <- formula(paste(newnameY, "~", as.character(ff[[3]])))
     } else if (length(levels) < length(levels(factor(outcome)))) { 
       eX <- eX[,outcome %in% levels,drop = FALSE]
+      vars <- all.vars(ff)[!(all.vars(ff) %in% names(pData))]
+      if (length(vars) > 0) {
+        add2pData <- as.data.frame(sapply(vars, function(var) {
+          eval(as.name(var))
+        }))
+        pData <- data.frame(pData, add2pData)
+      }
       pData <- pData[outcome %in% levels,, drop = FALSE]
       n <- ncol(eX)
     }
@@ -247,7 +254,7 @@ globaltest <- function(X, Y, genesets,
       g <- length(levels)
     }
   } 
-
+                                   
   # 12: Fit the adjustmodel:
   if (model == "logistic") {
     fit <- glm(ff, data = pData, family = binomial, x = TRUE, y = TRUE, na.action = 'na.fail', 
