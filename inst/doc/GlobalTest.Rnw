@@ -27,11 +27,11 @@ version \Sexpr{Biobase::package.version("globaltest")} \\\ \\
 
 \section*{Important Note}
 
-As of version 4.0.0 the default method for calculating the p-value
-has changed. To get exactly the same results as in earlier versions,
-add the option \Robject{method = "gamma"} to the
-\Rfunction{globaltest} function. See section \ref{method} for more
-details.
+As of version 4.0.0 the method for calculating the asymptotic p-value
+has much improved. To use gamma approximation results of earlier versions 
+(and of the Bioinformatics paper add the option \Robject{method = "gamma"} to the
+\Rfunction{globaltest} function (only for compatibility). See section \ref{method} 
+for more details.
 
 \section{Introduction}
 
@@ -110,19 +110,19 @@ library(methods)
 The first data set is the famous Leukemia data set by \cite{Golub1999}, 
 that is available from the \Rpackage{golubEsets} package on
 BioConductor. We load the data and normalize them using
-\Rpackage{vsn}
+\Rpackage{vsn}. We reduce the data set in size in order to 
+speed up the computations in this Vignette.
 
 <<getGolubData, results=hide>>=
 library(golubEsets)
 library(vsn)
 data(Golub_Merge)
-#TEMPORARY: until vsn supports ExpressionSet: Golub <- vsn(Golub_Merge)
-Golub<-Golub_Merge
-exprs(Golub)<-exprs(vsn(exprs(Golub_Merge)))
+Golub<-Golub_Merge[,1:34]
+exprs(Golub)<-exprs(vsn2(Golub_Merge[,1:34]))
 @
 
 This gives us a data set \Robject{Golub}, which is of the format
-\Rclass{ExpressionSet}. It has 7,129 genes for 72 samples on Affymetrix
+\Rclass{ExpressionSet}. It has 7,129 genes for 34 samples on Affymetrix
 hu6800 chips. We use \Rpackage{vsn} to normalize the data here, but
 any other normalization method may be used instead. Several
 phenotype variables are available with \Robject{Golub}, among them
@@ -547,7 +547,7 @@ also be used to later increase the number of permutations.
 
 <<permutations>>=
 gt <- globaltest(Golub, "ALL.AML", GO.cellcycle)
-permutations(gt, nperm = 20000)
+permutations(gt, nperm = 2000)
 @
 
 All permutation test statistics are stored in the \Rclass{gt.result}
@@ -703,7 +703,7 @@ ensures a certain level of generality, while keeping computation
 time limited.
 
 <<getFocus>>=
-focusBP <- getFocus(bp)
+focusBP <- getFocus(bp, maxatoms = 7)
 @
 
 The \Rfunction{getFocus} function accepts an extra argument
@@ -744,7 +744,7 @@ names(focusnode) <- names(nodes)
 nodefill <- ifelse(focusnode, "#BBBBBB", "white")
 nAttrs <- list()
 nAttrs$fillcolor <- nodefill
-nAttrs$label <- 1:length(go60)
+nAttrs$label <- 1:length(names(nodes))
 names(nAttrs$label) <- names(nodes)
 pg <- plot(sigGO, nodeAttrs = nAttrs)
 x <- getNodeXY(pg)$x
@@ -773,6 +773,25 @@ plot(sigGO, nodeAttrs = nAttrs)
 legend
 @
 \end{tiny}
+
+The plot legend can be made interactive using the following code
+
+<<interactivity, eval=FALSE>>=
+repeat {
+  p <- locator(n=1)
+  if (is.null(p)) break()
+  pg <- plot(sigGO, nodeAttrs = nAttrs)
+  x <- getNodeXY(pg)$x
+  y <- getNodeXY(pg)$y
+  distance <- abs(p$x-x)+abs(p$y-y)
+  idx <- which.min(distance)
+  legend("topleft",legend=c(nAttrs$label[idx],names(focusnode)[idx],
+    Term(lookUp(names(focusnode)[idx], "GO","TERM")[[1]])),bg="white")
+  }
+@
+
+Clicking on any node now produces a legend for that node in the top left corner 
+of the graph. Press escape to return to the \texttt{R} prompt.
 
 
 
@@ -1067,7 +1086,7 @@ The influence of specific samples can be assessed by drawing a
 second regression line through only those points in the plot, which
 are comparisons involving the sample of interest. For example if we
 are interested the sample with sample name \Robject{"1"}, we take
-the points corresponding to the pairs (1,2) up to (1,72). If the
+the points corresponding to the pairs (1,2) up to (1,34). If the
 regression line drawn through only these points deviates much from
 the general line, the sample deviates from the general pattern. This
 is especially the case if this line has a negative slope, which
@@ -1079,21 +1098,21 @@ If we want to test sample \Robject{"1"}, we say:
 
 <<regressionplot>>=
 gt <- globaltest(Golub, "ALL.AML", kegg)
-regressionplot(gt, "04110", sampleid = "1")
+regressionplot(gt, "04110", sampleid = "39")
 @
 
 We can also use this plot for a group of samples, saying for
 example:
 
 <<regressionplot2>>=
-regressionplot(gt, "04110", sampleid = c("1","2"))
+regressionplot(gt, "04110", sampleid = c("39","40"))
 @
 
 \begin{figure}[!ht]
 \caption{Example regressionplot}
 \centering
 <<regressionplot-plot, fig=TRUE, echo=FALSE>>=
-regressionplot(gt, "04110", "1")
+regressionplot(gt, "04110", "39")
 @
 \end{figure}
 

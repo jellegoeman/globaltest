@@ -30,7 +30,9 @@
     \item{\code{drawlabels}:}{Object of class "logical".
     Whether gene or sample labels should be printed at the x-axis.}
     \item{\code{labelsize}:}{Object of class "numeric". The size of the gene/sample labels.}
-    \item{\code{legend}:}{The meaning of the red and green colours of the bars.}
+    \item{\code{legend}:}{The meaning of the colours of the bars, to be used in the legend.}
+    \item{\code{colour}:}{The numbers of the colours used in the plot.}
+    \item{\code{colourCode}:}{The meaning of the colours used (shorter version of \code{legend}.}
     }
 }
 

@@ -107,7 +107,7 @@ setMethod("show", "gt.barplot",
 
 #==========================================================
 setMethod("sort", matchSignature(signature(x = "gt.barplot"), sort),
-  function(x, decreasing = FALSE ) {
+  function(x, decreasing = TRUE ) {
     ix <- sort.list(z.score(x), decreasing=decreasing)
     x[ix]
   }
