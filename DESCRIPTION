@@ -14,7 +14,7 @@ Collate: 000.R gtresult.R gtbarplot.R mlogit.R GOstructure.R
   internal.R checkerboard.R geneplot.R globaltest.R gtGO.R 
   multtest.R permutations.R regressionplot.R sampleplot.R
   sampling.R 
-SaveImage: yes
+LazyLoad: yes
 LazyLoad: yes
 ZipData: yes
 URL: http://www.msbi.nl/goeman
