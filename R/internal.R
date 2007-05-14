@@ -9,6 +9,18 @@
     }
 }
 #==========================================================
+# A small iterations utility
+#==========================================================
+iterations <- function(object) {
+  if (is(object, "mlogit"))
+    object@iter
+  else if ("iter" %in% names(object))
+    object$iter
+  else 
+    0
+}    
+
+
 
 
 #==========================================================

@@ -268,7 +268,7 @@ globaltest <- function(X, Y, genesets,
   }
   if (!is.null(coefficients(fit)) && any(is.na(coefficients(fit))))
     stop("The null model is singular.", call. = FALSE)
-  if ((model != "linear") && (!is.null(fit$iter) && fit$iter == 20))
+  if (!is.null(iterations(fit)) && iterations(fit) == 20)
     warning("The null model failed to converge.", call. = FALSE)
   if ((model == "survival") && (all(residuals(fit) == 0))) {
     stop("There are no events.", call. = FALSE)
