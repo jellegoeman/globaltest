@@ -21,6 +21,7 @@ setMethod("length", "GOstructure", function(x) {
 
 makeGOstructure <- function(data, annotation, top, only.ids, ontology = c("BP", "CC", "MF"), unreliable) {
 
+  require("GO") || stop("The GO package is required for this feature")
   ll2name<-function(ids){
     ids<-ids[ids %in% annotation]
     nms<-data[match(ids,annotation)]
@@ -53,7 +54,6 @@ makeGOstructure <- function(data, annotation, top, only.ids, ontology = c("BP", 
 
   ONancestor  <- paste(ontology, "ANCESTOR", sep="")
   ONoffspring  <- paste(ontology, "OFFSPRING", sep="")  
-  require(GO)
   annotaton<-as.character(annotation)
   # Get the genes and remove unreliable annotations
   allgenes <- GO2ALLPROBES(top)[[1]]

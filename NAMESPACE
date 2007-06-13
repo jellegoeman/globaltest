@@ -6,7 +6,9 @@ importFrom(survival, Surv, coxph, coxph.fit, basehaz, coxph.control)
 
 importFrom(stats, coefficients, fitted.values, residuals)
 
-importFrom(annotate, lookUp, Secondary, Term)
+importFrom(annotate, lookUp)
+
+importFrom(AnnotationDbi, Secondary, Term)
 
 import(Biobase)
 
