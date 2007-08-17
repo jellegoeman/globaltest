@@ -13,8 +13,8 @@ globaltest <- function(X, Y, genesets,
                         scaleX = TRUE, 
                         accuracy = 50, ...)
 
-
 {
+
   # We coerce the input X, Y, d, model, adjust, levels, into the format:
   # matrix eX
   # data.frame pData

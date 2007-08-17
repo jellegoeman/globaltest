@@ -37,7 +37,9 @@ setMethod("summary", "mlogit", function(object,...) {
   cat("Call:\n")
   cat(paste(deparse(object@call), "\n"))
   cat("\n")
-  devres <- sign(object@y - object@fitted.values) * sqrt(-2 * (log(object@fitted.values) * object@y + log(1-object@fitted.values) * (1-object@y)))
+  devres <- sqrt(-2 * (log(object@fitted.values)))
+  devres[object@y==0] <- sqrt(-2 * (log(1-object@fitted.values)))[object@y==0]
+  devres <- sign(object@y - object@fitted.values) * devres
   sumdevres <- t(round(apply(devres,2,quantile),4))
   colnames(sumdevres) <- c("Min", "1Q", "Median", "3Q", "Max")
   cat("Deviance Residuals:\n")
@@ -162,7 +164,7 @@ mlogit <- function(formula, data, control = glm.control())
     null.deviance = nulldev,
     deviance = dev,
     iter = iter,
-    converged = ((iter) == control$maxit)
+    converged = (iter < control$maxit)
   )
   
   fit
