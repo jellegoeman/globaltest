@@ -193,7 +193,7 @@ sampleplot <- function(gt, geneset, samplesubset, scale = TRUE, drawlabels = TRU
   } else if (model == 'logistic') {
     colour <- c(2,3)
     colourCode <- .levels(gt)
-    legend <- c(paste(.levels(gt)[1], "samples"), paste(.levels(gt)[2], "samples"))
+    legend <- paste(paste("\"", .levels(gt), "\"", sep=""), "samples")
   } else if (model == "multinomial") {
     colourCode <- .levels(gt)
     colour <- 1 + 1:length(.levels(gt))

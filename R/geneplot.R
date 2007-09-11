@@ -79,19 +79,18 @@ geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE,
         paste("negative correlation with", nameY))
     }
   } else if (model == 'logistic') {
-    colourCode <- c(paste("high in", .levels(gt)[1]), paste("high in", .levels(gt)[2]) )
+    colourCode <- paste("high in", paste("\"", .levels(gt), "\"", sep=""))
     colour <- 2:3
-    legend <- c(paste("higher expression in", .levels(gt)[1], "samples"), 
-      paste("higher expression in", .levels(gt)[2], "samples"))
+    legend <- paste("higher expression in", paste("\"", .levels(gt), "\"", sep=""), "samples")
   } else if (model == 'survival') {
     colourCode <- c("+", "-")
     colour <- 3:2
     legend <- c(paste("positively associated with survival"), 
       paste("negatively associated with survival"))
   } else if (model == "multinomial") {
-    colourCode <- sapply(.levels(gt), function(level) paste("high in", level))
+    colourCode <- paste("high in", paste("\"", .levels(gt), "\"", sep=""))
     colour <- 1 + 1:length(.levels(gt))
-    legend <- sapply(.levels(gt), function(level) paste("highest expression in", level, "samples"))
+    legend <- paste("higher expression in", paste("\"", .levels(gt), "\"", sep=""), "samples")
   }
 
   gtbar <- new("gt.barplot",     
