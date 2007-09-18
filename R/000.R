@@ -14,8 +14,6 @@ setGeneric("z.score", function(x) standardGeneric("z.score"))
 
 setGeneric("scale")
 
-setGeneric("combine")
-
 setGeneric("plot", function(x, y, ...) standardGeneric("plot"))
 
 setGeneric("hist", function(x,...) standardGeneric("hist"))
