@@ -16,8 +16,7 @@
 \alias{names,gt.result-method}
 \alias{names<-,gt.result-method}
 \alias{sort,gt.result-method}
-\alias{combine,gt.result-method}
-\alias{combine}
+\alias{combine,gt.result,gt.result-method}
 \alias{fit,gt.result-method}
 \alias{fit}
 

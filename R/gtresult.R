@@ -155,8 +155,8 @@ setMethod("sort", matchSignature(signature(x = "gt.result"), sort),
 #==========================================================
 # Combines two or more gt.result objects to one
 #==========================================================
-setMethod("combine", signature(x = "gt.result"),
-  function(x, y, ...) {
+setMethod("combine", signature(x = "gt.result", y = "gt.result"),
+  function(x, y) {
     if (!missing(y)) {
       if (!.formula(x) == .formula(y))
         stop("Different models.")
