@@ -93,9 +93,9 @@ used for testing.
 \section{Preparation}
 
 In the examples that follow we use two data sets. Both use the
-dataformat use BioConductor \Rclass{exprSet} input, which is the
+dataformat use BioConductor \Rclass{ExpressionSet} input, which is the
 standard format for storing gene expression data in BioConductor.
-The \Rclass{exprSet} is the preferred input format for data in
+The \Rclass{ExpressionSet} is the preferred input format for data in
 \Rpackage{globaletest}, but simple vector/matrix input is also
 possible. See \Robject{help(globaltest)}.
 
@@ -146,7 +146,7 @@ library(globaltest)
 data(vandeVijver)
 @
 
-This loads another \Rclass{exprSet}, called \Robject{vandeVijver},
+This loads another \Rclass{ExpressionSet}, called \Robject{vandeVijver},
 which contains the data. The chip was done with Rosetta technology
 and the data are already normalized by Rosetta. The response of
 primary interest is the survival time, coded in variables
@@ -218,13 +218,13 @@ gt.all <- globaltest(Golub, "ALL.AML")
 @
 
 The first input \Rfunarg{X} should be the object with the expression
-data (here the \Rclass{exprSet} object), the second input
+data (here the \Rclass{ExpressionSet} object), the second input
 \Rfunarg{Y} should give the response variable. Because the call
-above provides an \Rclass{exprSet} for \Rfunarg{X}, we only need to
+above provides an \Rclass{ExpressionSet} for \Rfunarg{X}, we only need to
 specify the name of the repsonse variable in \Rfunarg{Y}.
 Alternatively, the user can provide the whole vector in \Rfunarg{Y}.
 In that case \Rfunarg{X} only needs to provide the matrix of gene
-expression measurements (but is may still be an \Rclass{exprSet}).
+expression measurements (but is may still be an \Rclass{ExpressionSet}).
 
 The third function argument should be the gene set(s) to be tested.
 The default is to test the gene set of all genes on the chip.

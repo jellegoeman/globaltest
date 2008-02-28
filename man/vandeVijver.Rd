@@ -7,7 +7,7 @@
 \title{A subset of the Breast cancer data from Rosetta Inpharmatics LLC and
 Netherlands Cancer Institute.}
 
-\description{An \code{\link[Biobase:exprSet-class]{exprSet}}
+\description{An \code{\link[Biobase:ExpressionSet-class]{ExpressionSet}}
 containing expression data of 100 breast cancer patients on 407
 selected genes plus the following phenotype data.
   \describe{
@@ -44,7 +44,7 @@ criteria, 1 = low risk, 0 = intermediate/high risk}
 
 \seealso{\code{\link{annotation.vandeVijver}}.}
 
-\format{An \code{\link[Biobase:exprSet-class]{exprSet}}. See the Biobase package}
+\format{An \code{\link[Biobase:ExpressionSet-class]{ExpressionSet}}. See the Biobase package}
 
 \references{M.J. van de Vijver, Y.D. He, L.J. van 't Veer, H. Dai,
 A.A.M. Hart, D.W. Voskuil, G.J. Schreiber, J.L. Peterse, C. Roberts,

@@ -58,7 +58,7 @@ samplename to draw under the axis.}
 \code{\link{regressionplot}}, \code{\link{checkerboard}}.}
 
 \examples{
-    # Breast cancer data (exprSet) from the Netherlands Cancer
+    # Breast cancer data (ExpressionSet) from the Netherlands Cancer
     # Institute with annotation:
     data(vandeVijver)
     data(annotation.vandeVijver)

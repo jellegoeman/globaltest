@@ -28,7 +28,7 @@ procedure that preserves the structure of the GO graph.}
     \item{stopafter}{The maximum number of significant GO terms to be found. The algorithm will stop when this value is exceeded.}
     \item{verbose}{If set to \code{TRUE}, prints much more extensive progress information.}
     \item{data}{The data set for which the \code{\link{GOstructure}} object is to be made. Can be either an
-    \code{\link[Biobase:exprSet-class]{exprSet}} or a vector of
+    \code{\link[Biobase:ExpressionSet-class]{ExpressionSet}} or a vector of
     probe indicators.}
     \item{annotation}{The name of the metaData annotation package to be used, or a vector of EntrezGene ids with the same
     length as the number of genes in \code{data}.}
@@ -72,7 +72,7 @@ also the vignette GlobalTest.pdf included with this package.}
 \code{\link{GOstructure}}, \code{\link{gt.multtest}}.}
 
 \examples{
-    # Breast cancer data (exprSet) from the Netherlands Cancer
+    # Breast cancer data (ExpressionSet) from the Netherlands Cancer
     # Institute with small GO structure (all descendants of Cell Cycle)
     # See the vignette for details on making a GO structure object.
     data(vandeVijver)

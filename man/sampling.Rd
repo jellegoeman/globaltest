@@ -40,7 +40,7 @@ Globaltest.pdf that comes with this package.}
 \code{\link{sampleplot}}, \code{\link{geneplot}}.}
 
 \examples{
-    # Breast cancer data (exprSet) from the Netherlands Cancer
+    # Breast cancer data (ExpressionSet) from the Netherlands Cancer
     # Institute with annotation:
     data(vandeVijver)
     data(annotation.vandeVijver)

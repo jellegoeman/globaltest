@@ -35,7 +35,7 @@ the vignette GlobalTest.pdf included with this package.}
 \seealso{\code{\link{globaltest}}, \code{\link{gtGO}}.}
 
 \examples{
-    # Breast cancer data (exprSet) from the Netherlands Cancer
+    # Breast cancer data (ExpressionSet) from the Netherlands Cancer
     # Institute with annotation:
     data(vandeVijver)
     data(annotation.vandeVijver)
