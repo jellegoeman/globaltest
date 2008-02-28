@@ -45,7 +45,7 @@ makeGOstructure <- function(data, annotation, top, only.ids, ontology = c("BP", 
       "CC" = "GO:0005575", 
       "MF" = "GO:0003674")
   }
-  if (class(data) %in% c("exprSet","ExpressionSet")) {
+  if (is(data,"ExpressionSet")) {
     data<-featureNames(data)
   } else if (!is.character(data)) {
     stop("Invalid input of data")
