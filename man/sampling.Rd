@@ -47,7 +47,7 @@ Globaltest.pdf that comes with this package.}
 
     gt <- globaltest(vandeVijver, "StGallen", annotation.vandeVijver)
 
-    sampling(gt)
+    sampling(gt, ndraws=100)
 }
 
 \keyword{htest}

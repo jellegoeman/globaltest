@@ -1,4 +1,4 @@
-#==========================================================
+#==========================================================                                        
 # Function "globaltest" performs the global test on (a list of) 
 #    subsets of the data
 # and stores the result in a gt.result object
@@ -392,6 +392,10 @@ globaltest <- function(X, Y, genesets,
     warning("No gamma approximation for a survival model. Asymptotic normality used.", call. = FALSE)
     method <- "asymptotic"
   }
+  if (method == "gamma") {
+    warning("The gamma method has been deprecated. It will be removed in a future version.")
+  }
+  
 
   # 19: Calculate the test results for each geneset and add them to gt
   if ((method == "gamma") || (method == "permutations")) {

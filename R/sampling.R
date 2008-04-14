@@ -43,13 +43,9 @@ sampling <- function(gt, geneset, ndraws = 10^3)
       randomgt <- gt
       randomgt@genesets <- randomgenesets
       if (model == "linear") {
-        res <- .linearglobaltestgamma(randomgt)
+        res <- .linearglobaltest(randomgt)
       } else if (model == "logistic") {
-        if (adjusted) {
-          res <- .adjustedlogisticglobaltestgamma(randomgt)
-        } else {
-          res <- .unadjustedlogisticglobaltestgamma(randomgt)
-        }
+        res <- .logisticglobaltest(randomgt)
       } else  if (model == "survival") {
         if (adjusted) {
           res <- .adjustedsurvivalglobaltest(randomgt)
@@ -58,9 +54,9 @@ sampling <- function(gt, geneset, ndraws = 10^3)
         }
       } else if (model == "multinomial") {
         if (adjusted) {
-          res <- .adjustedmultinomialglobaltestgamma(randomgt)
+          res <- .adjustedmultinomialglobaltest(randomgt)
         } else {
-          res <- .unadjustedmultinomialglobaltestgamma(randomgt)
+          res <- .unadjustedmultinomialglobaltest(randomgt)
         }
       }       
       (res[,1] - res[,2]) / res[,3]
@@ -73,13 +69,9 @@ sampling <- function(gt, geneset, ndraws = 10^3)
     zscore <- z.score(gt)
   else {
     if (model == "linear") {
-      res <- .linearglobaltestgamma(gt)
+      res <- .linearglobaltest(gt)
     } else if (model == "logistic") {
-      if (adjusted) {
-        res <- .adjustedlogisticglobaltestgamma(gt)
-      } else {
-        res <- .unadjustedlogisticglobaltestgamma(gt)
-      }
+      res <- .logisticglobaltest(gt)
     } else  if (model == "survival") {
       if (adjusted) {
         res <- .adjustedsurvivalglobaltest(gt)
@@ -88,9 +80,9 @@ sampling <- function(gt, geneset, ndraws = 10^3)
       }
     } else if (model == "multinomial") {
       if (adjusted) {
-        res <- .adjustedmultinomialglobaltestgamma(gt)
+        res <- .adjustedmultinomialglobaltest(gt)
       } else {
-        res <- .unadjustedmultinomialglobaltestgamma(gt)
+        res <- .unadjustedmultinomialglobaltest(gt)
       }
     }
     zscore <- (res[,1] - res[,2]) / res[,3]

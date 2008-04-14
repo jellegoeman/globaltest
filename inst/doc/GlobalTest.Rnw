@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{GlobalTest}
-%\VignetteDepends{globaltest, graphics, vsn, hu6800, golubEsets, KEGG, GOstats, Rgraphviz, multtest}
+%\VignetteDepends{globaltest, graphics, vsn, hu6800.db, golubEsets, KEGG.db, GOstats, Rgraphviz, multtest}
 %\VignetteKeywords{Expression Analysis}
 %\VignettePackage{globaltest}
 
@@ -17,7 +17,7 @@
 
 \author{Jelle Goeman \and Jan Oosting}
 
-\date{Package \Rpackage{globaltest}.\\\ \\ 
+\date{Package \Rpackage{globaltest}.\\\ \\
 version \Sexpr{Biobase::package.version("globaltest")} \\\ \\
 \today}
 
@@ -28,9 +28,9 @@ version \Sexpr{Biobase::package.version("globaltest")} \\\ \\
 \section*{Important Note}
 
 As of version 4.0.0 the method for calculating the asymptotic p-value
-has much improved. To use gamma approximation results of earlier versions 
+has much improved. To use gamma approximation results of earlier versions
 (and of the Bioinformatics paper add the option \Robject{method = "gamma"} to the
-\Rfunction{globaltest} function (only for compatibility). See section \ref{method} 
+\Rfunction{globaltest} function (only for compatibility). See section \ref{method}
 for more details.
 
 \section{Introduction}
@@ -107,10 +107,10 @@ library(methods)
 
 \subsection{Leukemia Data}
 
-The first data set is the famous Leukemia data set by \cite{Golub1999}, 
+The first data set is the famous Leukemia data set by \cite{Golub1999},
 that is available from the \Rpackage{golubEsets} package on
 BioConductor. We load the data and normalize them using
-\Rpackage{vsn}. We reduce the data set in size in order to 
+\Rpackage{vsn}. We reduce the data set in size in order to
 speed up the computations in this Vignette.
 
 <<getGolubData, results=hide>>=
@@ -162,11 +162,11 @@ to link the gene sets to be tested to the genes in the data.
 The easiest way to do this is to use the metadata packages provided
 in BioConductor. These are provided for most commercially available
 chips and for many organisms. For example, to get GO and KEGG
-annotation for the Leukemia data set, we use the \Rpackage{hu6800}
+annotation for the Leukemia data set, we use the \Rpackage{hu6800.db}
 package.
 
 <<loadKEGGandGO>>=
-library(hu6800)
+library(hu6800.db)
 kegg <- as.list(hu6800PATH2PROBE)
 go <- as.list(hu6800GO2ALLPROBES)
 @
@@ -324,11 +324,11 @@ top5
 @
 
 To make this list more readable, the pathway numbers can be replaced
-by the pathway names. For this we need the \Rpackage{KEGG} package,
+by the pathway names. For this we need the \Rpackage{KEGG.db} package,
 which contains the necessary information.
 
 <<kegg.numbers.to.names>>=
-library(KEGG)
+library(KEGG.db)
 names(top5) <- as.list(KEGGPATHID2NAME)[names(top5)]
 top5
 @
@@ -470,14 +470,14 @@ option \Rfunarg{method}.
 \paragraph{Asymptotic method} This method calculates the p-value
 based on the asymptotic distribution. This is the recommended method
 for large sample sizes. It can be slightly conservative for small
-samples. This new asymptotic method supersedes the Gamma approximation 
+samples. This new asymptotic method supersedes the Gamma approximation
 described in \cite{Goeman2004}.
 
 For survival as response this uses the normal distribution as
 described in \cite{Goeman2005}.
 
 For continuous, two-valued and multi-valued response the asymptotic
-method uses numerical methods of \cite{Box1954} and \cite{Kotz1967} 
+method uses numerical methods of \cite{Box1954} and \cite{Kotz1967}
 for calculating the distribution of non-chi-squared
 distributed quadratic forms. The calculation of the p-values
 involves a step that smoothes away very small eigenvalues. An extra
@@ -509,10 +509,10 @@ method will usually not give exactly the same p-values.
 to the asymptotic distribution. This has the advantage that it is slightly
 quicker to calculate and that it is less conservative for small
 sample sizes. A drawback is that it can be
-anti-conservative, especially for large gene sets. This is the distribution 
-that was used in \cite{Goeman2004}. We recommend using the new asymptotic 
+anti-conservative, especially for large gene sets. This is the distribution
+that was used in \cite{Goeman2004}. We recommend using the new asymptotic
 method instead. See above. There is no gamma
-approximation if the response variable is a survival time. 
+approximation if the response variable is a survival time.
 
 
 \paragraph{} The user chooses the
@@ -630,7 +630,7 @@ and \Robject{ESR1} (oestrogen receptor status), and
 globaltest(vandeVijver, Surv(TIMEsurvival, EVENTdeath) ~ NIH + ESR1 + Posnodes)
 @
 
-From the result we see that the microarray data do not seem to have any 
+From the result we see that the microarray data do not seem to have any
 additional predictive value in this reduced data set. The p-value rose substantially
 relative to the unadjusted test, so at least one of these known risk
 factors is expected to be a confounder: it is strongly associated
@@ -790,7 +790,7 @@ repeat {
   }
 @
 
-Clicking on any node now produces a legend for that node in the top left corner 
+Clicking on any node now produces a legend for that node in the top left corner
 of the graph. Press escape to return to the \texttt{R} prompt.
 
 
@@ -891,7 +891,7 @@ under the null hypothesis that the gene is not associated with the
 response (except in a survival model, where the expected height is
 zero). Marks indicate with how many standard deviations (under the
 null hypothesis) the bar exceeds the reference line. Finally the
-bars are coloured to indicate a positive or a negative association
+bars are colored to indicate a positive or a negative association
 of the gene with the response.
 
 The geneplot influence bars have two interpretations. In the first

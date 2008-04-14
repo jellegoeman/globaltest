@@ -1,0 +1,9 @@
+4.9.2 (2008-04-14)
+- added a warning that method = "gamma" is deprecated.
+- changed the makeGOstructure function to accomodate the removal of the GOALLENTREZID object from the GO package.
+- updated the dependence of GO, KEGG and hu6800 to their .db versions.
+- updated the sampling method so that it does not use the gamma z-scores anymore (Thanks to Roel Bakker for the bug report).
+
+
+4.9.1 (2008-01-14)
+- fixed a bug in the "[" method that arose when the permutations version of the test was used (Thanks to Remco Visser for the bug report).

@@ -91,7 +91,6 @@ permutations <- function(gt, geneset, nperm = 10^4)
     if (nperm >= .nPerms(gt)) { # Use all possible permutations
       nperm <- .nPerms(gt)
       gt@method <- 4
-      gt@PermQs <- matrix(,.nPathways(gt),0)
       if ((model == "logistic") && !adjusted) {
         m <- sum(Y == Y[1])
         if (m == n/2) {

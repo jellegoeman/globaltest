@@ -16,7 +16,7 @@ procedure that preserves the structure of the GO graph.}
 
   \usage{
   gtGO(..., GO, focus, maxalpha = 0.05, stopafter = 100, verbose = FALSE)
-  makeGOstructure(data, annotation, top, only.ids, ontology = c("BP", "CC", "MF"), unreliable)
+  makeGOstructure(data, annotation, top, only.ids, ontology = c("BP", "CC", "MF"), entrez, unreliable)
   getFocus(GOstructure, maxatoms = 10)}
 
 \arguments{
@@ -30,8 +30,7 @@ procedure that preserves the structure of the GO graph.}
     \item{data}{The data set for which the \code{\link{GOstructure}} object is to be made. Can be either an
     \code{\link[Biobase:ExpressionSet-class]{ExpressionSet}} or a vector of
     probe indicators.}
-    \item{annotation}{The name of the metaData annotation package to be used, or a vector of EntrezGene ids with the same
-    length as the number of genes in \code{data}.}
+    \item{annotation}{The name of the metaData annotation package to be used. If a metadata package is not available, the name of the organism package (e.g. \code{org.HS.eg.db} can be given instead, and the mapping from probe identifiers to entrez can be supplied with the \code{entrez} argument.}
     \item{top}{The node to be used as top node of the \code{\link{GOstructure}}. Defaults
     to one of "GO:0008150", "GO:0005575", "GO:0003674", depending on he ontology chosen. The
     \code{\link{GOstructure}} object will only contain offspring of the chosen top node.}
@@ -39,6 +38,7 @@ procedure that preserves the structure of the GO graph.}
     will not appear in the \code{\link{GOstructure}} object.}
     \item{ontology}{The ontology to be used. One of Biological Process (BP), Cellular
     Component (CC) or Molecular Function (MF).}
+    \item{entrez}{A vector of EntrezGene ids with the same length as the number of genes in \code{data}, (and in the same order) giving the mapping from probe identifiers to EntrezGene ids. If this argument is used, the \code{annotation} argument should give the name of the organism annotation package.}
     \item{unreliable}{Can be used to designate one or more of the GO evidence codes as unreliable.
     Value must be a vector containing one or more from
     "IC", "IDA", "IEA", "IEP", "IGI", "IMP", "IPI", "ISS", "NAS", "ND", "RCA", "TAS", "NR".}

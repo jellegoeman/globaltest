@@ -19,22 +19,24 @@ setMethod("length", "GOstructure", function(x) {
 
 
 
-makeGOstructure <- function(data, annotation, top, only.ids, ontology = c("BP", "CC", "MF"), unreliable) {
+makeGOstructure <- function(data, annotation, top, only.ids, ontology = c("BP", "CC", "MF"), entrez, unreliable) {
 
-  require("GO") || stop("The GO package is required for this feature")
-  ll2name<-function(ids){
-    ids<-ids[ids %in% annotation]
-    nms<-data[match(ids,annotation)]
-    names(nms)<-names(ids)
-    nms
-  }
-  GO2ALLPROBES <-function(goid) {
+  require("GO.db") || stop("The GO.db package is required for this feature")
+  if (length(annotation)>1) stop("Invalid annotation")
+  noentrez <- missing(entrez)
+  
+  GO2ALLPROBES <- function(goid) {
     # return named vector of rownames
-    if (length(annotation)==1) {
-      lookUp(goid, annotation, "GO2ALLPROBES")
+    if (noentrez) {
+      lookUp(goid, annotation, "GO2ALLPROBES", load=TRUE)
     } else {
-      ll <- mget(goid, GOALLENTREZID)
-      lapply(ll,ll2name)
+      ll <- lookUp(goid, annotation, "GO2ALLEGS", load=TRUE)
+      lapply(ll, function(ids){
+        ids <- ids[ids %in% entrez]
+        nms <- data[match(ids, entrez)]
+        names(nms) <- names(ids)
+        nms
+      })
     }
   }
   # Get the right ontology
@@ -50,7 +52,6 @@ makeGOstructure <- function(data, annotation, top, only.ids, ontology = c("BP", 
   } else if (!is.character(data)) {
     stop("Invalid input of data")
   }
-  if (length(annotation)>1 && length(annotation)!=length(data)) stop("Invalid annotation")
 
   ONancestor  <- paste(ontology, "ANCESTOR", sep="")
   ONoffspring  <- paste(ontology, "OFFSPRING", sep="")  
