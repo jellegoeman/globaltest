@@ -33,7 +33,7 @@ citEntry(entry="Article",
         "Floor de Kort, Hans C. van Houwelingen (2004)",
         "A global test for groups of genes:",
         "testing association with a clinical outcome.",
-        "Bioinformatics 20, 93–99.")
+        "Bioinformatics 20, 93-99.")
 )
 
 citEntry(entry="Article",
