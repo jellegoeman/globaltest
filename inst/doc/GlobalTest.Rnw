@@ -444,7 +444,8 @@ whether the patient died (had an event) at that point or was still
 alive (censored) at the last observation time.
 
 <<vandeVijver_survival>>=
-globaltest(vandeVijver, Surv(TIMEsurvival, EVENTdeath))
+library(survival)
+globaltest(vandeVijver, "Surv(TIMEsurvival, EVENTdeath)")
 @
 
 By convention, the event indicator takes a 1 if the patient died,
@@ -453,7 +454,7 @@ value that indicates an event should be explicitly given. The
 following alternative calls give the same output as the above:
 
 <<vandeVijver_survival_alternatives, eval=FALSE>>=
-globaltest(vandeVijver, Surv(TIMEsurvival, EVENTdeath == 1))
+globaltest(vandeVijver, "Surv(TIMEsurvival, EVENTdeath == 1)")
 globaltest(vandeVijver, "TIMEsurvival", d = "EVENTdeath")
 globaltest(vandeVijver, "TIMEsurvival", d = "EVENTdeath", event = 1)
 @
