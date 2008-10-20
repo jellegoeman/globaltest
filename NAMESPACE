@@ -1,6 +1,6 @@
-importFrom(multtest, plot)
+importFrom(multtest, mt.rawp2adjp)
 
-importFrom(graphics, hist)
+importFrom(graphics, hist, plot)
 
 importFrom(survival, Surv, coxph, coxph.fit, basehaz, coxph.control)
 
@@ -10,7 +10,7 @@ importFrom(annotate, lookUp)
 
 importFrom(AnnotationDbi, Term, Secondary)
 
-import(Biobase)
+import(Biobase, methods)
 
 exportClasses(gt.result, gt.barplot, mlogit, GOstructure)
 

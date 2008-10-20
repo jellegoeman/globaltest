@@ -1,11 +1,11 @@
 Package: globaltest
-Version: 4.11.2
-Date: 2008-04-14
+Version: 4.11.3
+Date: 2008-10-20
 Title: Testing Association of Groups of Genes with a Clinical Variable
 Author: Jelle Goeman <j.j.goeman@lumc.nl> and Jan Oosting <j.oosting@lumc.nl>
 Maintainer: Jelle Goeman <j.j.goeman@lumc.nl>
-Depends: methods, graphics, multtest, AnnotationDbi, annotate
-Imports: Biobase, survival, AnnotationDbi, annotate
+Depends: methods
+Imports: Biobase, survival, AnnotationDbi, annotate, multtest, graphics
 Suggests: vsn, golubEsets, KEGG.db, hu6800.db, GOstats, Rgraphviz, GO.db
 Description: Testing whether sets of genes (e.g. KEGG pathways of GO terms) are significantly associated with a clinical variable of interest.
 License: GPL version 2 or newer

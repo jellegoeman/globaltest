@@ -101,8 +101,6 @@ possible. See \Robject{help(globaltest)}.
 
 <<options, echo=FALSE>>=
 options(continue = "  ")
-library(graphics)
-library(methods)
 @
 
 \subsection{Leukemia Data}

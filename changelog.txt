@@ -1,3 +1,6 @@
+4.11.3
+- cleaned the dependencies in the description file: moved most packages from depends to imports field
+
 4.9.2 (2008-04-14)
 - added a warning that method = "gamma" is deprecated.
 - changed the makeGOstructure function to accomodate the removal of the GOALLENTREZID object from the GO package.
