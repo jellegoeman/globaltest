@@ -752,7 +752,7 @@ ordering <- sort.list(order(-y,x))
 nAttrs$label <- ordering
 names(nAttrs$label) <- names(nodes)
 plot(sigGO, nodeAttrs = nAttrs)
-Terms <- sapply(lookUp(names(nodes)[sort.list(ordering)], "GO", "TERM"), Term)
+Terms <- sapply(mget(names(nodes)[sort.list(ordering)], GOTERM), Term)
 names(Terms) <- NULL
 legend <- data.frame(Terms)
 @
@@ -785,7 +785,7 @@ repeat {
   distance <- abs(p$x-x)+abs(p$y-y)
   idx <- which.min(distance)
   legend("topleft",legend=c(nAttrs$label[idx],names(focusnode)[idx],
-    Term(lookUp(names(focusnode)[idx], "GO","TERM")[[1]])),bg="white")
+    Term(mget(names(focusnode)[idx], GOTERM)[[1]]),bg="white"))
   }
 @
 
