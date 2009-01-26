@@ -933,8 +933,10 @@ iterations <- function(object) {
         upper <- partialsum + 1 - sumc
         if (mixture)
           ready <- ((upper - lower) / (upper + lower) < 10^-5) || (ix == maxiter) || (upper < accuracy)
-        else
-          ready <- ix == maxiter
+        else {
+          ready <- TRUE
+          upper <- .pAsymptotic(x, lams, mean(c(bet, min(lams))))
+        }
         ix <- ix + 1
       }
     }

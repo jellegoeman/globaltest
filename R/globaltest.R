@@ -280,7 +280,7 @@ globaltest <- function(X, Y, genesets,
   adjusted <- !is.null(IminH)
 
 
-  # 14: Impute missing values of X and rescale X
+  # 14: Impute missing values of X and rescale X       
   row.meanX <- rowMeans(eX, na.rm = TRUE)
   eX <- eX - row.meanX %o% rep(1, times=n)
   eX[is.na(eX)] <- 0
