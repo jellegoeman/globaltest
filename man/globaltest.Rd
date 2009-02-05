@@ -59,7 +59,7 @@ the names of covariates in the
 \code{\link[Biobase:phenoData-class]{phenoData}} from \code{X}
 or a \code{\link[stats:formula]{formula}} object using these
 names. Default: no adjustment.}
-    \item{method}{The method for calculation the p-value. Use code{method =
+    \item{method}{The method for calculation the p-value. Use \code{method =
 "asymptotic"} for the full asymptotic distribution of the test
 statistic; \code{method = "gamma"} for the gamma (= scaled
 chi-squared) approximation to that distribution and \code{method =
