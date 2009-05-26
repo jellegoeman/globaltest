@@ -1,3 +1,18 @@
+4.99.0
+- Complete rewrite of the package: all function have been replaced, old ones deprecated
+- New vignette
+- New feature: complete support of formula-based calls to "gt" (was: globaltest)
+- New feature: improved asymptotic null distribution for glms
+- New feature: exact distribution for linear model
+- New feature: inheritance method for multiple testing
+- New feature: focus level method available outside GO context
+- New feature: P-values, dendrogram and inheritance mutiple testing in "covariates" function (was: geneplot)
+- New feature: P-values and dendrogram in "subjects" function (was: sampleplot)
+- New feature: functions gtKEGG, gtGO, gtBroad for easier gene set testing.
+
+4.15.1
+- fixed bug in geneplot that deleted gene labels of single gene gene sets
+
 4.13.1
 - changed .pAsymptotic to only use true mixtures (c > 0) in order to avoid numerical problems in large data sets
 

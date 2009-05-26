@@ -2,7 +2,7 @@
 
 \alias{checkerboard}
 
-\title{Checkerboard plot for Global Test}
+\title{Checkerboard plot for Global Test (Deprecated)}
 
 \description{Produces a plot to visualize the test result produced
 by \code{\link{globaltest}}, by showing the association between
@@ -31,6 +31,9 @@ The left and bottom margins are adjusted to allow enough space
 for the longest samplename.}
 
 \value{A matrix giving the old and the new sample numbers.}
+
+\note{\code{checkerboard} has been deprecated. Please use \code{\link{subjects}} instead.}
+
 
 \references{J. J. Goeman, S. A. van de Geer, F. de Kort and J. C.
 van Houwelingen, 2004, \emph{A global test for groups of genes:

@@ -90,15 +90,13 @@ mlogit <- function(formula, data, control = glm.control())
   # extract Y from formula and data  
   if (missing(data))
     data <- NULL
-  Y <- factor(eval(formula[[2]], data))
+  Y <- factor(eval(formula[[2]], data, environment(formula)))
   n <- length(Y)
   outs <- levels(Y)
   g <- length(outs)
   matrixY <- sapply(outs, function(out) { Y == out }) + 0
-  
-  dummyform <- as.formula(paste("rep(0,n) ~", formula[3]))
-  dummyfit <- lm(dummyform, data = data, x = TRUE)
-  X <- as.matrix(dummyfit$x)
+                                            
+  X <- model.matrix(formula, data=data)
   p <- ncol(X)
   
   # fit parameters

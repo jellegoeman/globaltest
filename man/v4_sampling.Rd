@@ -4,7 +4,7 @@
 
 \title{Sampling random 'pathways' for the Global Test}
 
-\description{For every pathway in a result of \code{globaltest},
+\description{(DEPRECATED: please use use \code{\link{comparative}} instead). For every pathway in a result of \code{globaltest},
 calculates how many randomly drawn groups of genes of the same size have a
 smaller or equal p-value.}
 
@@ -25,7 +25,10 @@ what proportion of the random pathways has a larger standardized test statistic
 \value{An object of class
 \code{\link[gt.result-class]{gt.result}}.}
 
-\note{The function \code{sampling} cannot be applied to a
+\note{
+\code{sampling} has been deprecated. Please use \code{\link{comparative}} instead.
+
+The function \code{sampling} cannot be applied to a
 \code{\link[gt.result-class]{gt.result}} object resulting from a call to
 \code{\link{permutations}}.}
 

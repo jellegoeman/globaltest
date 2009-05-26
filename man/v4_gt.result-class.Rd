@@ -1,9 +1,7 @@
 \name{gt.result-class}
 \docType{class}
-\alias{p.value}
 \alias{gt.result}
-\alias{result}
-\alias{size}
+\alias{genesets}
 \alias{gt.result-class}
 \alias{show,gt.result-method}
 \alias{size,gt.result-method}
@@ -21,7 +19,7 @@
 \alias{fit}
 
 
-\title{Class "gt.result" for results of the function globaltest}
+\title{Class "gt.result" for results of the function globaltest  (Deprecated)}
 
 \description{The class gt.result is the output of a call to
 \code{\link{globaltest}} and the input of various plotting
@@ -80,6 +78,8 @@ functions to visualize the test result. }
     \code{\link{globaltest}}.}
     }
 }
+
+\note{\code{gt.result} has been deprecated: please use use \code{\link{gt.object}} instead.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 

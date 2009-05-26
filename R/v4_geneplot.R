@@ -62,9 +62,9 @@ geneplot <- function(gt, geneset, genesubset, scale = FALSE, drawlabels = TRUE,
   } else {
     up <- 1 + ((gt@eX[geneset,] %*% .Y(gt)) <= 0) 
   }
+  rownames(up) <- rownames(gt@eX)[geneset]
   res <- cbind(res[,1:3,drop = FALSE], up)
   colnames(res) <- c("Influence", "Expected", "SD", "UP")
-  
  
   # Output: gt.barplot object
   if (model == 'linear') {

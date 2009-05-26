@@ -2,7 +2,7 @@
 
 \alias{regressionplot}
 
-\title{Regression Plot for Global Test}
+\title{Regression Plot for Global Test (Deprecated)}
 
 \description{Produces a plot which can be used to visualize the
 effect of specific samples on the test result produced by
@@ -35,7 +35,9 @@ crosses.}
 
 \value{\code{NULL} (no output).}
 
-\note{Regressionplot does not work if the adjusted version of
+\note{\code{regressionplot} has been deprecated. Please use \code{\link{subjects}} instead.
+
+Regressionplot does not work if the adjusted version of
 globaltest was used.}
 
 \references{J. J. Goeman, S. A. van de Geer, F. de Kort and J. C.

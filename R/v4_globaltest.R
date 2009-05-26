@@ -20,6 +20,9 @@ globaltest <- function(X, Y, genesets,
   # data.frame pData
   # formula ff
 
+  if (gt.options()$warn.deprecated)
+    .Deprecated("gt")
+
   # 0: check whether the input is in the permitted classes
   if (!(class(X) %in% c("matrix","ExpressionSet"))) 
     stop("X should be of class ExpressionSet or matrix", call. = FALSE)

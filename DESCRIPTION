@@ -1,19 +1,17 @@
 Package: globaltest
-Version: 4.15.0
-Date: 2009-01-22
-Title: Testing Association of Groups of Genes with a Clinical Variable
+Version: 4.99.0
+Date: 2009-05-26
+Title: Locally most powerful testing in high dimensions, with applications to gene set testing
 Author: Jelle Goeman <j.j.goeman@lumc.nl> and Jan Oosting <j.oosting@lumc.nl>
 Maintainer: Jelle Goeman <j.j.goeman@lumc.nl>
 Depends: methods
 Imports: Biobase, survival, AnnotationDbi, annotate, multtest, graphics
-Suggests: vsn, golubEsets, KEGG.db, hu6800.db, GOstats, Rgraphviz, GO.db, annotate
-Description: Testing whether sets of genes (e.g. KEGG pathways of GO terms) are significantly associated with a clinical variable of interest.
+Suggests: vsn, golubEsets, KEGG.db, hu6800.db, Rgraphviz, GO.db, lungExpression, org.Hs.eg.db, annotate, Biobase, survival, GSEABase
+Description: The global test is a locally most powerful test against potentially high-dimensional alternatives. This package implements this test for (generalized linear) regression models, and has several functions to facilitate the use of this test for gene set testing of GO and KEGG terms.
 License: GPL version 2 or newer
 biocViews: Microarray, OneChannel, Bioinformatics, DifferentialExpression, GO, Pathways
-Collate: 000.R gtresult.R gtbarplot.R mlogit.R GOstructure.R 
-  internal.R checkerboard.R geneplot.R globaltest.R gtGO.R 
-  multtest.R permutations.R regressionplot.R sampleplot.R
-  sampling.R 
+Collate: gt-object.R mlogit.R comparative.R diagnosticplots.R focuslevel.R generalizedFdistribution.R genesettesting.R gt.R inheritance.R models.R options.R utilities.R
+	v4_000.R v4_gtresult.R v4_gtbarplot.R v4_internal.R v4_checkerboard.R v4_geneplot.R v4_globaltest.R v4_multtest.R v4_permutations.R v4_regressionplot.R v4_sampleplot.R v4_sampling.R 
 LazyLoad: yes
 ZipData: yes
 URL: http://www.msbi.nl/goeman

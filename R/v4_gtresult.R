@@ -69,12 +69,12 @@ setMethod("result", "gt.result",
 
 #==========================================================
 setMethod("p.value", "gt.result",
-            function(x) x@res[,6])
+            function(object, ...) object@res[,6])
 
 
 #==========================================================
 setMethod("z.score", "gt.result",
-            function(x) (x@res[,3] - x@res[,4]) / x@res[,5])
+            function(object) (object@res[,3] - object@res[,4]) / object@res[,5])
 
 
 #==========================================================

@@ -52,9 +52,9 @@ setMethod("names<-", "gt.barplot",
 # A z.score method for "gt.barplot" 
 #==========================================================
 setMethod("z.score", "gt.barplot", 
-            function(x) 
+            function(object,...) 
 {
-    res <- x@res
+    res <- object@res
     (res[,1] - res[,2]) / res[,3]
 })      
 

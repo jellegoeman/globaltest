@@ -15,7 +15,7 @@
 \alias{names,gt.barplot-method}
 \alias{names<-,gt.barplot-method}
 
-\title{Class "gt.barplot" for results of the functions geneplot and sampleplot}
+\title{Class "gt.barplot" for results of the functions geneplot and sampleplot (Deprecated)}
 
 \description{The class gt.barplot stores the output of a call to
 \code{\link{geneplot}} or \code{\link{sampleplot}}.}
@@ -51,6 +51,8 @@
     \item{names<-}{(gt.result): Changes the names of the genes or samples.}
   }
 }
+
+\note{\code{gt.barplot} has been deprecated: please use use \code{\link{covariates}} or \code{\link{subjects}} instead.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 

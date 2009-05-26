@@ -2,7 +2,7 @@
 
 \alias{geneplot}
 
-\title{Gene Plot for Global Test}
+\title{Gene Plot for Global Test (Deprecated)}
 
 \description{Produces a plot to show the influence of individual
 genes on the test result produced by \code{\link{globaltest}}.}
@@ -40,6 +40,8 @@ and downregulation.
 
 The bottom margin is adjusted to allow enough space for the longest
 gene id to draw under the axis.}
+
+\note{\code{geneplot} has been deprecated. Please use \code{\link{covariates}} instead.}
 
 \value{An object of type \code{\link[gt.barplot-class]{gt.barplot}}.}
 

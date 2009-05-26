@@ -2,7 +2,7 @@
 
 \alias{globaltest}
 
-\title{Global Test}
+\title{Global Test (Deprecated)}
 
 \description{In microarray data, tests a (list of) group(s) of
 genes for significant association with a given clinical variable.}
@@ -95,6 +95,8 @@ the group have similar expression patterns, only that many of
 them are correlated with the outcome.}
 
 \note{
+\code{globaltest} has been deprecated. Please use \code{\link{gt}} instead.
+
 The options globaltest options sampling and permutation
 have been replaced by separate functions from version 3.0. See
 \code{\link{sampling}} and \code{\link{permutations}}.}

@@ -4,7 +4,7 @@ importFrom(graphics, hist, plot)
 
 importFrom(survival, Surv, coxph, coxph.fit, basehaz, coxph.control)
 
-importFrom(stats, coefficients, fitted.values, residuals)
+importFrom(stats, coefficients, fitted.values, residuals, weights, alias, model.matrix)
 
 importFrom(annotate, lookUp)
 
@@ -12,12 +12,14 @@ importFrom(AnnotationDbi, Term, Secondary)
 
 import(Biobase, methods)
 
-exportClasses(gt.result, gt.barplot, mlogit, GOstructure)
+exportClasses(gt.result, gt.barplot, mlogit, gt.object)
 
-exportMethods("[", show, result, p.value, length, names, "names<-", 
+exportMethods("[", "[[", show, result, p.value, length, names, "names<-", 
 	sort, size, hist, z.score, scale, plot, fit, summary, residuals, 
-	fitted.values, coefficients, genesets)
+	fitted.values, coefficients, genesets, alias, "alias<-", model.matrix, weights)
 
-export(globaltest, permutations, sampling, geneplot, sampleplot, 
-	regressionplot, checkerboard, gt.multtest, mlogit, makeGOstructure, 
-	gtGO, getFocus, combine)
+export(globaltest, gt, permutations, sampling, geneplot, sampleplot, 
+	regressionplot, checkerboard, gt.multtest, mlogit,
+	gtGO, combine, leafNodes, multtest, draw, gtKEGG, gtBroad,
+	comparative, focusLevel, inheritance, covariates, subjects, gt.options,
+	findFocus)

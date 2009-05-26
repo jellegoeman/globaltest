@@ -2,7 +2,7 @@
 
 \alias{sampleplot}
 
-\title{Sample Plot for Global Test}
+\title{Sample Plot for Global Test (Deprecated)}
 
 \description{Produces a plot to show the influence of individual
 samples on the test result produced by \code{\link{globaltest}}.}
@@ -51,6 +51,8 @@ The bottom margin is adjusted to allow enough space for the longest
 samplename to draw under the axis.}
 
 \value{An object of type \code{\link[gt.barplot-class]{gt.barplot}}.}
+
+\note{\code{sampleplot} has been deprecated. Please use \code{\link{subjects}} instead.}
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 

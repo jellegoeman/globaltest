@@ -1,0 +1,502 @@
+######################################
+# Covariates function
+# Decomposes the test result into the contributions due to each covariate
+######################################
+covariates <- function(object, 
+            what = c("p-value", "statistic", "z-score", "weighted"), cluster = "average", 
+            alpha = 0.05, sort=TRUE, legend = TRUE, colors, alias, 
+            cex.labels = 0.6, pdf, trace) {
+                                                
+  if ((length(object) > 1) && missing(pdf))
+    stop("length(object) > 1. Please reduce to a single test result or specify an output file.")
+  if (missing(trace)) trace <- gt.options()$trace
+  if (missing(alias)) alias <- NULL               # prevents confusion with "alias" method
+
+  if (!missing(pdf)) {
+    if (tolower(substr(pdf, nchar(pdf)-3, nchar(pdf))) != ".pdf")
+      pdf <- paste(pdf, ".pdf", sep="")
+    pdf(pdf)
+  }
+
+  # What to plot
+  what <- substr(match.arg(tolower(what),  c("p-value", "statistic", "z-score", "weighted")),1,1)
+
+  # update legend if asked
+  if (is.character(legend)) {
+    object@legend$cov <- legend
+    legend <- TRUE  
+  }
+  
+  # prepare alias
+  if (!is.null(alias)) {
+    if (is.environment(alias)) alias <- as.list(alias)
+    if (is.list(alias)) alias <- unlist(alias)
+    if (length(alias) == object@functions$df()[3] && is.null(names(alias))) 
+      names(alias) <- object@functions$cov.names()
+  }
+
+  # get the right subsets 
+  for (jj in 1:length(object)) {
+    obj <- object[jj] 
+    if (is.null(obj@weights)) 
+      weights <- rep(1, size(obj))
+    else
+      weights <- obj@weights[[1]]
+    if (is.null(obj@subsets)){
+      subset <- seq_len(size(obj))
+      obj@subsets[[1]]=subset      }
+    else
+      subset <- obj@subsets[[1]]
+
+    # make a title if necessary
+    ttl <- names(obj)
+    if (!is.null(alias(obj)))
+      ttl <- paste(ttl, "-", alias(obj))
+
+    # get the test function
+    test <- function(set) {
+      obj@functions$test(subset[set], weights[set])
+    }
+  
+    # Test covariates  
+    leaves <- t(sapply(1:size(obj), function(i) {
+      test(i)
+    }))
+    rownames(leaves) <- obj@functions$cov.names(subset)
+    if (is.null(rownames(leaves)))
+      rownames(leaves) <- subset
+  
+    # revert to weighted if asked
+    if (what == "w") {
+      leaves[,c("S", "ES", "sdS")] <- leaves[,c("S", "ES", "sdS")] * matrix(weights(obj),size(obj),3)
+    }
+                       
+    # Make bars  
+    pps <- -log10(leaves[,"p"] )
+    bars <- switch(what, 
+      p = pps,
+      z = (leaves[,"S"]  - leaves[,"ES"]) / leaves[,"sdS"],
+      w=,s= leaves[,"S"]
+    )
+    names(bars) <- rownames(leaves)
+    if (!is.null(alias)) {
+      if (length(alias) == length(bars) && (is.null(names(alias)) || is.null(names(bars))))
+        names(bars) <- alias
+      else {
+        names(bars) <- alias[names(bars)]
+      }
+    }
+    
+    if (sort) 
+      order.bars <- -pps
+    else
+      order.bars <- 1:length(bars)
+  
+    # get default plotting parameters     
+    margins <- par("mai")
+                                    
+    # Make the dendrogram
+    dendrogram <- ((!is.logical(cluster)) || (cluster)) && (substr(cluster,1,1) != "n")
+    if (is.logical(cluster) && dendrogram) cluster <- "average"
+    if (dendrogram) {
+      # Get residuals of the alternative regressing out the null
+      cors <- obj@functions$cor(subset)
+      
+      # Make a distance matrix and a dendrogram
+      if (obj@directional)
+        dd <- as.dist(1-cors)
+      else
+        dd <- as.dist(1-abs(cors))
+      hc <- as.dendrogram(hclust(dd, method = cluster))
+  
+      # reorder to get the most significant ones to the left
+      hc <- reorder(hc, wts=order.bars, agglo.FUN=min)
+      sorter <- unlist(hc)
+      obj@result =rbind(obj@result,leaves)
+      obj@subsets =  c(list(obj@functions$cov.names(obj@subsets[[1]])),  unlist(obj@functions$cov.names(subset)))
+      obj@extra <- NULL
+      obj@structure <- NULL
+      obj=inheritance(obj,hc,trace=trace, stop=1)
+      # Color the dendrogram
+      sigcol <- function(branch, sig, top) {      
+        setlist=obj@subsets
+        labels=unlist(dendrapply(branch, function(n) attributes(n)$label))  
+        newlabels=unlist(branch)
+        labels[newlabels]=labels
+        branchset <- unlist(branch) 
+        selected <- names(setlist)[which(lapply(setlist, setequal, labels[ branchset])==T)]          
+        if (sig) { 
+          sig <- obj@extra$inheritance[which(names(obj)==selected)]<=alpha
+        }
+        uit <- branch
+        attr(uit, "edgePar") <- list(col=ifelse(sig, 1, gray(.8)), lwd= ifelse(sig, 2, 1))
+        if (sig && top) attr(uit, "nodePar") <- list(pch=20)
+        if (!is.leaf(branch)) {
+          for (i in 1:length(branch)) {
+            uit[[i]] <- sigcol(branch[[i]], sig, FALSE)
+          }
+        }
+        return(uit)
+      }
+      hc <- sigcol(hc, sig = TRUE, top=TRUE)
+     
+      # draw
+      par(mai=c(0, max(1,margins[2]), margins[3:4]))
+      layout(as.matrix(1:2), heights=c(1,2))
+      ylab <- ifelse(obj@directional, "correlation", "absolute correlation")
+      plot(hc, leaflab="none", yaxt = "n", ylab=ylab, mgp=c(4,1,0))
+      axis(2, at = seq(0,2,by=.2), labels=1-seq(0,2,by=.2), las=2)
+    } else {
+      sorter <- sort.list(order.bars) 
+    }
+                             
+    leaves <- leaves[sorter,,drop=FALSE]
+    bars <- bars[sorter]
+                     
+    labwidth <- max(strwidth(names(bars),"inches", cex.labels)) + .2
+    par(mai = c(max(margins[1], labwidth*1.3), max(1,margins[2]), if (dendrogram) 0 else margins[3], margins[4]))
+  
+    #colors
+    positive <- obj@functions$positive(subset)[sorter]
+    if (missing(colors)) 
+      if (max(positive) <= 2)  # multinomial model
+        colors <- 3:2
+      else
+        colors <- rainbow(max(positive), start=0,end=1/2)
+    if (all(positive %in% 0:1))  
+      cols <- ifelse(positive, colors[1], colors[2])
+    else
+      cols <- colors[positive]
+                             
+    ylab <- switch(what,
+      p = "p-value",
+      z = "z-score",
+      s = "test statistic",
+      w = "weighted test statistic"
+    )
+    ylims <- switch(what, 
+      z=,p = range(bars),
+      w=,s = range(c(bars, leaves[,"ES"]))
+    )
+    if (ylims[1] > 0) ylims[1] <- 0
+    if (legend) {
+      nbars <- length(bars)
+      room <- (ylims[2] - max(bars[trunc(nbars*.6):nbars])) / diff(ylims)
+      ylims[2] <- ylims[2] + diff(ylims) * max(0,.1*length(colors) - room)
+    }
+    mids <- drop(barplot(bars, yaxt="n", las=2, ylab=ylab, ylim=ylims, mgp=c(4,1,0), col=cols, cex.names=cex.labels))
+    
+    # help lines
+    if (dendrogram) {
+      mb <- max(bars)
+      for (i in 1: length(bars))
+        lines(c(mids[i],mids[i]),c(max(0,bars[i])+.01*mb,mb*1.2),col=gray(.8),lty=3 )
+    }    
+    
+    if (what == "p") {
+      maxlogp <- max(bars, na.rm=TRUE)
+      labs <- seq(0,maxlogp, by = max(1,maxlogp %/% 5))
+      if (length(labs)==1)
+        labs <- log10(c(1,2,10/3,5))
+      else if (length(labs) <= 2)
+        labs <- outer(log10(c(1,2,5)),labs,"+")
+      else if (length(labs) <= 4)
+        labs <- outer(log10(c(1,10/3)),labs,"+")
+      axis(2, at = labs, labels=10^-labs, las=2)
+    } else
+      axis(2, las=2)
+    if (what %in% c("s","w")) {
+      sapply(seq_along(mids), function(i) { 
+        lines(c(mids[i]-0.5, mids[i]+0.5), rep(leaves[i,"ES"],2), lwd=3)
+        sapply(seq_len(max(0, (bars[i] - leaves[i,"ES"])/leaves[i,"sdS"])), function(k)
+          lines(c(mids[i]-0.5, mids[i]+0.5), rep(leaves[i,"ES"]+k*leaves[i,"sdS"],2))
+        )
+      })
+    }
+    abline(0,0)
+  
+    if (legend)               
+      legend("topright", obj@legend$cov, fill = colors, bg="white")
+
+    #reset defaults 
+    layout(1)
+    par(mai=margins)
+        
+    if (!missing(pdf)) {
+      title(ttl)
+    }
+  }
+
+  if (!missing(pdf))
+    dev.off()
+  
+  # return
+  if (length(object) == 1) {
+    out <- obj
+  } else
+    out <- NULL
+
+  return(invisible(out))
+}
+
+
+
+
+
+######################################
+# Subjects function
+# Decomposes the test result into the contributions due to each subject
+######################################
+subjects <- function(object,
+            what = c("p-value", "statistic", "z-score", "weighted"), cluster = "average",
+            sort=TRUE, mirror = TRUE, legend = TRUE, colors, alias, cex.labels = 0.6, pdf) {
+            
+  if ((length(object) > 1) && missing(pdf))
+    stop("length(object) > 1. Please reduce to a single test result or specify an output file.")
+  if (missing(alias)) alias <- NULL               # prevents confusion with "alias" method
+    
+  if (!missing(pdf)) {
+    if (tolower(substr(pdf, nchar(pdf)-3, nchar(pdf))) != ".pdf")
+      pdf <- paste(pdf, ".pdf", sep="")
+    pdf(pdf)
+  }    
+
+  # update legend if asked
+  if (is.character(legend)) {
+    object@legend$subj <- legend
+    legend <- TRUE  
+  }
+  
+  # What to plot
+  what <- substr(match.arg(tolower(what),  c("p-value", "statistic", "z-score", "weighted")),1,1)
+
+
+  # get the right subsets
+  for (jj in 1:length(object)) {
+    obj <- object[jj]  
+    if (is.null(obj@weights))
+      weights <- rep(1, size(obj))
+    else
+      weights <- obj@weights[[1]]
+    if (is.null(obj@subsets))
+      subset <- seq_len(size(obj))
+    else
+      subset <- obj@subsets[[1]]
+
+    # make a title if necessary
+    ttl <- names(obj)
+    if (!is.null(alias(obj)))
+ 
+      ttl <- paste(ttl, "-", alias(obj))    
+  
+    # calculate scores
+    rr <- obj@functions$subjectplot(subset, weights, mirror)
+    if (what == "w") {
+      rr[,1:3] <- rr[,1:3] * matrix(abs(rr[,4])/max(abs(rr[,4])),nrow(rr),3)
+    }
+  
+    # Make bars
+    zs <- (rr[,1] - rr[,2]) / rr[,3]
+    if (mirror) 
+      pps <- pnorm(zs, lower.tail=FALSE)
+    else
+      pps <- pnorm(sign(rr[,4]) * zs, lower.tail=FALSE)
+    bars <- switch(what,
+      w=,s= rr[,1],
+      z = zs,
+      p = -log10(pps)
+    )
+    if (is.null(alias))
+      names(bars) <- rownames(obj@functions$getX(subset))
+    else
+      names(bars) <- alias
+    if (is.null(names(bars)))
+      names(bars) <- 1:length(bars)
+    if (sort)
+      order.bars <- -bars #if (mirror || what == "p") -bars * sign(rr[,4]) else -bars 
+    else
+      order.bars <- 1:length(bars)
+                                                          
+    # get default plotting parameters
+    margins <- par("mai")
+  
+    # Make the dendrogram
+    dendrogram <- ((!is.logical(cluster)) || (cluster)) && (substr(cluster,1,1) != "n")
+    if (is.logical(cluster) && dendrogram) cluster <- "average"
+    if (dendrogram) {
+      # Get residuals of the alternative regressing out the null
+      cors <- obj@functions$cor(subset, weights, transpose=TRUE)
+                                                       
+      # Make a distance matrix and a dendrogram
+      dd <- as.dist(1-cors)
+      hc <- as.dendrogram(hclust(dd, method = cluster))
+  
+      # reorder to get the most significant ones to the left
+      hc <- reorder(hc, wts=order.bars, agglo.FUN=min)
+      sorter <- unlist(hc)
+  
+      # draw
+      par(mai=c(0, max(1,margins[2]), margins[3:4]))
+      layout(as.matrix(1:2), heights=c(1,2))
+      ylab <- "correlation"
+      plot(hc, leaflab="none", yaxt = "n", ylab=ylab, mgp=c(4,1,0))
+      axis(2, at = seq(0,2,by=.2), labels=1-seq(0,2,by=.2), las=2)
+    } else {
+      sorter <- sort.list(order.bars)
+    }
+  
+    bars <- bars[sorter]
+    rr <- rr[sorter,]
+    pps <- pps[sorter]
+  
+    labwidth <- max(strwidth(names(bars),"inches", cex.labels)) + .2
+    par(mai = c(max(margins[1], labwidth*1.3), max(1,margins[2]), if (dendrogram) 0 else margins[3], margins[4]))
+                                     
+    #colors
+    if (missing(colors)) 
+      if (any(rr[,"Y"] < 0))
+        colors <- 3:2
+      else
+        colors <- rainbow(max(rr[,"Y"]), start=0,end=1/2)
+    if (any(rr[,"Y"] < 0))  
+      cols <- ifelse(rr[,"Y"] > 0, colors[1], colors[2])
+    else
+      cols <- colors[rr[,"Y"]]
+  
+    ylab <- switch(what,
+      z = "z-score",
+      p = "p-value",
+      s = "posterior effect",
+      w = "weighted posterior effect"
+    )
+    ylims <- switch(what, 
+      z=,p= range(bars),
+      s=,w= range(c(bars, rr[,"ER"]))
+    )
+    if (ylims[1] > 0) ylims[1] <- 0
+    if (legend) {
+      nbars <- length(bars)
+      room <- (ylims[2] - max(bars[trunc(nbars*.6):nbars])) / diff(ylims)
+      ylims[2] <- ylims[2] + diff(ylims) * max(0,.125*length(colors) - room)
+    }
+    mids <- drop(barplot(bars, yaxt="n", las=2, ylab=ylab, ylim=ylims, mgp=c(4,1,0), col=cols, cex.names=cex.labels))
+    
+    # help lines
+    if (dendrogram) {
+      mb <- max(bars)
+      for (i in 1: length(bars))
+        lines(c(mids[i],mids[i]),c(max(0,bars[i])+.01*mb,mb*1.2),col=gray(.8),lty=3 )
+    }    
+    
+    if (what == "p") {
+      maxlogp <- max(bars, na.rm=TRUE)
+      labs <- seq(0,maxlogp, by = max(1,maxlogp %/% 5))
+      if (length(labs)==1)
+        labs <- log10(c(1,2,10/3,5))
+      else if (length(labs) <= 2)
+        labs <- outer(log10(c(1,2,5)),labs,"+")
+      else if (length(labs) <= 4)
+        labs <- outer(log10(c(1,10/3)),labs,"+")
+      axis(2, at = labs, labels=10^-labs, las=2)
+    } else
+      axis(2, las=2)
+    if (what %in% c("s","w")) {
+      sapply(seq_along(mids), function(i) {
+        lines(c(mids[i]-0.5, mids[i]+0.5), rep(rr[i,"ER"],2), lwd=3)
+        sapply(seq_len(max(0, (bars[i] - rr[i,"ER"])/rr[i,"sdR"])), function(k)
+          lines(c(mids[i]-0.5, mids[i]+0.5), rep(rr[i,"ER"]+k*rr[i,"sdR"],2))
+        )
+        sapply(-seq_len(max(0, -(bars[i] - rr[i,"ER"])/rr[i,"sdR"])), function(k)
+          lines(c(mids[i]-0.5, mids[i]+0.5), rep(rr[i,"ER"]+k*rr[i,"sdR"],2))
+        )
+      })
+    }
+    abline(0,0)
+  
+    if (legend)
+      legend("topright", obj@legend$subj, fill = colors, bg="white")
+  
+    #reset defaults
+    layout(1)
+    par(mai=margins)
+  
+    if (!missing(pdf))
+      title(ttl)
+  
+  }
+  
+  if (!missing(pdf))
+    dev.off()
+
+  if (length(object)== 1) {
+    out <- cbind("P-value" = pps, Statistic = rr[,1], Expected = rr[,2], Std.dev = rr[,3], Residual = rr[,4])
+    rownames(out) <- names(bars)
+  } else
+    out <- NULL
+
+  invisible(out)
+ }
+
+
+######################################
+# Similarity function
+# Visualizes the XX' matrix
+######################################
+similarity <- function(object, cluster = "average", legend = TRUE) {
+
+  # reconstruct XX
+  if (length(object) > 1)
+    stop("length(object) > 1. Please reduce to a single test result")
+  if (is.null(object@weights))
+    weights <- rep(1, size(object))
+  else
+    weights <- object@weights[[1]]
+  if (is.null(object@subsets))
+    subset <- seq_len(size(object))
+  else
+    subset <- object@subsets[[1]]
+
+  X <- object@functions$getX(subset, weights)
+  if (object@directional) X <- cbind(X, sqrt(object@directional) * rowSums(X))
+
+  sds <- sqrt(rowSums(X*X))
+  sds[sds < max(sds)*1e-14] <- Inf
+  cors <- crossprod(t(X)) / outer(sds,sds)
+
+  # Make a distance matrix and a dendrogram
+  dendrogram <- ((!is.logical(cluster)) || (cluster)) && (substr(cluster,1,1) != "n")
+  if (is.logical(cluster) && dendrogram) cluster <- "average"
+  if (dendrogram) {
+    dd <- as.dist(1-cors)
+    dend <- as.dendrogram(hclust(dd, method = cluster))
+  } 
+
+  # Reconstruct XX matrix
+  XX <- crossprod(t(X))
+  diag(XX) <- NA
+
+  # make green and red, making sure black represents zero
+  posfraq <- - round(max(XX, na.rm=TRUE) / min(XX, na.rm=TRUE) * 100)
+  red <- c(100:1,rep(0,posfraq))/100
+  green <- c(rep(0,100),1:posfraq)/posfraq
+  color=rgb(red,green,0)
+
+  # Get sidecolors w.r.t Y
+  Y <- object@functions$getY()
+  scoreY <- 0.5 - 0.5 * round(Y / max(abs(Y)), 2)
+  #sidecolor <- gray(scoreY)
+
+  sidecolor <- rgb(1-ifelse(scoreY < 0.5, (1-scoreY)/2, 0), 1-ifelse(scoreY < 0.5, (1-scoreY)/2, 0), 1-ifelse(scoreY < 0.5, 0, scoreY/2))
+
+  if (dendrogram)
+    heatmap(XX, Rowv= dend, Colv=rev(dend), col=color, scale= "none",
+      RowSideColor = sidecolor, ColSideColors = sidecolor)
+  else
+    heatmap(XX, Rowv= NA, Colv=NA, col=color, scale= "none", 
+      RowSideColor = sidecolor, ColSideColors = sidecolor)
+      
+  if (legend && dendrogram)
+    legend("topleft", c("similar", "neutral", "dissimilar"), fill=c(3,1,2), cex=.6)
+    
+  invisible(XX)
+}

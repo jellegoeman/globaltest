@@ -6,15 +6,28 @@ citEntry(entry="Manual",
     author = personList(as.person("J. J. Goeman"),
         as.person("J. Oosting")),
     year = substring(packageDescription("globaltest")$Date,1,4),
-    note = paste("R package version",
-    packageDescription("globaltest")$version),
+    note = paste("R package version", packageDescription("globaltest")$version),
     textVersion =
       paste("Jelle J. Goeman and Jan Oosting (",
         substring(packageDescription("globaltest")$Date,1,4),
-        ") Globaltest: testing association",
-        " of a group of genes with a clinical variable. ",
+        ") Globaltest ",
         "R package, version ", packageDescription("globaltest")$Version,
         ".", sep = "")
+)
+
+citEntry(entry="Article",
+    title = "Testing against a high-dimensional alternative",
+    author = personList(as.person("J. J. Goeman"),
+        as.person("S. A. van de Geer"),
+        as.person("J. C. van Houwelingen")),
+    journal = "Journal of the Royal Statistical Society, Series B",
+    number = 68,
+    pages = "477-493",
+    year = 2006,
+    textVersion =
+      paste("Jelle J. Goeman, Sara A. van de Geer, Hans C. van Houwelingen (2006)",
+		"Testing against a high-dimensional alternative,",
+        	"Journal of the Royal Statistical Society, Series B, 68, 477-493.")
 )
 
 citEntry(entry="Article",
@@ -36,20 +49,4 @@ citEntry(entry="Article",
         "Bioinformatics 20, 93-99.")
 )
 
-citEntry(entry="Article",
-    title = "Testing association of a pathway with survival",
-    author = personList(as.person("J. J. Goeman"),
-        as.person("J. Oosting"),
-        as.person("A. Cleton-Jansen"),
-	as.person("J. K. Anninga"),
-        as.person("J. C. van Houwelingen")),
-    journal = "Bioinformatics",
-    number = 21,
-    pages = "1950-1957",
-    year = 2005,
-    textVersion =
-      paste("Jelle J. Goeman, Jan Oosting, Anne-Marie Cleton-Jansen,",
-        "Jakob, K. Anninga, Hans C. van Houwelingen (2005)",
-        "Testing association of a pathway with survival.",
-        "Bioinformatics 21, 1950-1957.")
-)
+

@@ -2,7 +2,7 @@
 
 \alias{permutations}
 
-\title{Permutations version of the Global Test}
+\title{Permutations version of the Global Test (Deprecated)}
 
 \description{Produces permutations of the \code{\link{globaltest}} test
 statistic and uses these to recalculate the p-value.}
@@ -26,7 +26,9 @@ stored for later visualisation using \code{\link{hist}}.}
 \value{An object of class
 \code{\link[gt.result-class]{gt.result}}.}
 
-\note{Permutations does not work if the adjusted version of
+\note{\code{permutations} has been deprecated: please use use \code{\link{gt}} instead.
+
+Permutations does not work if the adjusted version of
 globaltest was used.}
 
 \references{For references, type: citation("globaltest"). See also
