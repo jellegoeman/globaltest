@@ -1,3 +1,6 @@
+4.99.1
+- Empty subset now gives NA p-value rather than error.
+
 4.99.0
 - Complete rewrite of the package: all function have been replaced, old ones deprecated
 - New vignette

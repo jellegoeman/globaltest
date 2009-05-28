@@ -273,10 +273,7 @@ gt <- function(response, alternative, null, data, test.value,
         flush.console()
       }
       if (!many.weights) {                                           # single weighting; many subsets
-        if (length(subsets[[i]]) == 0)
-          uit <- c(rep(NA, 5), 0)
-        else
-          uit <- test(subset=subsets[[i]]) 
+        uit <- test(subset=subsets[[i]]) 
       } else if (!many.subsets) {                                    # many weightings; single subset
         uit <- test(weights=weights[[i]]) 
       } else {                                                       # many weightings; many subsets

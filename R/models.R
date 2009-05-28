@@ -38,52 +38,56 @@
       if (!missing(subset))
         X <- X[,subset,drop=FALSE]
       p <- ncol(X)
-      if(!missing(weights))
-        X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-
-      if (p > n) {
-        XX <- crossprod(t(X))
-        if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
-        norm.const <- sum(diag(XX)) / 100
-        S <- sum(Y * (XX %*% Y)) / sum(Y*Y)
-        lams <- eigen(XX, symmetric = TRUE, only.values=TRUE)$values
-        lams[1:(n-m)] <- lams[1:(n-m)] - S
-
-        # term needed for mean and variance of S for z-score
-        var.num <- 2*sum(XX*XX)
-
+      if (p == 0) {
+        return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
       } else {
-        if (dir && (p > 1)) X <- cbind(X, sqrt(dir) * rowSums(X))
-
-        norm.const <- sum(X * X) / 100
-        xy <- crossprod(X, Y)
-        S <- sum(xy * xy) / sumYY
-        lams <- eigen(crossprod(X), symmetric = TRUE, only.values=TRUE)$values
-        if (length(lams) < n) lams <- c(lams, numeric(n-length(lams)))
-        lams[1:(n-m)] <- lams[1:(n-m)] - S
-
-        # term needed for mean and variance of S for z-score
-        tr.term <- crossprod(X)
-        var.num <- 2*sum(tr.term*tr.term)
+        if(!missing(weights))
+          X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+  
+        if (p > n) {
+          XX <- crossprod(t(X))
+          if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
+          norm.const <- sum(diag(XX)) / 100
+          S <- sum(Y * (XX %*% Y)) / sum(Y*Y)
+          lams <- eigen(XX, symmetric = TRUE, only.values=TRUE)$values
+          lams[1:(n-m)] <- lams[1:(n-m)] - S
+  
+          # term needed for mean and variance of S for z-score
+          var.num <- 2*sum(XX*XX)
+  
+        } else {
+          if (dir && (p > 1)) X <- cbind(X, sqrt(dir) * rowSums(X))
+  
+          norm.const <- sum(X * X) / 100
+          xy <- crossprod(X, Y)
+          S <- sum(xy * xy) / sumYY
+          lams <- eigen(crossprod(X), symmetric = TRUE, only.values=TRUE)$values
+          if (length(lams) < n) lams <- c(lams, numeric(n-length(lams)))
+          lams[1:(n-m)] <- lams[1:(n-m)] - S
+  
+          # term needed for mean and variance of S for z-score
+          tr.term <- crossprod(X)
+          var.num <- 2*sum(tr.term*tr.term)
+        }
+  
+        # mean and variance of S for z-score
+        # use series approximation as given in Paolella (2003) 319:
+        mu.num <- sum(lams) + (n-m)*S
+        mu.den <- n-m
+        var.den <- 2*(n-m)
+        cov.term <- 2*mu.num
+        ES <- (mu.num/mu.den) * (1 - cov.term/(mu.num*mu.den) + var.den/(mu.den^2))
+        VarS <- (mu.num^2/mu.den^2) * (var.num/(mu.num^2)  + var.den/(mu.den^2) - 2*cov.term/(mu.num*mu.den))
+  
+        # calculate the p-value
+        if (calculateP)
+          p.value <- .getP(lams)
+        else
+          p.value <- NA
+  
+        # give back
+        return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))
       }
-
-      # mean and variance of S for z-score
-      # use series approximation as given in Paolella (2003) 319:
-      mu.num <- sum(lams) + (n-m)*S
-      mu.den <- n-m
-      var.den <- 2*(n-m)
-      cov.term <- 2*mu.num
-      ES <- (mu.num/mu.den) * (1 - cov.term/(mu.num*mu.den) + var.den/(mu.den^2))
-      VarS <- (mu.num^2/mu.den^2) * (var.num/(mu.num^2)  + var.den/(mu.den^2) - 2*cov.term/(mu.num*mu.den))
-
-      # calculate the p-value
-      if (calculateP)
-        p.value <- .getP(lams)
-      else
-        p.value <- NA
-
-      # give back
-      return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))
     }
   } else {
   # 2: permutation version
@@ -91,40 +95,44 @@
       if (!missing(subset))
         X <- X[,subset,drop=FALSE]
       p <- ncol(X)
-      if(!missing(weights))
-        X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-
-      if (p > n) {
-
-        XX <- crossprod(t(X))
-        if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
-
-        norm.const <- sum(diag(XX)) * sumYY / 100
-
-        S <- sum(Y * (XX %*% Y))
-        permS <- colSums(permY * (XX %*% permY))
-
+      if (p == 0) {
+        return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
       } else {
-        if (dir && (p > 1)) X <- cbind(X, sqrt(dir) * rowSums(X))
-
-        norm.const <- sum(X * X) * sumYY / 100
-        xy <- crossprod(X, Y)
-        S <- sum(xy * xy)
-
-        permxy <- crossprod(X, permY)
-        permS <- colSums(permxy * permxy)
-
+        if(!missing(weights))
+          X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+  
+        if (p > n) {
+  
+          XX <- crossprod(t(X))
+          if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
+  
+          norm.const <- sum(diag(XX)) * sumYY / 100
+  
+          S <- sum(Y * (XX %*% Y))
+          permS <- colSums(permY * (XX %*% permY))
+  
+        } else {
+          if (dir && (p > 1)) X <- cbind(X, sqrt(dir) * rowSums(X))
+  
+          norm.const <- sum(X * X) * sumYY / 100
+          xy <- crossprod(X, Y)
+          S <- sum(xy * xy)
+  
+          permxy <- crossprod(X, permY)
+          permS <- colSums(permxy * permxy)
+  
+        }
+  
+        # mean and variance of S for z-score
+        ES <- mean(permS)
+        VarS <- var(permS)
+  
+        # calculate the p-value
+        p.value <- mean(S <= permS)
+  
+        # give back
+        return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov = p))
       }
-
-      # mean and variance of S for z-score
-      ES <- mean(permS)
-      VarS <- var(permS)
-
-      # calculate the p-value
-      p.value <- mean(S <= permS)
-
-      # give back
-      return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov = p))
     }
   }
 
@@ -319,46 +327,50 @@
         if (!missing(subset))
           X <- X[,subset,drop=FALSE]
         p <- ncol(X)
-        if(!missing(weights))
-          X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+        if (p == 0) {
+          return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
+        } else {
+          if(!missing(weights))
+            X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+    
+          XX <- crossprod(t(X))
+          if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
+                         
+          S <- sum(Y * (XX %*% Y)) / sum(Y*Y*diag(XX))
+    
+          # get lambdas
+          XX <- XX * outer(sqrtW, sqrtW)
+          dXX <- diag(diag(XX))
+          if (m > 0) {
+            dXX <- dXX - (dXX %*% ZWhf) %*% ZWZinvZW
+            dXX <- dXX - crossprod(ZWZinvZW, crossprod(ZWhf, dXX))
+          }
+    
+          if (is.nan(S))
+            lams <- 0
+          else
+            lams <- eigen(XX - S*dXX, symmetric = TRUE, only.values=TRUE)$values
   
-        XX <- crossprod(t(X))
-        if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
-                       
-        S <- sum(Y * (XX %*% Y)) / sum(Y*Y*diag(XX))
-  
-        # get lambdas
-        XX <- XX * outer(sqrtW, sqrtW)
-        dXX <- diag(diag(XX))
-        if (m > 0) {
-          dXX <- dXX - (dXX %*% ZWhf) %*% ZWZinvZW
-          dXX <- dXX - crossprod(ZWZinvZW, crossprod(ZWhf, dXX))
+          # calculate the p-value
+          if (calculateP)
+            p.value <- .getP(lams)
+          else
+            p.value <- NA
+    
+          # mean and variance of S for z-score                                                           
+          # use series approximation as given in Paolella (2003) 319:
+          mu.num <- sum(diag(XX))
+          mu.den <- sum(diag(dXX))
+          var.num <- 2*sum(XX*XX)
+          var.den <- 2*sum(dXX*dXX)
+          cov.term <- 2*sum(XX*dXX)
+    
+          ES <- (mu.num/mu.den) * (1 - cov.term/(mu.num*mu.den) + var.den/(mu.den^2))
+          VarS <- (mu.num^2/mu.den^2) * (var.num/(mu.num^2)  + var.den/(mu.den^2) - 2*cov.term/(mu.num*mu.den))
+    
+          # give back
+          return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))
         }
-  
-        if (is.nan(S))
-          lams <- 0
-        else
-          lams <- eigen(XX - S*dXX, symmetric = TRUE, only.values=TRUE)$values
-
-        # calculate the p-value
-        if (calculateP)
-          p.value <- .getP(lams)
-        else
-          p.value <- NA
-  
-        # mean and variance of S for z-score                                                           
-        # use series approximation as given in Paolella (2003) 319:
-        mu.num <- sum(diag(XX))
-        mu.den <- sum(diag(dXX))
-        var.num <- 2*sum(XX*XX)
-        var.den <- 2*sum(dXX*dXX)
-        cov.term <- 2*sum(XX*dXX)
-  
-        ES <- (mu.num/mu.den) * (1 - cov.term/(mu.num*mu.den) + var.den/(mu.den^2))
-        VarS <- (mu.num^2/mu.den^2) * (var.num/(mu.num^2)  + var.den/(mu.den^2) - 2*cov.term/(mu.num*mu.den))
-  
-        # give back
-        return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))
       }
     } else {
     # 2: permutation version
@@ -366,37 +378,41 @@
         if (!missing(subset))
           X <- X[,subset,drop=FALSE]
         p <- ncol(X)
-        if(!missing(weights))
-          X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-  
-        if (p > n) {
-          XX <- crossprod(t(X))
-          if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
-  
-          S <- sum(Y * (XX %*% Y)) / sum(Y*Y*diag(XX))
-          permS <- colSums(permY * (XX %*% permY)) / drop(diag(XX) %*% (permY * permY))
-  
+        if (p == 0) {
+          return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
         } else {
-          if (dir) X <- X + dir * matrix(rowSums(X), nrow(X), ncol(X))
-  
-          diagXX <- rowSums(X * X)
-          xy <- crossprod(X, Y)
-          S <- sum(xy * xy) / sum(Y*Y*diagXX)
-  
-          permxy <- crossprod(X, permY)
-          permS <- colSums(permxy * permxy) / drop(diagXX %*% (permY * permY))
-  
+          if(!missing(weights))
+            X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+    
+          if (p > n) {
+            XX <- crossprod(t(X))
+            if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
+    
+            S <- sum(Y * (XX %*% Y)) / sum(Y*Y*diag(XX))
+            permS <- colSums(permY * (XX %*% permY)) / drop(diag(XX) %*% (permY * permY))
+    
+          } else {
+            if (dir) X <- X + dir * matrix(rowSums(X), nrow(X), ncol(X))
+    
+            diagXX <- rowSums(X * X)
+            xy <- crossprod(X, Y)
+            S <- sum(xy * xy) / sum(Y*Y*diagXX)
+    
+            permxy <- crossprod(X, permY)
+            permS <- colSums(permxy * permxy) / drop(diagXX %*% (permY * permY))
+    
+          }
+    
+          # mean and variance of S for z-score
+          ES <- mean(permS)
+          VarS <- var(permS)
+    
+          # calculate the p-value
+          p.value <- mean(S <= permS)
+    
+          # give back
+          return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))
         }
-  
-        # mean and variance of S for z-score
-        ES <- mean(permS)
-        VarS <- var(permS)
-  
-        # calculate the p-value
-        p.value <- mean(S <= permS)
-  
-        # give back
-        return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))
       }
     }
   
@@ -593,73 +609,81 @@
       if (!missing(subset))
         X <- X[,subset,drop=FALSE]
       p <- ncol(X)
-      if(!missing(weights))
-        X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-
-      XX <- crossprod(t(X))
-      if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
-      Q <- crossprod(Y, XX) %*% Y
-
-      # adjust Q in case of tied survival times
-      if (ties) {
-        tiecorrect <- sum( sapply(1:length(dtimes), function(i) {
-          if (sum(matrixO[,i]) == 1)
-            0
-          else {
-            matrixtie <- outer(matrixO[,i], matrixO[,i])
-            diag(matrixtie) <- 0
-            sum(XX[as.logical(matrixtie)]) - 2 * sum(matrixP[,i] %*% XX %*% matrixtie) + sum(matrixtie) * (matrixP[,i] %*% XX %*% matrixP[,i])
-          }
-        }))
-        Q <- Q - tiecorrect
+      if (p == 0) {
+        return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
+      } else {
+        if(!missing(weights))
+          X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+  
+        XX <- crossprod(t(X))
+        if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
+        Q <- crossprod(Y, XX) %*% Y
+  
+        # adjust Q in case of tied survival times
+        if (ties) {
+          tiecorrect <- sum( sapply(1:length(dtimes), function(i) {
+            if (sum(matrixO[,i]) == 1)
+              0
+            else {
+              matrixtie <- outer(matrixO[,i], matrixO[,i])
+              diag(matrixtie) <- 0
+              sum(XX[as.logical(matrixtie)]) - 2 * sum(matrixP[,i] %*% XX %*% matrixtie) + sum(matrixtie) * (matrixP[,i] %*% XX %*% matrixP[,i])
+            }
+          }))
+          Q <- Q - tiecorrect
+        }
+  
+        # calculate mean and variance of Q
+        EQ <- sum(XX * matrixW)
+        tussen <- matrix(diag(XX), n, nd) + 2 * XX %*% (matrixM - matrixP)
+        matrixT <- tussen - matrix(colSums(matrixP * tussen), n, nd, byrow = TRUE)
+        varQ <- sum(matrixPO * ((matrixT * matrixT) %*% t(matrixO)))
+  
+        # calculate p-value
+        Z <- (Q - EQ) / sqrt(varQ)
+        p.value <- pnorm(Z, lower.tail = FALSE)
+        norm.const <- (n-m) * EQ / 100
+  
+        # positive = negative association with occurence of the event
+  
+        # give back
+        return(c(p = p.value, S = Q/norm.const, ES = EQ/norm.const, sdS=sqrt(varQ)/norm.const, ncov=p))
       }
-
-      # calculate mean and variance of Q
-      EQ <- sum(XX * matrixW)
-      tussen <- matrix(diag(XX), n, nd) + 2 * XX %*% (matrixM - matrixP)
-      matrixT <- tussen - matrix(colSums(matrixP * tussen), n, nd, byrow = TRUE)
-      varQ <- sum(matrixPO * ((matrixT * matrixT) %*% t(matrixO)))
-
-      # calculate p-value
-      Z <- (Q - EQ) / sqrt(varQ)
-      p.value <- pnorm(Z, lower.tail = FALSE)
-      norm.const <- (n-m) * EQ / 100
-
-      # positive = negative association with occurence of the event
-
-      # give back
-      return(c(p = p.value, S = Q/norm.const, ES = EQ/norm.const, sdS=sqrt(varQ)/norm.const, ncov=p))
     }
   } else {
     test <- function(subset, weights, calculateP = TRUE) {     # calculateP not used in permutation testing
       if (!missing(subset))
         X <- X[,subset,drop=FALSE]
       p <- ncol(X)
-      if(!missing(weights))
-        X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-
-      XX <- crossprod(t(X))
-      if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
-      Q <- drop(crossprod(Y, XX) %*% Y)
-      EQ <- sum(XX * matrixW)
-
-      permQ <- colSums(permY * (XX %*% permY))
-      permEQ <- apply(permIY, 2, function(prm) {
-        pW <- matrixW[prm,prm]
-        sum(XX * pW)
-      })
-
-      norm.const <- (n-m) * EQ / 100
-
-      # calculate the p-value
-      p.value <- mean(Q - EQ <= permQ - permEQ)
-
-      # mean and variance of S for z-score
-      ES <- EQ + mean(permQ - permEQ)
-      VarS <- var(permQ - permEQ)
-
-      # give back
-      return(c(p = p.value, S = Q/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov = p))
+      if (p == 0) {
+        return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
+      } else {
+        if(!missing(weights))
+          X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+  
+        XX <- crossprod(t(X))
+        if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
+        Q <- drop(crossprod(Y, XX) %*% Y)
+        EQ <- sum(XX * matrixW)
+  
+        permQ <- colSums(permY * (XX %*% permY))
+        permEQ <- apply(permIY, 2, function(prm) {
+          pW <- matrixW[prm,prm]
+          sum(XX * pW)
+        })
+  
+        norm.const <- (n-m) * EQ / 100
+  
+        # calculate the p-value
+        p.value <- mean(Q - EQ <= permQ - permEQ)
+  
+        # mean and variance of S for z-score
+        ES <- EQ + mean(permQ - permEQ)
+        VarS <- var(permQ - permEQ)
+  
+        # give back
+        return(c(p = p.value, S = Q/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov = p))
+      }
     }
   }
 
@@ -875,51 +899,55 @@
       if (!missing(subset))
         bX <- bX[,selector(subset),drop=FALSE]
       p <- ncol(bX)/G
-      if(!missing(weights))
-        bX <- bX * matrix(rep(ifelse(weights>0, sqrt(weights), -sqrt(weights)),G), n*G, p*G, byrow = TRUE)
-
-      XX <- crossprod(t(bX))
-      if (dir) 
-        for (i in 1:G) { 
-          rs <- rowSums(bX[,p*(i-1)+1:p])
-          XX <- XX + dir * outer(rs, rs)
+      if (p == 0) {
+        return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
+      } else {
+        if(!missing(weights))
+          bX <- bX * matrix(rep(ifelse(weights>0, sqrt(weights), -sqrt(weights)),G), n*G, p*G, byrow = TRUE)
+  
+        XX <- crossprod(t(bX))
+        if (dir) 
+          for (i in 1:G) { 
+            rs <- rowSums(bX[,p*(i-1)+1:p])
+            XX <- XX + dir * outer(rs, rs)
+          }
+        dXX <- XX
+        dXX[(row(XX) - col(XX)) %% n != 0] <- 0
+                     
+        S <- sum(bY * (XX %*% bY)) / sum(bY * (dXX %*% bY))
+  
+        # get lambdas
+        if (m > 0) {
+          dXX <- dXX - bZ %*% (ZWZinvZW %*% dXX)
+          dXX <- dXX - dXX %*% t(ZWZinvZW) %*% t(bZ)
         }
-      dXX <- XX
-      dXX[(row(XX) - col(XX)) %% n != 0] <- 0
-                   
-      S <- sum(bY * (XX %*% bY)) / sum(bY * (dXX %*% bY))
-
-      # get lambdas
-      if (m > 0) {
-        dXX <- dXX - bZ %*% (ZWZinvZW %*% dXX)
-        dXX <- dXX - dXX %*% t(ZWZinvZW) %*% t(bZ)
+        XX <- halfW %*% XX %*% halfW
+        dXX <- halfW %*% dXX %*% halfW
+        if (is.nan(S))
+          lams <- 0
+        else
+          lams <- eigen(XX - S*dXX, symmetric=TRUE, only.values=TRUE)$values
+  
+        # calculate the p-value
+        if (calculateP)
+          p.value <- .getP(lams)
+        else
+          p.value <- NA
+  
+        # mean and variance of S for z-score
+        # use series approximation as given in Paolella (2003) 319:
+        mu.num <- sum(diag(XX))
+        mu.den <- sum(diag(dXX))
+        var.num <- 2*sum(XX*XX)
+        var.den <- 2*sum(dXX*dXX)
+        cov.term <- 2*sum(XX*dXX)
+  
+        ES <- (mu.num/mu.den) * (1 - cov.term/(mu.num*mu.den) + var.den/(mu.den^2))
+        VarS <- (mu.num^2/mu.den^2) * (var.num/(mu.num^2)  + var.den/(mu.den^2) - 2*cov.term/(mu.num*mu.den))
+  
+        # give back
+        return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))
       }
-      XX <- halfW %*% XX %*% halfW
-      dXX <- halfW %*% dXX %*% halfW
-      if (is.nan(S))
-        lams <- 0
-      else
-        lams <- eigen(XX - S*dXX, symmetric=TRUE, only.values=TRUE)$values
-
-      # calculate the p-value
-      if (calculateP)
-        p.value <- .getP(lams)
-      else
-        p.value <- NA
-
-      # mean and variance of S for z-score
-      # use series approximation as given in Paolella (2003) 319:
-      mu.num <- sum(diag(XX))
-      mu.den <- sum(diag(dXX))
-      var.num <- 2*sum(XX*XX)
-      var.den <- 2*sum(dXX*dXX)
-      cov.term <- 2*sum(XX*dXX)
-
-      ES <- (mu.num/mu.den) * (1 - cov.term/(mu.num*mu.den) + var.den/(mu.den^2))
-      VarS <- (mu.num^2/mu.den^2) * (var.num/(mu.num^2)  + var.den/(mu.den^2) - 2*cov.term/(mu.num*mu.den))
-
-      # give back
-      return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))
     }
   } else {
   # 2: permutation version
@@ -927,30 +955,34 @@
       if (!missing(subset))
         bX <- bX[,selector(subset),drop=FALSE]
       p <- ncol(bX)/G
-      if(!missing(weights))
-        bX <- bX * matrix(rep(ifelse(weights>0, sqrt(weights), -sqrt(weights)),G), n*G, p*G, byrow = TRUE)
-        
-      XX <- crossprod(t(bX))
-      if (dir) 
-        for (i in 1:G) { 
-          rs <- rowSums(bX[,p*(i-1)+1:p])
-          XX <- XX + dir * outer(rs, rs)
-        }
-      dXX <- XX
-      dXX[(row(XX) - col(XX)) %% n != 0] <- 0
-    
-      S <- sum(bY * (XX %*% bY)) / sum(bY * (dXX %*% bY))
-      permS <- colSums(permY * (XX %*% permY)) / colSums(permY * (dXX %*% permY))
-
-      # mean and variance of S for z-score
-      ES <- mean(permS)
-      VarS <- var(permS)
-
-      # calculate the p-value
-      p.value <- mean(S <= permS)
-
-      # give back
-      return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))
+      if (p == 0) {
+        return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
+      } else {
+        if(!missing(weights))
+          bX <- bX * matrix(rep(ifelse(weights>0, sqrt(weights), -sqrt(weights)),G), n*G, p*G, byrow = TRUE)
+          
+        XX <- crossprod(t(bX))
+        if (dir) 
+          for (i in 1:G) { 
+            rs <- rowSums(bX[,p*(i-1)+1:p])
+            XX <- XX + dir * outer(rs, rs)
+          }
+        dXX <- XX
+        dXX[(row(XX) - col(XX)) %% n != 0] <- 0
+      
+        S <- sum(bY * (XX %*% bY)) / sum(bY * (dXX %*% bY))
+        permS <- colSums(permY * (XX %*% permY)) / colSums(permY * (dXX %*% permY))
+  
+        # mean and variance of S for z-score
+        ES <- mean(permS)
+        VarS <- var(permS)
+  
+        # calculate the p-value
+        p.value <- mean(S <= permS)
+  
+        # give back
+        return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))
+      }
     }
   }
 
