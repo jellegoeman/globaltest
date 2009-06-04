@@ -1,5 +1,5 @@
 gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = c("BP", "CC", "MF"),
-                  minsize=0, maxsize=Inf,
+                  minsize=1, maxsize=Inf,
                   multtest = c("Holm", "focuslevel", "BH", "BY"), focuslevel = 10,
                   sort = TRUE) {
 

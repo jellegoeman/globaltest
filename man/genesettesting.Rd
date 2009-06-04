@@ -13,7 +13,7 @@ gtKEGG (response, exprs, ..., id, annotation, probe2entrez,
            multtest = c("Holm", "BH", "BY"), sort = TRUE)
 
 gtGO (response, exprs, ..., id, annotation, probe2entrez, ontology = c("BP", "CC", "MF"),
-           minsize=0, maxsize=Inf, multtest = c("Holm", "focuslevel", "BH", "BY"),
+           minsize=1, maxsize=Inf, multtest = c("Holm", "focuslevel", "BH", "BY"),
            focuslevel = 10, sort = TRUE)
 
 gtBroad (response, exprs, ..., id, annotation, probe2entrez, collection,

@@ -24,7 +24,7 @@ focusLevel <- function(test, sets, focus, ancestors, offspring,
     }
   if (is.null(names(sets)))
     stop("sets input has no names attribute.")
-            
+
   # input checking 2: ancestors and offspring
   if (missing(ancestors) && is(test, "gt.object") && !is.null(test@structure$ancestors))
     ancestors <- test@structure$ancestors
@@ -90,6 +90,7 @@ focusLevel <- function(test, sets, focus, ancestors, offspring,
     })
     names(rawp) <- names(sets)
   }
+  rawp[is.na(rawp)] <- 1
   if (trace) cat(rep("\b", 2*digitsK+25), sep="")
 
      
@@ -168,6 +169,7 @@ focusLevel <- function(test, sets, focus, ancestors, offspring,
           unions[[term]] <- matrix(rep(TRUE, length(TermAtoms)), 1, length(TermAtoms))  # Prepare the matrix of unions of atoms
           sigUnions[[term]] <- FALSE
           pUnions[[term]] <- sapply(list(unique(unlist(TermAtoms))), test)                  # Start by testing the union of all atoms
+          pUnions[[term]][is.na(pUnions[[term]])] <- 1
           offspringAtoms[[term]] <- matrix(sapply(TermAtoms, function(y)            # Write all offspring as unions of atoms
             sapply(offspringSets, function(x) all(y %in% x))), ncol = length(TermAtoms))
           rownames(offspringAtoms[[term]]) <- names(offspringSets)
@@ -254,6 +256,7 @@ focusLevel <- function(test, sets, focus, ancestors, offspring,
           unique(unlist(atoms[[term]][newpatterns[i,]]))
         })
         newpvalues <- sapply(newsets, test)
+        newpvalues[is.na(newpvalues)] <- 1
         pUnions[[term]] <- c(pUnions[[term]], newpvalues) 
         change <- TRUE
       }

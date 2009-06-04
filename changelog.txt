@@ -1,3 +1,7 @@
+4.99.2
+- minsize default in gtGO changed from 0 to 1
+- focusLevel also proof against empty subsets
+
 4.99.1
 - Empty subset now gives NA p-value rather than error.
 
