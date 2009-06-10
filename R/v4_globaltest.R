@@ -329,11 +329,12 @@ globaltest <- function(X, Y, genesets,
   
   if ( !is.list(genesets) ) 
     genesets <- list(genesets)
-
+                                      
   genesets <- lapply(genesets, function(tg) { 
     if ( !is.vector(tg) & !is.null(tg) )
       stop("genesets should be a (list of) vector(s)", call. = FALSE)
-
+    
+    tg <- tg[!is.na(tg)]
     if ( (length(tg) == p) && all(tg %in% c(0,1)) ) {
       test.names <- names(tg)[tg == 1]
       if (  !is.null(rownames(eX) )  &  !is.null(test.names) ) {

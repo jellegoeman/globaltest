@@ -1,3 +1,8 @@
+4.99.3
+- globaltest(), gtGO() and gtKEGG() adapted to accomodate changes to annotation packages
+- weights default changed in inheritance()
+- arguments of inheritance() renamed
+
 4.99.2
 - minsize default in gtGO changed from 0 to 1
 - focusLevel also proof against empty subsets

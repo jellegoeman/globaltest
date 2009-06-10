@@ -25,7 +25,7 @@ findFocus (sets, ancestors, offspring, maxsize = 10, atoms = TRUE)
 
 
 # The inheritance method:
-inheritance (test, hc, w, stop = 1, Shaffer, homogeneous = FALSE, trace)
+inheritance (test, sets, weights, stop = 1, Shaffer, homogeneous = FALSE, trace)
 
 
 # Utilities for focus level and inheritance method:
@@ -39,8 +39,8 @@ draw (object, alpha = 0.05, type = c("focuslevel","inheritance"),
     \item{object}{A \code{\link{gt.object}}, usually one in which more than one test was performed.}
     \item{method}{The method of multiple testing correction. Choose from: Holm familywise error control (Holm), Benjamini and Hochberg FDR control (BH); Benjamini and Yekutieli FDR control (BY).}
     \item{test}{Either a \code{\link{function}} or \code{\link{gt.object}}. If a function, that function should take as its argument a vector of covariate labels, and return  (raw) p-value. See the examples below. If a \code{\link{gt.object}} the call to \code{\link{gt}} that created it must have had all the covariates of \code{sets} (below) in its \code{alternative} argument.}
-    \item{sets}{A named list representing covariate sets of the hypotheses of interest, for which adjusted p-values are to be calculated. If it is missing but \code{test} is
-        a \code{\link{gt.object}}, the \code{subsets} slot of that object will be used.}
+    \item{sets}{A named \code{\link[base:list]{list}} representing covariate sets of the hypotheses of interest, for which adjusted p-values are to be calculated. If it is missing but \code{test} is
+        a \code{\link{gt.object}}, the \code{subsets} slot of that object will be used. If used in the \code{inheritance}, \code{sets} describe a tree structure of hypotheses. In this case, object of class \code{\link[stats:hclust]{hclust}} or \code{\link[stats:dendrogram]{dendrogram}}.}
     \item{focus}{The focus level of the focus level method. Must be a subset of \code{names(sets)}. Represents the level of the graph at which the method is focused,
         i.e. has most power.}
     \item{ancestors}{An environment or list that maps each set in \code{sets} to all its ancestors, i.e. its proper supersets. If missing, \code{ancestors} is determined
@@ -57,9 +57,8 @@ draw (object, alpha = 0.05, type = c("focuslevel","inheritance"),
     \item{maxsize}{Parameter to choose the height of the focus level. The focus level sets are chosen in such a way that the number of tests that is to be done for each
         focus level set is at most \code{2^maxsize - 1}.}
     \item{alpha}{The alpha level of familywise error control for the significant subgraph.}
-    \item{hc}{Tree or cluster structure of hypotheses, can be an object of class \code{\link[stats:hclust]{hclust}}, \code{\link[stats:dendrogram]{dendrogram}} or named a \code{\link[base:list]{list}} of sets. If \code{hc} is missing and \code{object} is a \code{\link{gt.object}} the dendrogram structure is derived by \code{object@structure}. }
     \item{Shaffer}{If set to \code{TRUE}, it applys the Shaffer improvement. If \code{Shaffer} is \code{NULL} and \code{object} is a \code{\link{gt.object}} the procedure perfoms a validity control and, if succesfull, sets \code{Shaffer=TRUE}}
-    \item{w}{Optional weights vector for the leaves nodes. If it is missing but \code{test} is a \code{\link{gt.object}}, the \code{\link{weights}} of that object will be used.}
+    \item{weights}{Optional weights vector for the leaves nodes. If it is missing but \code{test} is a \code{\link{gt.object}}, the result of \code{\link{weights}(object)} will be used. In all other cases \code{weights} is set to be uniform among all leaf nodes.}
     \item{homogeneous}{If set to \code{TRUE}, redistributes the alpha of rejected leaf node hypotheses homogeneously over the hypotheses under test, rather than to closest related hypotheses.}
     \item{type}{Argument for specifying which multiple testing correction method should be used. Only relevant if both the inheritance and the focuslevel procedures were
         performed on the same set of test results.}
@@ -179,9 +178,8 @@ Many more examples in the vignette! }
     # define clusters on the covariates X
     hcl=hclust(dist(t(X)))
     # Do inheritance procedure
-    resI=inheritance(res,hc = hcl)
+    resI=inheritance(res, sets = hcl)
     resI
-
     leafNodes(resI, alpha = .1)
 
 }

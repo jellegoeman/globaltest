@@ -42,10 +42,7 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
 
   # reduce the terms
   if (missing(id))
-    id <- keys(GOOBJECT)
-  else
-    id <- intersect(keys(GOOBJECT), id)
-  id <- intersect(id, keys(GOTERM))
+    id <- mappedkeys(GOOBJECT)
   myGOTERM <- lookUp(id, "GO", "TERM")
 
   # get the right ontology/ies
@@ -57,7 +54,8 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
 
   # retrieve sets
   sets <- lookUp(id, annotation, extension)
-
+  sets <- lapply(sets, function(st) if (all(is.na(st))) character(0) else st)
+                                                         
   # map back
   if (!missing(probe2entrez)) {
     if (is.environment(probe2entrez)) probe2entrez <- as.list(probe2entrez)
@@ -79,7 +77,8 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
   choose <- size >= minsize & size <= maxsize
   sets <- sets[choose]
   myGOTERM <- myGOTERM[choose]
-
+  if (length(sets) == 0) stop("No GO terms wih size between \"minsize\" and \"maxsize\"")
+                   
   # perform tests and do multiple testing
   if (length(sets) > 1) {
     multtest <- match.arg(multtest)
@@ -98,7 +97,7 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
         if (length(ontid) > 0) lookUp(ontid, "GO", ext) else list()
       }), recursive=FALSE)      
       names(offspring) <- substring(names(offspring), 4)
-      
+      offspring <- sapply(offspring, function(os) if (all(is.na(os))) character(0) else os)
       if (is.numeric(focuslevel))
         focuslevel <- findFocus(sets, ancestors = ancestors, offspring = offspring, maxsize = focuslevel)
       res <- gt(response, exprs, ...)
@@ -110,7 +109,7 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
     res <- gt(response, exprs, ..., subsets = sets) 
                                           
   # add names
-  alias(res) <- sapply(myGOTERM, Term)
+  alias(res) <- sapply(myGOTERM, function(mgt) if (is(mgt, "GOTerms")) Term(mgt) else "")
   alias(res)[is.na(alias(res))] <- ""
 
   if (sort)
@@ -160,12 +159,9 @@ gtKEGG <- function(response, exprs, ..., id, annotation, probe2entrez,
     extension <- "PATH2PROBE"
   KEGGOBJECT <- eval(as.name(paste(annotation, extension, sep="")))
                                    
-  # reduce the terms
+  # default terms
   if (missing(id))   
-    id <- keys(KEGGOBJECT)
-  else 
-    id <- intersect(keys(KEGGOBJECT), id)
-  id <- intersect(id, keys(KEGGPATHID2NAME))
+    id <- mappedkeys(KEGGOBJECT)
 
   # retrieve sets
   sets <- lookUp(id, annotation, extension)

@@ -1,6 +1,6 @@
-inheritance <- function(test, hc, w, stop = 1, Shaffer, homogeneous=FALSE, trace) {
+inheritance <- function(test, sets, weights, stop = 1, Shaffer, homogeneous=FALSE, trace) {
 
-  if (missing(hc)) {
+  if (missing(sets)) {
     if (is(test,"gt.object")) {
       if(!is.null(slot(test, "structure")))
         {structure=test@structure          
@@ -11,10 +11,10 @@ inheritance <- function(test, hc, w, stop = 1, Shaffer, homogeneous=FALSE, trace
          else{
             parent=ancestors2parents(structure$ancestors)
             broadstructure=c(structure,list(sets, parent=ancestors2parents(structure$ancestors))) }}
-      else stop("argument \"hc\" is missing with no default")
+      else stop("argument \"sets\" is missing with no default")
     }
   }
-  else{
+  else{ hc=sets
     if(is(hc,"hclust")) hc=as.dendrogram(hc)
     if(is(hc,"dendrogram")) {
       broadstructure=dendro2structure(hc)
@@ -23,6 +23,7 @@ inheritance <- function(test, hc, w, stop = 1, Shaffer, homogeneous=FALSE, trace
     else {if(is(hc,"list"))  {sets=hc; broadstructure=do.structure(sets);   structure=broadstructure[1:2]}
           else  stop("Format of argument \"hc\" is not \"dendrogram\" nor \"hclust\" nor a list of sets")}
   }
+   if (missing(weights)) weights <- NULL               # prevents confusion with "weights" method
 
   if (is(test,"gt.object")) {
     if(missing(Shaffer)) {
@@ -53,13 +54,17 @@ inheritance <- function(test, hc, w, stop = 1, Shaffer, homogeneous=FALSE, trace
   rawp=rep(NA,length(sets))
   names(rawp)=nam
   digitsK <- trunc(log10(K))+1
-
+   get.weights<-function() {
+   if(is.null(test@subsets)) weights= weights(test)
+   else  weights= weights(test[which(sapply(test@subsets,function(x){ identical(sort(x),sort(labels) )})[1])])
+   }                  
   if (is(test, "gt.object")) {
     if (is.list(test@weights)) if (length(test@weights)>1) stop("The inheritance method is not applicable with individually weighted sets")
-         if(missing(w)) w=test@weights
-         else if(is.null(w)) w=test@weights
+    if(missing(weights))    weights= get.weights()
+    else if(is.null(weights)) weights= get.weights()
+    
     #coumpute weights for all tested subsets
-    if(length(w)!= length(labels)) { if(!is.null(w)) print("Weights does not fit the number of univariate hypotheses. Uniform weights are assumed") ; w=rep(1,length(labels)) ; names(w)=labels; }
+    if(length(weights)!= length(labels)) { if(!is.null(weights)) stop("Weights does not fit the number of leaves.") }
       #extract weigths for leaves nodes
     rawgt <- test
     test <- function(set) rawgt@functions$test(set)[1]
@@ -93,14 +98,14 @@ inheritance <- function(test, hc, w, stop = 1, Shaffer, homogeneous=FALSE, trace
       }
       test(sets[[i]])
     })
-    if(missing(w)) w=rep(1,length(rawp))
-    else if(is.null(w)) w=rep(1,length(rawp))
+    if(missing(weights)) weights=rep(1,length(rawp))
+    else if(is.null(weights)) weights=rep(1,length(rawp))
   }
   if (trace) cat(rep("\b", 2*digitsK+25), sep="")
   #extract weigths for leaves nodes
-  weights=sapply(sets,function(x) sum(w[x]))
+  weights.sets=sapply(sets,function(x) sum(weights[x]))
   #now recall core function:
-  res=.inherit(ps=rawp,structure=broadstructure, w=weights,stop=maxalpha,Shaffer=Shaffer,homogeneous)
+  res=.inherit(ps=rawp,structure=broadstructure, weights=weights.sets,stop=maxalpha,Shaffer=Shaffer,homogeneous)
   adjustedP=res$adj.p[names(rawgt)]
   if (trace==1) cat("\n")
   if (!is.null(rawgt)) {
@@ -108,7 +113,7 @@ inheritance <- function(test, hc, w, stop = 1, Shaffer, homogeneous=FALSE, trace
     extra[["inheritance"]][match(names(adjustedP),names(rawgt))] <- adjustedP
     rawgt@extra <- as.data.frame(extra)
     rownames(rawgt@extra)=names(rawgt)
-    #rawgt=rawgt[sort.list(row.names(rawgt@result)),] 
+    rawgt=rawgt[sort.list(row.names(rawgt@result)),] 
     return(rawgt)
   } else {
     return(data.frame(raw.p = rawp, inheritance = adjustedP))
@@ -201,18 +206,18 @@ ancestors2parents <- function(ancestors) {
 
 ######################################################################################################################
 ## here start the main function
-.inherit<-function(ps,structure=structure, w,stop=1,Shaffer=T,homogeneous=F){
+.inherit<-function(ps,structure=structure, weights,stop=1,Shaffer=T,homogeneous=F){
   ps=signif(ps,digits =8)
   m=length(structure$leaflist)
-  if(length(w)==1)  w=rep(w,m)
+  if(length(weights)==1)  weights=rep(weights,m)
   adj.p=rep(1,length(ps))
   names(adj.p)=names(ps)
 
   alphas=rep(0,length(ps)); names(alphas)=names(ps)
   founders=setdiff(names(ps),names(structure$ancestor))
-  who.next=which.min(ps[founders]/w[founders])
-  alpha=signif(ps[founders[who.next]]/w[founders[who.next]]*sum(w[founders]),digits=8)
-  alphas[founders]=w[founders]/sum(w[founders])*alpha
+  who.next=which.min(ps[founders]/weights[founders])
+  alpha=signif(ps[founders[who.next]]/weights[founders[who.next]]*sum(weights[founders]),digits=8)
+  alphas[founders]=weights[founders]/sum(weights[founders])*alpha
 
   actives=rep(FALSE,length(alphas)); names(actives)=names(ps)
   rejected=actives
@@ -230,7 +235,7 @@ ancestors2parents <- function(ancestors) {
         activesleaves=structure$leaflist[actives[structure$leaflist]]
         while(length(activesleaves)){
 		       sibs=structure$child[[structure$parent[[activesleaves[1]]]]]
-		       if(all(sibs %in% activesleaves)) { alphas.Shaffer[sibs]=alphas[sibs]*sum(w[sibs])/(sum(w[sibs])-min(w[sibs])) }
+		       if(all(sibs %in% activesleaves)) { alphas.Shaffer[sibs]=alphas[sibs]*sum(weights[sibs])/(sum(weights[sibs])-min(weights[sibs])) }
 		       activesleaves=setdiff(activesleaves,sibs)
           }
       }
@@ -246,10 +251,10 @@ ancestors2parents <- function(ancestors) {
             ids=structure$child[[i.divide]]
             actives[ids]=TRUE
             #redistribute alpha
-            alphas[ ids ]=to.divide*w[ids]/sum(w[ids])
+            alphas[ ids ]=to.divide*weights[ids]/sum(weights[ids])
             alphas[i.divide]=0
           }
-          else{ #if a lead node    (and rejected)
+          else{ #if a lead node    (and rejected)   
            if(homogeneous){  ####ALTERNATIVE WAY: redistribute EQUALLY the alphas left free from rejected alphas
              alphas[i.divide]=0
              alphas=alphas*alpha/(alpha-to.divide)
@@ -263,14 +268,14 @@ ancestors2parents <- function(ancestors) {
                    heirs=setdiff(names(which(actives[structure$offspring[[structure$parent[[target]]]]])),target)
                    if(length(heirs)){
                      search.heirs=FALSE
-                     actives[heirs]=TRUE
-                     alphas[heirs]=alphas[heirs]+to.divide*w[heirs]/sum(w[heirs])
+                     actives[heirs]=TRUE        
+                     alphas[heirs]=alphas[heirs]+to.divide*weights[heirs]/sum(weights[heirs])
                      alphas[i.divide]=0
                    }
                    else{ target=structure$parent[[target]]}
                 }
              }            
-           }##<-- END    stop research
+           }##<-- END    stop research  
          }  ## end of "if a lead node    (and rejected)"
         } #end if rejected
       } #end for loop
@@ -282,7 +287,7 @@ ancestors2parents <- function(ancestors) {
    ##increase alpha
    if(!all(rejected)){
       test.next=names(ps)[actives]
-      who.next=test.next[which.min(ps[test.next]/w[test.next])]
+      who.next=test.next[which.min(ps[test.next]/weights[test.next])]
       alphas[test.next]=ps[who.next]/alphas[who.next]  *alphas[test.next]
       alpha=sum(alphas[test.next])
       istep=TRUE

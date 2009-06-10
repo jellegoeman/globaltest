@@ -101,12 +101,11 @@ covariates <- function(object,
     if (dendrogram) {
       # Get residuals of the alternative regressing out the null
       cors <- obj@functions$cor(subset)
-      
       # Make a distance matrix and a dendrogram
       if (obj@directional)
         dd <- as.dist(1-cors)
       else
-        dd <- as.dist(1-abs(cors))
+      dd <- as.dist(1-abs(cors))   
       hc <- as.dendrogram(hclust(dd, method = cluster))
   
       # reorder to get the most significant ones to the left
@@ -116,7 +115,7 @@ covariates <- function(object,
       obj@subsets =  c(list(obj@functions$cov.names(obj@subsets[[1]])),  unlist(obj@functions$cov.names(subset)))
       obj@extra <- NULL
       obj@structure <- NULL
-      obj=inheritance(obj,hc,trace=trace, stop=1)
+      obj=inheritance(obj,sets=hc,trace=trace, stop=1)
       # Color the dendrogram
       sigcol <- function(branch, sig, top) {      
         setlist=obj@subsets
