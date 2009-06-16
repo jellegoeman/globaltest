@@ -25,7 +25,8 @@ findFocus (sets, ancestors, offspring, maxsize = 10, atoms = TRUE)
 
 
 # The inheritance method:
-inheritance (test, sets, weights, stop = 1, Shaffer, homogeneous = FALSE, trace)
+inheritance (test, sets, weights, stop = 1, Shaffer, 
+            homogeneous = FALSE, trace)
 
 
 # Utilities for focus level and inheritance method:

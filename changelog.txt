@@ -1,3 +1,9 @@
+4.99.4
+- name conflict between new .weed() and deprecated .weed() resolved 
+- GOstructure class, makeGOstructure(), and getFocus() placed back (deprecated) for the benefit of the GlobalAncova package
+- line lengths of usage in .Rd files adjusted for reference manual
+- option(warn.deprecated=FALSE) set in all deprecated .Rd files to avoind warnings during check
+
 4.99.3
 - globaltest(), gtGO() and gtKEGG() adapted to accomodate changes to annotation packages
 - weights default changed in inheritance()

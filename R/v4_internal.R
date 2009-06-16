@@ -198,7 +198,7 @@ iterations <- function(object) {
       EQ <- sum(lams)
       varQ <- 2*sum(lams * lams)
       seQ <- sqrt(varQ)
-      p.value <- .pAsymptotic(Q, .weed(lams, accuracy))
+      p.value <- .pAsymptotic(Q, .oldweed(lams, accuracy))
       out <- c(Q, EQ, seQ, p.value)
     }
     out
@@ -245,7 +245,7 @@ iterations <- function(object) {
       EQ <- sum(lams)
       varQ <- 2*sum(lams * lams)
       seQ <- sqrt(varQ)
-      p.value <- .pAsymptotic(Q, .weed(lams, accuracy))
+      p.value <- .pAsymptotic(Q, .oldweed(lams, accuracy))
       out <- c(Q, EQ, seQ, p.value)
     }
     out
@@ -283,7 +283,7 @@ iterations <- function(object) {
       EQ <- sum(lams)
       varQ <- 2*sum(lams * lams)
       seQ <- sqrt(varQ)
-      p.value <- .pAsymptotic(Q, .weed(lams, accuracy))
+      p.value <- .pAsymptotic(Q, .oldweed(lams, accuracy))
       out <- c(Q, EQ, seQ, p.value)
     }
     out
@@ -363,7 +363,7 @@ iterations <- function(object) {
       EQ <- sum(lams)
       varQ <- 2*sum(lams * lams)
       seQ <- sqrt(varQ)
-      p.value <- .pAsymptotic(Q, .weed(lams, accuracy))
+      p.value <- .pAsymptotic(Q, .oldweed(lams, accuracy))
       out <- c(Q, EQ, seQ, p.value)
     }
     out
@@ -863,7 +863,7 @@ iterations <- function(object) {
 #==========================================================
 # Removes extremely small eigenvalues 
 #==========================================================
-.weed <- function(lams, accuracy) {
+.oldweed <- function(lams, accuracy) {
   if (missing(accuracy)) {
     thresh <- 1/50
   } else {

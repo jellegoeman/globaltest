@@ -12,7 +12,7 @@ importFrom(AnnotationDbi, Term, Secondary)
 
 import(Biobase, methods)
 
-exportClasses(gt.result, gt.barplot, mlogit, gt.object)
+exportClasses(gt.result, gt.barplot, mlogit, gt.object, GOstructure)
 
 exportMethods("[", "[[", show, result, p.value, length, names, "names<-", 
 	sort, size, hist, z.score, scale, plot, fit, summary, residuals, 
@@ -22,4 +22,4 @@ export(globaltest, gt, permutations, sampling, geneplot, sampleplot,
 	regressionplot, checkerboard, gt.multtest, mlogit,
 	gtGO, combine, leafNodes, multtest, draw, gtKEGG, gtBroad,
 	comparative, focusLevel, inheritance, covariates, subjects, gt.options,
-	findFocus)
+	findFocus, getFocus, makeGOstructure)

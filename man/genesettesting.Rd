@@ -12,8 +12,9 @@
 gtKEGG (response, exprs, ..., id, annotation, probe2entrez,
            multtest = c("Holm", "BH", "BY"), sort = TRUE)
 
-gtGO (response, exprs, ..., id, annotation, probe2entrez, ontology = c("BP", "CC", "MF"),
-           minsize=1, maxsize=Inf, multtest = c("Holm", "focuslevel", "BH", "BY"),
+gtGO (response, exprs, ..., id, annotation, probe2entrez, 
+           ontology = c("BP", "CC", "MF"), minsize=1, maxsize=Inf, 
+           multtest = c("Holm", "focuslevel", "BH", "BY"), 
            focuslevel = 10, sort = TRUE)
 
 gtBroad (response, exprs, ..., id, annotation, probe2entrez, collection,
@@ -41,7 +42,8 @@ gtBroad (response, exprs, ..., id, annotation, probe2entrez, collection,
 
 \details{These are utility functions to make it easier to do gene set testing of gene sets available in gene set databases. The functions automatically retrieve the gene sets, preprocess and select them, perform global test, do multiple testing correction, and sort the results on the basis of their p-values.
 
-All functions require that \code{annotate} and the appropriate annotation packages are installed. \code{gtKEGG} additionally requires the \code{KEGG.db} package; \code{gtGO} requires the \code{GO.db} package; \code{gtBroad} requires the user to download the XML file "msigdb_v2.5.xml" from \code{http://www.broad.mit.edu/gsea/downloads.jsp#msigdb}, and to preprocess that file using the \code{\link[GSEABase:getBroadSets]{getBroadSets}} function.
+All functions require that \code{annotate} and the appropriate annotation packages are installed. \code{gtKEGG} additionally requires the \code{KEGG.db} package; \code{gtGO} requires the \code{GO.db} package; \code{gtBroad} requires the user to download the XML file "msigdb_v2.5.xml" 
+from \\ \code{http://www.broad.mit.edu/gsea/downloads.jsp}, and to preprocess that file using the \code{\link[GSEABase:getBroadSets]{getBroadSets}} function.
 }
 
 \value{A \code{\link{gt.object}}.}

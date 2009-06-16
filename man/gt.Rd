@@ -9,8 +9,8 @@
 \usage{
 gt(response, alternative, null, data, test.value, 
      model = c("linear", "logistic", "cox", "poisson", "multinomial"), levels,
-     directional = FALSE, standardize = FALSE, permutations = 0, subsets, weights,
-     alias, x = FALSE, trace)
+     directional = FALSE, standardize = FALSE, permutations = 0, subsets, 
+     weights, alias, x = FALSE, trace)
 }
 
 \arguments{

@@ -11,12 +11,14 @@
 
 \usage{
 covariates(object,
-            what = c("p-value", "statistic", "z-score", "weighted"), cluster = "average",
-            alpha = 0.05, sort=TRUE, legend = TRUE, colors, alias, cex.labels = 0.6, pdf, trace)
+            what = c("p-value", "statistic", "z-score", "weighted"), 
+            cluster = "average", alpha = 0.05, sort=TRUE, 
+            legend = TRUE, colors, alias, cex.labels = 0.6, pdf, trace)
 
 subjects(object,
-            what = c("p-value", "statistic", "z-score", "weighted"), cluster = "average",
-            sort = TRUE, mirror = TRUE, legend = TRUE, colors, alias, cex.labels = 0.6, pdf)
+            what = c("p-value", "statistic", "z-score", "weighted"), 
+            cluster = "average", sort = TRUE, mirror = TRUE, 
+            legend = TRUE, colors, alias, cex.labels = 0.6, pdf)
 }
 
 

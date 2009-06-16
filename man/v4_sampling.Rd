@@ -43,6 +43,7 @@ Globaltest.pdf that comes with this package.}
 \code{\link{sampleplot}}, \code{\link{geneplot}}.}
 
 \examples{
+    \dontshow{gt.options(warn.deprecated=FALSE)}
     # Breast cancer data (ExpressionSet) from the Netherlands Cancer
     # Institute with annotation:
     data(vandeVijver)
