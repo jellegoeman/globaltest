@@ -1,3 +1,9 @@
+4.99.5
+- fixed a bug in inheritance() sometimes causing a unended processing of the function.
+- removed redundant levels in factor response in gt()
+- transpose option fixed
+- fixed the possibility of providing weights as a list of named vectors
+
 4.99.4
 - name conflict between new .weed() and deprecated .weed() resolved 
 - GOstructure class, makeGOstructure(), and getFocus() placed back (deprecated) for the benefit of the GlobalAncova package
@@ -49,3 +55,5 @@ annotate must be a depends; using mget instead removes that dependency
 
 4.9.1 (2008-01-14)
 - fixed a bug in the "[" method that arose when the permutations version of the test was used (Thanks to Remco Visser for the bug report).
+
+

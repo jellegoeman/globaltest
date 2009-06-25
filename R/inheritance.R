@@ -291,7 +291,7 @@ ancestors2parents <- function(ancestors) {
       alphas[test.next]=ps[who.next]/alphas[who.next]  *alphas[test.next]
       alpha=sum(alphas[test.next])
       istep=TRUE
-      if(alpha>stop) rejected[]=TRUE
+      if(alpha>=stop) rejected[]=TRUE
     }
   }  #end while min p-value is reached
 

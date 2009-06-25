@@ -274,6 +274,8 @@ setMethod("alias", "gt.object",
 setGeneric("alias<-", function(x, value) standardGeneric("alias<-"))
 setMethod("alias<-", "gt.object",
   function(x, value) {
+    if (length(value) != length(x))
+      stop("alias has length ", length(value), " but object has length ", length(x))
     extra <- x@extra
     extra$alias <- value
     x@extra <- as.data.frame(extra, stringsAsFactors=FALSE)

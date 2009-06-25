@@ -6,7 +6,7 @@ gt <- function(response, alternative, null, data, test.value,
   # store the call
   call <- match.call()
   
-  # avoid conflict between levels input and levels function
+  # avoid conflict between "levels" input and "levels" function
   if (missing(levels)) levels <- NULL
                        
   # data default
@@ -46,6 +46,10 @@ gt <- function(response, alternative, null, data, test.value,
     name.response <- deparse(call$response)
     response <- eval(call$response, data, parent.frame())
   }
+   
+  # remove redundant levels from factor response
+  if (is.factor(response))
+    response <- factor(response) 
                                      
   # get the model
   if (missing(model)) {
@@ -58,8 +62,8 @@ gt <- function(response, alternative, null, data, test.value,
   }
   model <- match.arg(tolower(model), c("linear", "logistic", "cox", "poisson", "multinomial"))
 
-  # if multinomial, coerce to factor
-    if (model=="multinomial" && !is.factor(response))
+  # if multinomial, coerce to factor and remove redundant level
+  if (model=="multinomial" && !is.factor(response))
       response <- factor(response)
   
   # find the sample size
@@ -190,14 +194,14 @@ gt <- function(response, alternative, null, data, test.value,
         intersect(sst, colnames(alternative))
     })
   }
-
+                                  
   # make sure that weights is a named list, compatible with colnames(alternative)
   if (many.weights) {
     names.weights <- names(weights)
     weights <- lapply(1:length(weights), function (i) {
       wt <- weights[[i]]
       if (!is.null(names(wt)))
-        wt <- wt[names(wt) %in% names(alternative)]
+        wt <- wt[names(wt) %in% colnames(alternative)]
       else 
         if (many.subsets && length(wt) == length(subsets[[i]]))
           names(wt) <- subsets[[i]]
@@ -209,7 +213,7 @@ gt <- function(response, alternative, null, data, test.value,
     if (any(sapply(lapply(weights, names), is.null)))
       stop("weights input is not compatible with covariates input.")
   }
-
+                                  
   # make subsets and weights compatible
   if (many.subsets && many.weights) {
     weights <- lapply(1:length(weights), function(i) {
@@ -222,7 +226,7 @@ gt <- function(response, alternative, null, data, test.value,
 
   # make subsets in case of short named weights
   if (many.weights && !many.subsets && any(sapply(weights, length) != ncol(alternative))) {
-    subsets <- sapply(weights, names)
+    subsets <- lapply(weights, names)
     many.subsets <- TRUE
   }
   
@@ -261,7 +265,7 @@ gt <- function(response, alternative, null, data, test.value,
     cox = .coxtest(response, Z=null, X=alternative, offset=offset, dir = directional, perms=permutations)
   )    
   test <- funs$test
-                                                       
+                                                      
   # Do the test
   if ((!many.subsets) && (!many.weights)) {           # single weighting; single subset
     res <- test()

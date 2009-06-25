@@ -10,10 +10,10 @@
     } else {
       stop("argument \"alternative\" could not be coerced into a matrix")
     }
-    # transpose if desired
-    if (gt.options()$transpose && ncol(alternative)==n)
-      alternative <- t(alternative)
   }
+  # transpose if desired
+  if (gt.options()$transpose && is.matrix(alternative))
+    alternative <- t(alternative)
   if (is(alternative, "ExpressionSet")) {
     require("Biobase") || stop("ExpressionSet input but Biobase package not available")
     alternative <- t(exprs(alternative))
