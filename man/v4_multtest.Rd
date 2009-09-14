@@ -22,7 +22,7 @@ the Family-Wise Error Rate.}
 \code{\link[multtest:mt.rawp2adjp]{mt.rawp2adjp}} function from the
 \code{multtest} package.}
 
-\value{An object of class \code{\link[gt.result-class]{gt.result}}.}
+\value{An object of class \code{\link{gt.result}}.}
 
 \note{\code{gt.multtest} has been deprecated. Please use \code{\link{multtest}} instead.
 

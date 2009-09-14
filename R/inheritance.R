@@ -1,28 +1,50 @@
-inheritance <- function(test, sets, weights, stop = 1, Shaffer, homogeneous=FALSE, trace) {
-
-  if (missing(sets)) {
-    if (is(test,"gt.object")) {
-      if(!is.null(slot(test, "structure")))
-        {structure=test@structure          
-         sets=unique(unlist(structure))
-         if(is.null(structure$ancestor)|is.null(structure$offspring))  {
-            broadstructure=do.structure(sets)
-            structure=broadstructure[c("ancestor","offspring")]      }
-         else{
-            parent=ancestors2parents(structure$ancestors)
-            broadstructure=c(structure,list(sets, parent=ancestors2parents(structure$ancestors))) }}
-      else stop("argument \"sets\" is missing with no default")
+inheritance <- function(test, sets, weights, ancestors, offspring,  stop = 1, Shaffer, homogeneous=FALSE, trace) {
+  # input checking 1: sets
+  if (missing(sets) && is(test, "gt.object") && !is.null(test@subsets)) 
+    sets <- test@subsets
+  if (missing(sets)) stop("argument \"sets\" is missing with no default")
+  if (is.character(sets))
+    if (is(test, "gt.object") && !is.null(test@subsets)) {
+      test <- test[sets]
+      sets <- test@subsets
     }
-  }
-  else{ hc=sets
-    if(is(hc,"hclust")) hc=as.dendrogram(hc)
-    if(is(hc,"dendrogram")) {
-      broadstructure=dendro2structure(hc)
-      sets=broadstructure[["sets"]]
-      structure=broadstructure[c("ancestor","offspring")] }
-    else {if(is(hc,"list"))  {sets=hc; broadstructure=do.structure(sets);   structure=broadstructure[1:2]}
-          else  stop("Format of argument \"hc\" is not \"dendrogram\" nor \"hclust\" nor a list of sets")}
-  }
+    if(is(sets,"hclust")) sets=as.dendrogram(sets)
+    if(is(sets,"dendrogram"))       sets=dendro2sets(sets)
+  if (is.null(names(sets)))
+    stop("sets input has no names attribute.")
+
+  # input checking 2: ancestors and offspring
+  if (missing(ancestors) && is(test, "gt.object") && !is.null(test@structure$ancestors))
+    ancestors <- test@structure$ancestors
+  if (missing(offspring) && is(test, "gt.object") && !is.null(test@structure$offspring))
+    offspring <- test@structure$offspring
+  if (missing(ancestors) && missing(offspring)) {     # Infer from sets
+    ancestors <- new.env(hash=TRUE)
+    offspring <- new.env(hash=TRUE)
+    for (i in 1:length(sets)) {
+      namei <- names(sets)[i]
+      for (j in 1:length(sets)) {
+        namej <- names(sets)[j]
+        if (i != j && length(sets[[i]]) <= length(sets[[j]]) && all(sets[[i]] %in% sets[[j]])) {
+          ancestors[[namei]] <- c(ancestors[[namei]], namej)
+          offspring[[namej]] <- c(offspring[[namej]], namei)
+        }
+      }
+    }
+  }      
+  if ((!missing(ancestors)) && is.environment(ancestors))
+    ancestors <- as.list(ancestors)
+  if ((!missing(offspring)) && is.environment(offspring))
+    offspring <- as.list(offspring)
+  if (missing(ancestors))
+    ancestors <- turnListAround(offspring)
+  if (missing(offspring))
+    offspring <- turnListAround(ancestors) 
+        
+   broadstructure=do.broadstructure(sets,ancestors,offspring)
+   rm(ancestors,offspring)
+
+    
    if (missing(weights)) weights <- NULL               # prevents confusion with "weights" method
 
   if (is(test,"gt.object")) {
@@ -32,8 +54,7 @@ inheritance <- function(test, sets, weights, stop = 1, Shaffer, homogeneous=FALS
     else 
       if(Shaffer) if( length( setdiff(unlist(broadstructure$sets[broadstructure$Shaffernode]),unlist(broadstructure$sets[broadstructure$leaflist])) )>0) 
                     stop("There are children of nodes with only leaves as offspring that are not included in the tree-structure. Shaffer can not be applied!")
-   }
-    
+   }  
   labels= unique(unlist(sets))
   if (missing(trace))    trace <- gt.options()$trace
   if (stop <= 1) {
@@ -57,7 +78,7 @@ inheritance <- function(test, sets, weights, stop = 1, Shaffer, homogeneous=FALS
    get.weights<-function() {
    if(is.null(test@subsets)) weights= weights(test)
    else  weights= weights(test[which(sapply(test@subsets,function(x){ identical(sort(x),sort(labels) )})[1])])
-   }                  
+   }                     
   if (is(test, "gt.object")) {
     if (is.list(test@weights)) if (length(test@weights)>1) stop("The inheritance method is not applicable with individually weighted sets")
     if(missing(weights))    weights= get.weights()
@@ -82,13 +103,12 @@ inheritance <- function(test, sets, weights, stop = 1, Shaffer, homogeneous=FALS
         }
         rawgt@functions$test(sets[[i]])
       }))
-     rawp[test.id]= result[,1]
-
-     rawgt@result <- rbind(rawgt@result[found[!is.na(found)],],result)
+     if (length(test.id)>0) {
+        rawp[test.id]= result[,1]
+        rawgt@result <- rbind(rawgt@result[found[!is.na(found)],],result)}        
      rownames(rawgt@result)<- c(names(sets)[!is.na(found)], names(sets)[which(is.na(found))])
      colnames(rawgt@result) <- c("p-value", "Statistic", "Expected", "Std.dev", "#Cov")
      rawgt@subsets <- sets
-     rawgt@structure=structure
   } else {
     rawgt <- NULL
     rawp <- sapply(1:K, function(i) {
@@ -111,9 +131,10 @@ inheritance <- function(test, sets, weights, stop = 1, Shaffer, homogeneous=FALS
   if (!is.null(rawgt)) {
     extra <- rawgt@extra
     extra[["inheritance"]][match(names(adjustedP),names(rawgt))] <- adjustedP
-    rawgt@extra <- as.data.frame(extra)
+    rawgt@extra <- as.data.frame(extra) 
     rownames(rawgt@extra)=names(rawgt)
-    rawgt=rawgt[sort.list(row.names(rawgt@result)),] 
+#    rawgt=rawgt[sort.list(row.names(rawgt@result)),]
+    rawgt@structure <- list(ancestors=broadstructure$ancestor,offspring=broadstructure$offspring) 
     return(rawgt)
   } else {
     return(data.frame(raw.p = rawp, inheritance = adjustedP))
@@ -123,27 +144,14 @@ inheritance <- function(test, sets, weights, stop = 1, Shaffer, homogeneous=FALS
 
 #############################################################################################################
 ################################################# FORMAT CONVERTING FUNCTIONS, SOME OTHER USEFUL FUNCTIONS and the core function
-do.structure=function(sets){
+
+##################################################
+do.broadstructure=function(sets,ancestor,offspring){
 ####################
   is.subset<-  function(sups,subs){ (sum(sets[[subs]] %in% sets[[sups]])==length(sets[[subs]]))&(length(sets[[sups]])>length(sets[[subs]])) }
   is.supset<-  function(subs,sups){ (sum(sets[[subs]] %in% sets[[sups]])==length(sets[[subs]]))&(length(sets[[sups]])>length(sets[[subs]])) }
 ####################
-  ancestor=list()
-  offspring=list()
-  for(i in 1:length(sets)){
-   temp=names(sets)[sapply(1:length(sets), is.subset,i)]
-   if(length(temp)>0){
-     ancestor=c(ancestor,list(temp))
-     names(ancestor)[length(ancestor)]=names(sets)[i]
-     names(sets)[i]
-     }
-   temp=names(sets)[sapply(1:length(sets), is.supset,i)]
-   if(length(temp)>0){
-     offspring=c(offspring,list(temp))
-     names(offspring)[length(offspring)]= names(sets)[i]
-     names(sets)[i]
-     }
-   }
+
    parent=ancestors2parents(ancestor)
    child=ancestors2parents(offspring)
    leaf.list<-function(structure) setdiff(names(structure$ancestor),names(structure$offspring))
@@ -156,7 +164,7 @@ do.structure=function(sets){
 }
 
 ################################################################################
-dendro2structure<-function(hc){
+dendro2sets<-function(hc){
   ####################
   #create set names from the dendrogram
   do.sets<-function(x,parent.labels="",sets){
@@ -175,16 +183,15 @@ dendro2structure<-function(hc){
   sets[[1]]=labels(hc)
   names(sets)[1]="O1"
   sets=do.sets(hc,names(sets)[1],sets)          
-  ans=do.structure(sets) 
 }
 
 
 #################################################
 # returns the parent of element id
-get.parent<-function(id){
-  temp=sapply(structure$offspring[structure$ancestor[[id]]],length)
-  structure$ancestor[[id]][temp == min(c(unlist(temp),Inf))]
-  }
+#get.parent<-function(id){
+#  temp=sapply(structure$offspring[structure$ancestor[[id]]],length)
+#  structure$ancestor[[id]][temp == min(c(unlist(temp),Inf))]
+#  }
 #################################################
 # outputs the leaves of the structure
 leaf.list<-function(structure) setdiff(names(structure$ancestor),names(structure$offspring))
@@ -197,16 +204,34 @@ is.leaf.list<-function(structure,all.list) {
   ans
   }
 #################################################
-# Takes sets to ancestors mapping; converts it to sets to parents mapping
+# Takes sets to ancestors mapping and converts it to a sets of parents (as well offspring to child)
 ancestors2parents <- function(ancestors) {
   lapply(ancestors, function(anc) {
     setdiff(anc, unique(unlist(ancestors[anc])))
   })
 } #see the original function in focuslevel.R
 
+# Starts from a named list and "turns it around"
+# Returns a named list of length(all elements of the list)
+# Each element of the list gives the names of the original list elements
+# that contained that element
+turnListAround <- function(aList) {
+  newlist <- new.env(hash=TRUE)
+  objs <- names(aList)
+  if (is.null(objs)) objs <- seq_along(alist)
+  for (i in objs) {
+    for (j in aList[[i]]) {
+      newlist[[j]] <- c(newlist[[j]], i)
+    }
+  }
+  as.list(newlist)
+}
+      
+
+
 ######################################################################################################################
 ## here start the main function
-.inherit<-function(ps,structure=structure, weights,stop=1,Shaffer=T,homogeneous=F){
+.inherit<-function(ps,structure, weights,stop=1,Shaffer=T,homogeneous=F){
   ps=signif(ps,digits =8)
   m=length(structure$leaflist)
   if(length(weights)==1)  weights=rep(weights,m)
@@ -243,6 +268,7 @@ ancestors2parents <- function(ancestors) {
       
       #### do the following for all actives nodes
       for(i.divide in names(which(actives)) ){
+#	  print(c(i.divide,ps[i.divide],alphas.Shaffer[i.divide]))
         if( ps[i.divide]<=alphas.Shaffer[i.divide]){ #if rejected
           rejected[i.divide]=TRUE
           actives[i.divide]=FALSE

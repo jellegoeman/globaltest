@@ -21,9 +21,9 @@ samples on the test result produced by \code{\link{globaltest}}.}
     \item{labelsize}{Relative size of the labels on the x-axis. If it is \code{NULL} ,
         the current value for \code{\link[graphics:par]{par("cex.axis")}} is used}
     \item{plot}{If \code{FALSE}: does not plot, but only returns a
-      \code{\link[gt.barplot-class]{gt.barplot}} object.}
+      \code{\link{gt.barplot}} object.}
     \item{addlegend}{If \code{FALSE}: does not add a legend to the plot
-        or to the \code{\link[gt.barplot-class]{gt.barplot}} object.}
+        or to the \code{\link{gt.barplot}} object.}
     \item{...}{Any extra arguments will be forwarded to the plotting
 function.}}
 
@@ -50,7 +50,7 @@ groups.
 The bottom margin is adjusted to allow enough space for the longest
 samplename to draw under the axis.}
 
-\value{An object of type \code{\link[gt.barplot-class]{gt.barplot}}.}
+\value{An object of type \code{\link{gt.barplot}}.}
 
 \note{\code{sampleplot} has been deprecated. Please use \code{\link{subjects}} instead.}
 

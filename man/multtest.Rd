@@ -25,7 +25,7 @@ findFocus (sets, ancestors, offspring, maxsize = 10, atoms = TRUE)
 
 
 # The inheritance method:
-inheritance (test, sets, weights, stop = 1, Shaffer, 
+inheritance (test, sets, weights, ancestors, offspring, stop = 1, Shaffer,
             homogeneous = FALSE, trace)
 
 
@@ -53,7 +53,7 @@ draw (object, alpha = 0.05, type = c("focuslevel","inheritance"),
         to exactly 1, the algorithm calculates all familywise error rate corrected p-values. Corrected p-values that are not calculated are reported as \code{NA}.}
     \item{atoms}{If set to \code{TRUE}, the focus level algorithm partitions the offspring of each focus level set into the smallest possible building blocks, called
         atoms. Doing this often greatly accelerates computation, but sometimes at the cost of some power.}
-    \item{trace}{If set to \code{TRUE}, reports progress information. The default is obtained from \code{\link[gt.options]{gt.options()$trace}}. Alternatively,
+    \item{trace}{If set to \code{TRUE}, reports progress information. The default is obtained from \code{\link[=gt.options]{gt.options()$trace}}. Alternatively,
         setting \code{trace = 2} gives much more extensive output (\code{focusLevel} only).}
     \item{maxsize}{Parameter to choose the height of the focus level. The focus level sets are chosen in such a way that the number of tests that is to be done for each
         focus level set is at most \code{2^maxsize - 1}.}
@@ -88,7 +88,7 @@ The focus level method requires the choice of a ``focus level'' in the graph. Th
 The \code{inheritance} method is an alternative method for calculating familywise error rate corrected p-values. Like the focus level method, \code{inheritance} also makes use of the structure of the tested sets to gain power. In this case, however, the graph is restricted to a tree, as can be obtained for example if the tested subsets are obtained from a hierarchical clustering. The inheritance procedure is used in the \code{\link{covariates}} function. Like Holm's method and the focus level method, the inheritance procedure makes no assumptions on the joint distribution of the test statistics.
 
 The \code{leafNodes} function extracts the leave nodes of the significant subgraph after a focus level procedure was performed. As this graph is defined by its leave
-nodes, this is the most efficient summary of the test result. Only implemented for \code{\link[gt.object-class]{gt.object}} input.
+nodes, this is the most efficient summary of the test result. Only implemented for \code{\link{gt.object}} input.
 
 The \code{draw} function draws the graph, displaying the significant nodes. It either draws the full graph with the non-significant nodes grayed out (\code{sign.only = TRUE}), or it draws only the subgraph corresponding to the significant nodes.
 

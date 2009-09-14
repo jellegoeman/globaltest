@@ -44,7 +44,9 @@ covariates <- function(object,
       weights <- obj@weights[[1]]
     if (is.null(obj@subsets)){
       subset <- seq_len(size(obj))
-      obj@subsets[[1]]=subset      }
+      if(length(subset)==1){ obj@subsets[[1]]=c(subset,NA); obj@subsets[[1]]=obj@subsets[[1]][1]  }
+      else 
+          obj@subsets[[1]]=subset}
     else
       subset <- obj@subsets[[1]]
 
@@ -73,6 +75,8 @@ covariates <- function(object,
                        
     # Make bars  
     pps <- -log10(leaves[,"p"] )
+    maxlogp <- max(pps[pps!=Inf], 0, na.rm=TRUE)
+    pps[pps==Inf] <- maxlogp + 3
     bars <- switch(what, 
       p = pps,
       z = (leaves[,"S"]  - leaves[,"ES"]) / leaves[,"sdS"],
@@ -99,23 +103,36 @@ covariates <- function(object,
     dendrogram <- ((!is.logical(cluster)) || (cluster)) && (substr(cluster,1,1) != "n")
     if (is.logical(cluster) && dendrogram) cluster <- "average"
     if (dendrogram) {
-      # Get residuals of the alternative regressing out the null
-      cors <- obj@functions$cor(subset)
-      # Make a distance matrix and a dendrogram
-      if (obj@directional)
-        dd <- as.dist(1-cors)
-      else
-      dd <- as.dist(1-abs(cors))   
-      hc <- as.dendrogram(hclust(dd, method = cluster))
-  
-      # reorder to get the most significant ones to the left
-      hc <- reorder(hc, wts=order.bars, agglo.FUN=min)
-      sorter <- unlist(hc)
-      obj@result =rbind(obj@result,leaves)
-      obj@subsets =  c(list(obj@functions$cov.names(obj@subsets[[1]])),  unlist(obj@functions$cov.names(subset)))
-      obj@extra <- NULL
-      obj@structure <- NULL
-      obj=inheritance(obj,sets=hc,trace=trace, stop=1)
+      if(dim(leaves)[1]==1){
+        hc = list(1)
+        attr(hc, "label") <- row.names(leaves)[1]
+        attr(hc, "members") <- 1
+        attr(hc, "leaf") <- TRUE
+        attr(hc, "height") <- 0
+        attr(hc, "class") <- "dendrogram"
+        obj@extra <- data.frame(inheritance=p.value(obj))
+        obj@subsets <- list(row.names(leaves)[1])
+        names(obj) <- obj@functions$cov.names(obj@subsets[[1]])
+        sorter <- unlist(hc)
+      } else {
+        # Get residuals of the alternative regressing out the null
+        cors <- obj@functions$cor(subset)
+        # Make a distance matrix and a dendrogram
+        if (obj@directional)
+          dd <- as.dist(1-cors)
+        else
+        dd <- as.dist(1-abs(cors))   
+        hc <- as.dendrogram(hclust(dd, method = cluster))
+        # reorder to get the most significant ones to the left
+        hc <- reorder(hc, wts=order.bars, agglo.FUN=min)
+        sorter <- unlist(hc)
+        obj@result =rbind(obj@result,leaves)
+        obj@subsets =  c(list(obj@functions$cov.names(obj@subsets[[1]])),  unlist(obj@functions$cov.names(subset)))
+        obj@extra <- NULL
+        obj@structure <- NULL                           
+        obj=inheritance(obj,sets=hc,trace=trace, stop=1)
+      }
+   
       # Color the dendrogram
       sigcol <- function(branch, sig, top) {      
         setlist=obj@subsets
@@ -123,7 +140,7 @@ covariates <- function(object,
         newlabels=unlist(branch)
         labels[newlabels]=labels
         branchset <- unlist(branch) 
-        selected <- names(setlist)[which(lapply(setlist, setequal, labels[ branchset])==T)]          
+        selected <- names(setlist)[sapply(setlist, setequal, labels[ branchset])]         
         if (sig) { 
           sig <- obj@extra$inheritance[which(names(obj)==selected)]<=alpha
         }
@@ -192,16 +209,26 @@ covariates <- function(object,
         lines(c(mids[i],mids[i]),c(max(0,bars[i])+.01*mb,mb*1.2),col=gray(.8),lty=3 )
     }    
     
+    # construct appropriate axes
     if (what == "p") {
-      maxlogp <- max(bars, na.rm=TRUE)
       labs <- seq(0,maxlogp, by = max(1,maxlogp %/% 5))
-      if (length(labs)==1)
-        labs <- log10(c(1,2,10/3,5))
-      else if (length(labs) <= 2)
+      if (length(labs)==1) {
+        minp <- 10^-maxlogp
+        if (minp < 0.5) {
+          labs <- log10(c(1,2,10/3,5))
+          labs <- labs[labs < maxlogp]
+        } else {
+          fc <- 10^-floor(log10(1-minp)) 
+          labs <- -log10(c(1,ceiling(minp*fc)/fc))
+        }
+      } else if (length(labs) <= 2)
         labs <- outer(log10(c(1,2,5)),labs,"+")
       else if (length(labs) <= 4)
         labs <- outer(log10(c(1,10/3)),labs,"+")
-      axis(2, at = labs, labels=10^-labs, las=2)
+      if (max(bars) > maxlogp) #zero p-values
+        axis(2, at = c(labs, max(bars)), labels=c(10^-labs, 0), las=2)
+      else
+        axis(2, at = labs, labels=10^-labs, las=2)
     } else
       axis(2, las=2)
     if (what %in% c("s","w")) {

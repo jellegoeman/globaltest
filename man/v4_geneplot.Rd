@@ -22,9 +22,9 @@ genes on the test result produced by \code{\link{globaltest}}.}
 the current value for \code{\link[graphics:par]{par("cex.axis")}}
 is used}
     \item{plot}{If \code{FALSE}: does not plot, but only returns a
-\code{\link[gt.barplot-class]{gt.barplot}} object.}
+\code{\link{gt.barplot}} object.}
     \item{addlegend}{If \code{FALSE}: does not add a legend to the plot
-or to the \code{\link[gt.barplot-class]{gt.barplot}} object.}
+or to the \code{\link{gt.barplot}} object.}
     \item{...}{Any extra arguments will be forwarded to the plotting
 function.}}
 
@@ -43,7 +43,7 @@ gene id to draw under the axis.}
 
 \note{\code{geneplot} has been deprecated. Please use \code{\link{covariates}} instead.}
 
-\value{An object of type \code{\link[gt.barplot-class]{gt.barplot}}.}
+\value{An object of type \code{\link{gt.barplot}}.}
 
 \references{For references, type: citation("globaltest"). See also
 the vignette GlobalTest.pdf included with this package.}

@@ -1,6 +1,6 @@
 Package: globaltest
-Version: 4.99.7
-Date: 2009-07-22
+Version: 4.99.8
+Date: 2009-09-14
 Title: Locally most powerful testing in high dimensions, with applications to gene set testing
 Author: Jelle Goeman <j.j.goeman@lumc.nl> and Jan Oosting <j.oosting@lumc.nl>
 Maintainer: Jelle Goeman <j.j.goeman@lumc.nl>

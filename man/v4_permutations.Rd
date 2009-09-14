@@ -24,7 +24,7 @@ the number of possible permutations is smaller than the value of
 stored for later visualisation using \code{\link{hist}}.}
 
 \value{An object of class
-\code{\link[gt.result-class]{gt.result}}.}
+\code{\link{gt.result}}.}
 
 \note{\code{permutations} has been deprecated: please use use \code{\link{gt}} instead.
 

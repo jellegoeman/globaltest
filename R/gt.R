@@ -230,6 +230,11 @@ gt <- function(response, alternative, null, data, test.value,
     many.subsets <- TRUE
   }
   
+  # check missing values in subsets
+  if (many.subsets && any(sapply(subsets, function(x) any(is.na(x))))) {
+    stop("missing values in \"subsets\"")
+  }
+  
   # prepare progress info
   if (missing(trace)) trace <- gt.options()$trace && (many.weights || many.subsets)
   if (trace && (many.subsets || many.weights)) {

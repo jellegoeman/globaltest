@@ -20,7 +20,7 @@ comparative(object, N = 1e3, z.scores = TRUE, trace)
 \details{In a situation when many covariates out of a large set are associated with the response, it is sometimes interesting to know p-value of the tested subset compares to random subsets of the same size. The \code{comparative} function calculates the proportion of random subsets of the covariates of the same size as the tested subset that have a better score than the tested subset. This proportion is a diagnostic tool to help interpret the test result; it should not be interpreted as a p-value.
 }
 
-\value{An object of class \code{\link[gt.object-class]{gt.object}} with an appropriate column added to the test results matrix.}
+\value{An object of class \code{\link{gt.object}} with an appropriate column added to the test results matrix.}
 
 \references{
 The comparative proportion is an enrichment type analysis. For the pros and cons of such an analysis, see
@@ -31,7 +31,7 @@ Goeman and Buhlmann (2007) Analyzing gene expression data in terms of gene sets:
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Jan Oosting}
 
 \seealso{
-The \code{\link{gt}} function. The \code{\link[gt.object-class]{gt.object}} function and useful functions associated with that object.
+The \code{\link{gt}} function. The \code{\link{gt.object}} function and useful functions associated with that object.
 }
 
 \examples{

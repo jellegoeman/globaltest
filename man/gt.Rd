@@ -7,9 +7,9 @@
 \description{Tests a low-dimensional null hypothesis against a potentially high-dimensional alternative in regression models (linear regression, logistic regression, poisson regression, Cox proportional hazards model).}
 
 \usage{
-gt(response, alternative, null, data, test.value, 
+gt(response, alternative, null, data, test.value,
      model = c("linear", "logistic", "cox", "poisson", "multinomial"), levels,
-     directional = FALSE, standardize = FALSE, permutations = 0, subsets, 
+     directional = FALSE, standardize = FALSE, permutations = 0, subsets,
      weights, alias, x = FALSE, trace)
 }
 
@@ -33,7 +33,7 @@ gt(response, alternative, null, data, test.value,
 
 \details{The Global Test tests a low-dimensional null hypothesis against a (potentially) high-dimensional alternative, using the locally most powerful test of Goeman et al (2006). In this regression model implementation, it tests the null hypothesis \code{response ~ null}, that the covariates in \code{alternative} are not associated with the response, against the alternative model \code{response ~ null + alternative} that they are.
 
-The test has a wide range of applications. In \link[gtGO]{gene set testing} in microarray data analysis \code{alternative} may be a matrix of gene expression measurements, and the aim is to find which of a collection of predefined \code{subsets} of the genes (e.g. Gene Ontology terms or KEGG pathways) is most associated with the \code{response}. In penalized regression or other machine learning techniques, \code{alternative} may be a collection of predictor variables that may be used to predict a \code{response}, and the test may function as a useful pre-test to see if training the classifier is worthwhile. In goodness-of-fit testing, \code{null} may be a model with linear terms fitted to the \code{response}, and \code{alternative} may be a large collection of non-linear terms. The test may be used in this case to test the fit of the null model with linear terms against a non-linear alternative.
+The test has a wide range of applications. In \link[=gtGO]{gene set testing} in microarray data analysis \code{alternative} may be a matrix of gene expression measurements, and the aim is to find which of a collection of predefined \code{subsets} of the genes (e.g. Gene Ontology terms or KEGG pathways) is most associated with the \code{response}. In penalized regression or other machine learning techniques, \code{alternative} may be a collection of predictor variables that may be used to predict a \code{response}, and the test may function as a useful pre-test to see if training the classifier is worthwhile. In goodness-of-fit testing, \code{null} may be a model with linear terms fitted to the \code{response}, and \code{alternative} may be a large collection of non-linear terms. The test may be used in this case to test the fit of the null model with linear terms against a non-linear alternative.
 
 See the vignette for extensive examples of these applications.
 }
@@ -45,7 +45,7 @@ P-values from the asymptotic distribution are accurate to at least two decimal p
 Missing values are allowed in the \code{alternative} matrix only. Missing values are imputed conservatively (i.e. under the null hypothesis). Covariates with many missing values get reduced variance and therefore automatically carry less weight in the test result.
 }
 
-\value{The function returns an object of class \code{\link[gt.object-class]{gt.object}}. Several operations and diagnostic plots can be made from this object. See also \link[diagnostics]{Diagnostic plots}.}
+\value{The function returns an object of class \code{\link{gt.object}}. Several operations and diagnostic plots can be made from this object. See also \link[=diagnostics]{Diagnostic plots}.}
 
 \references{
 General theory and properties of the global test are described in
@@ -59,7 +59,7 @@ For references related to applications of the test, see the vignette GlobalTest.
 \seealso{
 Diagnostic plots: \code{\link{covariates}}, \code{\link{subjects}}.
 
-The \code{\link[gt.object-class]{gt.object}} function and useful functions associated with that object.
+The \code{\link{gt.object}} function and useful functions associated with that object.
 
 Many more examples in the vignette!
 }

@@ -11,13 +11,13 @@
 
 \usage{
 covariates(object,
-            what = c("p-value", "statistic", "z-score", "weighted"), 
-            cluster = "average", alpha = 0.05, sort=TRUE, 
+            what = c("p-value", "statistic", "z-score", "weighted"),
+            cluster = "average", alpha = 0.05, sort=TRUE,
             legend = TRUE, colors, alias, cex.labels = 0.6, pdf, trace)
 
 subjects(object,
-            what = c("p-value", "statistic", "z-score", "weighted"), 
-            cluster = "average", sort = TRUE, mirror = TRUE, 
+            what = c("p-value", "statistic", "z-score", "weighted"),
+            cluster = "average", sort = TRUE, mirror = TRUE,
             legend = TRUE, colors, alias, cex.labels = 0.6, pdf)
 }
 
@@ -51,7 +51,7 @@ The dendrogram of the \code{subjects} plot is always based on correlation distan
 \note{The term "z-score" is not meant to imply a normal distribution, but just refers to a studentized score. The z-scores of the \code{subjects} plot are asymptotically normal under the null hypothesis; the z-scores of the \code{covariates} plot are asymptotically distributed as a chi-squared variable with one degree of freedom.
 }
 
-\value{If called to make a single plot, the \code{covariates} function returns an object of class \code{\link[gt.object-class]{gt.object}}. Several methods are available to access this object: see \code{\link{gt.object}}. The \code{subjects} function returns a matrix. If called to make multiple plots, both functions return \code{NULL}.}
+\value{If called to make a single plot, the \code{covariates} function returns an object of class \code{\link{gt.object}}. Several methods are available to access this object: see \code{\link{gt.object}}. The \code{subjects} function returns a matrix. If called to make multiple plots, both functions return \code{NULL}.}
 
 \references{
 General theory and properties of the global test are described in
@@ -69,7 +69,7 @@ For more references related to applications of the test, see the vignette Global
 \seealso{
 Diagnostic plots: \code{\link{covariates}}, \code{\link{subjects}}.
 
-The \code{\link[gt.object-class]{gt.object}} function and useful functions associated with that object.
+The \code{\link{gt.object}} function and useful functions associated with that object.
 
 Many more examples in the vignette!
 }

@@ -318,7 +318,7 @@ multtest <- function(object, method = c("Holm", "BH", "BY")) {
   
   method <- match.arg(method)
   
-  stepdown <- function(pv) {
+  stepup <- function(pv) {
     out <- pv
     for (i in length(pv):2 - 1)
       if (out[i] > out[i+1]) 
@@ -326,7 +326,7 @@ multtest <- function(object, method = c("Holm", "BH", "BY")) {
     out
   }
  
-  stepup <- function(pv) {
+  stepdown <- function(pv) {
     out <- pv
     for (i in 2:length(pv))
       if (out[i] < out[i-1]) 
@@ -347,11 +347,11 @@ multtest <- function(object, method = c("Holm", "BH", "BY")) {
     out <- pps
   else {
     if (method == "BH") 
-      out <- stepdown(pps[order] * K/(1:K))[reverse]
+      out <- stepup(pps[order] * K/(1:K))[reverse]
     else if (method == "BY")
-      out <- stepdown(pps[order] * K/(1:K) * sum(1/(1:K)))[reverse]
+      out <- stepup(pps[order] * K/(1:K) * sum(1/(1:K)))[reverse]
     else if (method == "Holm")
-      out <- stepup(pps[order] * K:1)[reverse]
+      out <- stepdown(pps[order] * K:1)[reverse]
   }
   
   out[out > 1] <- 1

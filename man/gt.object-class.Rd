@@ -38,6 +38,7 @@
     \item{\code{call}:}{The matched call to \code{\link{gt}}.}
     \item{\code{functions}:}{A "list" of various functions used by the \code{\link{covariates}} and \code{\link{subjects}} functions and the various methods.}
     \item{\code{subsets}:}{A "list" or "NULL". Stores the subsets tested, if more than one.}
+    \item{\code{structure}:}{A "list" or "NULL". Stores subset and superset relationships between the sets in the "subsets" slot.}
     \item{\code{weights}:}{A "list" or "NULL". Stores the weight vectors used for testing, if more than one.}
     \item{\code{alternative}:}{If \code{\link{gt}} was called with \code{x = TRUE}, stores the design matrix of the alternative hypothesis; "NULL" otherwise.}
     \item{\code{null}:}{If \code{\link{gt}} was called with \code{x = TRUE}, stores the design matrix of the null hypothesis; "NULL" otherwise.}

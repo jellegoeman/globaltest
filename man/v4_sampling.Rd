@@ -23,13 +23,13 @@ what proportion of the random pathways has a larger standardized test statistic
 (Q - EQ) / sd(Q) than the tested pathway.}
 
 \value{An object of class
-\code{\link[gt.result-class]{gt.result}}.}
+\code{\link{gt.result}}.}
 
 \note{
 \code{sampling} has been deprecated. Please use \code{\link{comparative}} instead.
 
 The function \code{sampling} cannot be applied to a
-\code{\link[gt.result-class]{gt.result}} object resulting from a call to
+\code{\link{gt.result}} object resulting from a call to
 \code{\link{permutations}}.}
 
 \references{Jelle J. Goeman, Jan Oosting, Anne-Marie Cleton-Jansen, Jakob, K.
