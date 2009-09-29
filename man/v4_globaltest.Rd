@@ -14,16 +14,18 @@ genes for significant association with a given clinical variable.}
 
 \arguments{
     \item{X}{Either a matrix of gene expression data, where columns correspond to
-samples and rows to genes or a Bioconductor \code{\link[Biobase:ExpressionSet-class]{ExpressionSet}}.
+samples and rows to genes or a Bioconductor
+\code{\link[Biobase:class.ExpressionSet]{ExpressionSet}}. 
 The data should be properly normalized beforehand (and log- or otherwise transformed),
 but missing values are allowed (coded as \code{NA}). Gene and sample names can be included
 as the row and column names of \code{X}.}
     \item{Y}{A vector with the clinical outcome of interest, having one value
 for each sample. If \code{X} is an
-\code{\link[Biobase:ExpressionSet-class]{ExpressionSet}} it can also be the
+\code{\link[Biobase:class.ExpressionSet]{ExpressionSet}} it can also be
+the 
 name of a covariate in the
-\code{\link[Biobase:phenoData-class]{phenoData}} from the
-\code{\link[Biobase:ExpressionSet-class]{ExpressionSet}},
+\code{\link[Biobase:class.phenoData]{phenoData}} from the
+\code{\link[Biobase:class.ExpressionSet]{ExpressionSet}},
 or a \code{\link[stats:formula]{formula}} object using
 these names. If the clinical outcome is survival, \code{Y} should
 contain the survival times.}
@@ -35,7 +37,7 @@ in \code{X}, with 1 indicating that the gene belongs to the
 group. Or it can be a vector containing the column numbers (in
 \code{X}) of the genes belonging to the group. Or it can be a
 subset of the rownames or
-\code{\link[Biobase:ExpressionSet-class]{featureNames}} for \code{X}.}
+\code{\link[Biobase:class.ExpressionSet]{featureNames}} for \code{X}.}
     \item{model}{Globaltest will try to determine the correct model from
 the input of \code{Y} and \code{d}. To override the automatic choice, use
 \code{model = "logistic"} for a two-valued outcome \code{Y} ,
@@ -46,17 +48,17 @@ and contains more than 2 levels: \code{levels} is a vector of levels of \code{Y}
 \code{levels} is length 2: test these 2 groups against each other.
 If levels is length 1: test that level against the others.}
     \item{d}{A vector or the name of a covariate in the
-\code{\link[Biobase:phenoData-class]{phenoData}} from the
-\code{\link[Biobase:ExpressionSet-class]{ExpressionSet}}
+\code{\link[Biobase:class.phenoData{phenoData}} from the
+\code{\link[Biobase:class.ExpressionSet]{ExpressionSet}}
 \code{X}, to indicate which samples experienced an event.
 Providing a value for \code{d} automatically sets \code{model = "survival"}}
     \item{event}{The value or values of \code{d} that indicates that
 there was an event.}
     \item{adjust}{Confounders or risk factors for which the test must
 be adjusted. Must be either a data frame or (if \code{X} is an
-\code{\link[Biobase:ExpressionSet-class]{ExpressionSet}})
+\code{\link[Biobase:class.ExpressionSet]{ExpressionSet}})
 the names of covariates in the
-\code{\link[Biobase:phenoData-class]{phenoData}} from \code{X}
+\code{\link[Biobase:class.phenoData]{phenoData}} from \code{X}
 or a \code{\link[stats:formula]{formula}} object using these
 names. Default: no adjustment.}
     \item{method}{The method for calculation the p-value. Use \code{method =

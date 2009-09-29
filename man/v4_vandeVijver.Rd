@@ -7,7 +7,7 @@
 \title{A subset of the Breast cancer data from Rosetta Inpharmatics LLC and
 Netherlands Cancer Institute. (Deprecated)}
 
-\description{An \code{\link[Biobase:ExpressionSet-class]{ExpressionSet}}
+\description{An \code{\link[Biobase:class.ExpressionSet]{ExpressionSet}}
 containing expression data of 100 breast cancer patients on 407
 selected genes plus the following phenotype data.
   \describe{
@@ -44,7 +44,8 @@ criteria, 1 = low risk, 0 = intermediate/high risk}
 
 \seealso{\code{\link{annotation.vandeVijver}}.}
 
-\format{An \code{\link[Biobase:ExpressionSet-class]{ExpressionSet}}. See the Biobase package}
+\format{An \code{\link[Biobase:class.ExpressionSet]{ExpressionSet}}. See
+  the Biobase package} 
 
 \note{The \code{vandeVijver} data set is deprecated. It was used for examples in an older version of the package, but is not used anymore. It will be removed from the package in a later version.}
 

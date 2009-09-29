@@ -14,8 +14,22 @@ gt(response, alternative, null, data, test.value,
 }
 
 \arguments{
-    \item{response}{The response vector of the regression model. May be supplied as a vector or as a \code{\link[stats:formula]{formula}} object. In the latter case, the right hand side of \code{response} is passed on to \code{alternative} if that argument is missing, or otherwise to \code{null}.}
-    \item{alternative}{The part of the design matrix corresponding to the alternative hypothesis. The covariates of the null model do not have to be supplied again here. May be given as a half \code{\link[stats:formula]{formula}} object (e.g. \code{~a+b}). In that case the intercept is always suppressed. Alternatively, the \code{alternative} argument may also be given as an \code{\link[Biobase:ExpressionSet]{ExpressionSet}} object, in which case \code{t(exprs(alternative))} is used for the \code{alternative} argument, and \code{pData(alternative)} is passed on to the \code{data} argument if that argument is missing.}
+    \item{response}{The response vector of the regression model. May be
+      supplied as a vector or as a \code{\link[stats:formula]{formula}}
+      object. In the latter case, the right hand side of \code{response}
+      is passed on to \code{alternative} if that argument is missing, or
+      otherwise to \code{null}.} 
+    \item{alternative}{The part of the design matrix corresponding to
+      the alternative hypothesis. The covariates of the null model do
+      not have to be supplied again here. May be given as a half
+      \code{\link[stats:formula]{formula}} object (e.g. \code{~a+b}). In
+      that case the intercept is always suppressed. Alternatively, the
+      \code{alternative} argument may also be given as an
+      \code{\link[Biobase:class.ExpressionSet]{ExpressionSet}} object,
+      in which case \code{t(exprs(alternative))} is used for the
+      \code{alternative} argument, and \code{pData(alternative)} is
+      passed on to the \code{data} argument if that argument is
+      missing.} 
     \item{null}{The part of the design matrix corresponding to the null hypothesis. May be given as a design matrix or as a half \code{\link[stats:formula]{formula}} object (e.g. \code{~a+b}). The default for \code{null} is \code{~1}, i.e. only an intercept. This intercept may be suppressed, if desired, with \code{null = ~0}.}
     \item{data}{Only used when \code{response}, \code{alternative}, or \code{null} is given in formula form. An optional data frame, list or environment containing the variables used in the formulae. If the variables in a formula are not found in \code{data}, the variables are taken from environment(formula), typically the environment from which \code{gt} is called.}
     \item{test.value}{An optional vector regression coefficients to test. The default is to test the null hypothesis that all regression coefficients of the covariates of the alternative are zero. The \code{test.value} argument can be used to test a value other than zero. The coefficients are applied to the design matrix of \code{alternative} before any standardization (see the \code{standardize} argument).}

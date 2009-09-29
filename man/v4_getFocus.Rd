@@ -19,7 +19,7 @@ procedure that preserves the structure of the GO graph.}
 
 \arguments{
     \item{data}{The data set for which the \code{\link{GOstructure}} object is to be made. Can be either an
-    \code{\link[Biobase:ExpressionSet-class]{ExpressionSet}} or a vector of
+    \code{\link[Biobase:class.ExpressionSet]{ExpressionSet}} or a vector of
     probe indicators.}
     \item{annotation}{The name of the metaData annotation package to be used. If a metadata package is not available, the name of the organism package (e.g. \code{org.HS.eg.db} can be given instead, and the mapping from probe identifiers to entrez can be supplied with the \code{entrez} argument.}
     \item{top}{The node to be used as top node of the \code{\link{GOstructure}}. Defaults
