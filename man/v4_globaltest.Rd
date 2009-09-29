@@ -104,7 +104,7 @@ have been replaced by separate functions from version 3.0. See
 \code{\link{sampling}} and \code{\link{permutations}}.}
 
 \value{The function returns an object of class
-\code{\link[gt.result-class]{gt.result}}.}
+\code{\link{gt.result}}.}
 
 \references{For references, type: \code{citation("globaltest")}. See
 also the vignette GlobalTest.pdf included with this package.}

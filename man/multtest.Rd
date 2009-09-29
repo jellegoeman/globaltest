@@ -38,10 +38,22 @@ draw (object, alpha = 0.05, type = c("focuslevel","inheritance"),
 
 \arguments{
     \item{object}{A \code{\link{gt.object}}, usually one in which more than one test was performed.}
-    \item{method}{The method of multiple testing correction. Choose from: Holm familywise error control (Holm), Benjamini and Hochberg FDR control (BH); Benjamini and Yekutieli FDR control (BY).}
-    \item{test}{Either a \code{\link{function}} or \code{\link{gt.object}}. If a function, that function should take as its argument a vector of covariate labels, and return  (raw) p-value. See the examples below. If a \code{\link{gt.object}} the call to \code{\link{gt}} that created it must have had all the covariates of \code{sets} (below) in its \code{alternative} argument.}
+    \item{method}{The method of multiple testing correction. Choose
+      from: Holm familywise error control (Holm), Benjamini and Hochberg
+      FDR control (BH); Benjamini and Yekutieli FDR control (BY).} 
+    \item{test}{Either a \code{\link{function}} or
+      \code{\link{gt.object}}. If a function, that function should
+      take as its argument a vector of covariate labels, and return
+      (raw) p-value. See the examples below. If a
+      \code{\link{gt.object}} the call to \code{\link{gt}} that created
+      it must have had all the covariates of \code{sets} (below) in its
+      \code{alternative} argument.} 
     \item{sets}{A named \code{\link[base:list]{list}} representing covariate sets of the hypotheses of interest, for which adjusted p-values are to be calculated. If it is missing but \code{test} is
-        a \code{\link{gt.object}}, the \code{subsets} slot of that object will be used. If used in the \code{inheritance}, \code{sets} describe a tree structure of hypotheses. In this case, object of class \code{\link[stats:hclust]{hclust}} or \code{\link[stats:dendrogram]{dendrogram}}.}
+        a \code{\link{gt.object}}, the \code{subsets} slot of that
+	object will be used. If used in the \code{inheritance},
+	\code{sets} describe a tree structure of hypotheses. In this
+	case, object of class \code{\link[stats:hclust]{hclust}} or
+	\code{\link[stats:dendrogram]{dendrogram}}.} 
     \item{focus}{The focus level of the focus level method. Must be a subset of \code{names(sets)}. Represents the level of the graph at which the method is focused,
         i.e. has most power.}
     \item{ancestors}{An environment or list that maps each set in \code{sets} to all its ancestors, i.e. its proper supersets. If missing, \code{ancestors} is determined
@@ -53,12 +65,17 @@ draw (object, alpha = 0.05, type = c("focuslevel","inheritance"),
         to exactly 1, the algorithm calculates all familywise error rate corrected p-values. Corrected p-values that are not calculated are reported as \code{NA}.}
     \item{atoms}{If set to \code{TRUE}, the focus level algorithm partitions the offspring of each focus level set into the smallest possible building blocks, called
         atoms. Doing this often greatly accelerates computation, but sometimes at the cost of some power.}
-    \item{trace}{If set to \code{TRUE}, reports progress information. The default is obtained from \code{\link[=gt.options]{gt.options()$trace}}. Alternatively,
+    \item{trace}{If set to \code{TRUE}, reports progress
+      information. The default is obtained from
+      \code{\link[=gt.options]{gt.options()$trace}}. Alternatively, 
         setting \code{trace = 2} gives much more extensive output (\code{focusLevel} only).}
     \item{maxsize}{Parameter to choose the height of the focus level. The focus level sets are chosen in such a way that the number of tests that is to be done for each
         focus level set is at most \code{2^maxsize - 1}.}
     \item{alpha}{The alpha level of familywise error control for the significant subgraph.}
-    \item{Shaffer}{If set to \code{TRUE}, it applys the Shaffer improvement. If \code{Shaffer} is \code{NULL} and \code{object} is a \code{\link{gt.object}} the procedure perfoms a validity control and, if succesfull, sets \code{Shaffer=TRUE}}
+    \item{Shaffer}{If set to \code{TRUE}, it applys the Shaffer
+      improvement. If \code{Shaffer} is \code{NULL} and \code{object} is
+      a \code{\link{gt.object}} the procedure perfoms a validity
+      control and, if succesfull, sets \code{Shaffer=TRUE}} 
     \item{weights}{Optional weights vector for the leaves nodes. If it is missing but \code{test} is a \code{\link{gt.object}}, the result of \code{\link{weights}(object)} will be used. In all other cases \code{weights} is set to be uniform among all leaf nodes.}
     \item{homogeneous}{If set to \code{TRUE}, redistributes the alpha of rejected leaf node hypotheses homogeneously over the hypotheses under test, rather than to closest related hypotheses.}
     \item{type}{Argument for specifying which multiple testing correction method should be used. Only relevant if both the inheritance and the focuslevel procedures were
@@ -99,11 +116,18 @@ In the graph terminology of the focus level method, \code{ancestor} means supers
 
 The validity of the focus level procedure depends on certain assumptions on the null hypothesis that is tested for each set. See the paper by Goeman and Mansmann (cited below) for the precise assumptions. Similar assumptions are necessary for the Shaffer improvement of the inheritance procedure.}
 
-\value{The function \code{multtest} returns an object of class \code{\link[gt.object-class]{gt.object}} with an appropriate column added to the test results matrix.
+\value{The function \code{multtest} returns an object of class
+  \code{\link[globaltest:gt.object-class]{gt.object}} with an
+  appropriate column added to the test results matrix. 
 
-The \code{focusLevel} and \code{inheritance} functions returns a \code{\link[gt.object-class]{gt.object}} if a \code{\link[gt.object-class]{gt.object}} argument was given as input, otherwise it returns a matrix with a column of raw p-values and a column of corrected p-values.
+The \code{focusLevel} and \code{inheritance} functions returns a
+\code{\link[gt.object-class]{gt.object}} if a
+\code{\link[globaltest:gt.object-class]{gt.object}} argument was given
+as input, otherwise it returns a matrix with a column of raw p-values
+and a column of corrected p-values. 
 
-The function \code{leafNodes} returns a \code{\link[gt.object-class]{gt.object}}.
+The function \code{leafNodes} returns a
+\code{\link[globaltest:gt.object-class]{gt.object}}. 
 
 \code{findFocus} returns a character vector.}
 
