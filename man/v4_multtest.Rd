@@ -4,7 +4,7 @@
 
 \title{Correct globaltest results for multiple testing (Deprecated)}
 
-\description{(DEPRECATED: please use use \code{\link{multtest}} instead). Corrects the raw p-values resulting from a call to
+\description{(DEPRECATED: please use use \code{\link{p.adjust}} instead). Corrects the raw p-values resulting from a call to
 \code{globaltest} for multiple testing, using either Benjamini and
 Hochberg's False Discovery Rate or Holm's procedure for controlling
 the Family-Wise Error Rate.}
@@ -24,7 +24,7 @@ the Family-Wise Error Rate.}
 
 \value{An object of class \code{\link{gt.result}}.}
 
-\note{\code{gt.multtest} has been deprecated. Please use \code{\link{multtest}} instead.
+\note{\code{gt.multtest} has been deprecated. Please use \code{\link{p.adjust}} instead.
 
 This function must be called \emph{prior} to any selection of
 significant genes.}

@@ -1,3 +1,14 @@
+4.99.9
+- Added trimming of zero weights in gt()
+- removed borders from covariates() and subjects() barplots
+- repaired the object returned by covariates() if cluster=FALSE
+- solved large sample numerical stability problem in .genF()
+- made sure covariates() returns alias as well
+- features() function added
+- multtest() function replaced by p.adjust() method
+- rewritten the introduction to the vignette to make it more acessible to non-statisticians
+- subsets method added for gt.object
+
 4.99.8
 - updated Rd files (xrefs, S4 slot documentation) to new Rcmd check standards.
 - fixed a terminal bug in covariates() in case of p-values exactly zero

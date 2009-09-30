@@ -1,6 +1,5 @@
 \name{Multiple testing methods of the globaltest package}
 
-\alias{multtest}
 \alias{focusLevel}
 \alias{findFocus}
 \alias{inheritance}
@@ -10,13 +9,9 @@
 
 \title{Multiple testing correction for the Global Test}
 
-\description{A collection of multiple testing procedures for the Global Test. Methods for Benjamini and Hochberg, and Benjamini and Yekutieli FDR control, for Holm
-family-wise error control, for the focus level procedure of Goeman and Mansmann for graph-structured hypotheses, and for the inheritance procedure based on Meinshausen.}
+\description{A collection of multiple testing procedures for the Global Test. Methods for the focus level procedure of Goeman and Mansmann for graph-structured hypotheses, and for the inheritance procedure based on Meinshausen.}
 
 \usage{
-# Holm and FDR:
-multtest (object, method = c("Holm", "BH", "BY"))
-
 # The focus level method:
 focusLevel (test, sets, focus, ancestors, offspring,
            stop = 1, atoms = TRUE, trace)
@@ -38,16 +33,7 @@ draw (object, alpha = 0.05, type = c("focuslevel","inheritance"),
 
 \arguments{
     \item{object}{A \code{\link{gt.object}}, usually one in which more than one test was performed.}
-    \item{method}{The method of multiple testing correction. Choose
-      from: Holm familywise error control (Holm), Benjamini and Hochberg
-      FDR control (BH); Benjamini and Yekutieli FDR control (BY).} 
-    \item{test}{Either a \code{\link{function}} or
-      \code{\link{gt.object}}. If a function, that function should
-      take as its argument a vector of covariate labels, and return
-      (raw) p-value. See the examples below. If a
-      \code{\link{gt.object}} the call to \code{\link{gt}} that created
-      it must have had all the covariates of \code{sets} (below) in its
-      \code{alternative} argument.} 
+    \item{test}{Either a \code{\link{function}} or \code{\link{gt.object}}. If a function, that function should take as its argument a vector of covariate labels, and return  (raw) p-value. See the examples below. If a \code{\link{gt.object}} the call to \code{\link{gt}} that created it must have had all the covariates of \code{sets} (below) in its \code{alternative} argument.}
     \item{sets}{A named \code{\link[base:list]{list}} representing covariate sets of the hypotheses of interest, for which adjusted p-values are to be calculated. If it is missing but \code{test} is
         a \code{\link{gt.object}}, the \code{subsets} slot of that
 	object will be used. If used in the \code{inheritance},
@@ -88,12 +74,7 @@ draw (object, alpha = 0.05, type = c("focuslevel","inheritance"),
 
 \details{Multiple testing correction becomes important if the Global Test is performed on many covariate subsets.
 
-The \code{multtest} function performs multiple testing that does not make use of any structure in the hypotheses. The Benjamini and Hochberg method gives false discovery
-rate adjusted p-values that are valid for most forms of positively correlated test statistics. The more stringent method of Benjamini and Yekutieli gives false discovery
-rate adjusted p-values that are valid for all possible correlation structures. Holm's method gives familywise error corrected p-values valid for general correlation
-structures.
-
-If the hypotheses are structured in such a way that many of the tested subsets are subsets of other sets, more powerful procedures can be applied that take advantage of this structure to gain power. Two methods are implemented in the \code{globaltest} package: the \code{inheritance} method for tree-structured hypotheses and the \code{focusLevel} method for general directed acyclic graphs.
+If the hypotheses are structured in such a way that many of the tested subsets are subsets of other sets, more powerful procedures can be applied that take advantage of this structure to gain power. Two methods are implemented in the \code{globaltest} package: the \code{inheritance} method for tree-structured hypotheses and the \code{focusLevel} method for general directed acyclic graphs. For simple multiple testing that does not use such structure, see \code{\link[gt.object-class]{p.adjust}}.
 
 The \code{focusLevel} procedure makes use of the fact that some sets are subsets or supersets of each other, as specified by the user in the \code{offspring} and
 \code{ancestors} arguments. Viewing the subset and superset structure as a graph, the procedure starts testing at a \code{focus} level: a subset of the nodes of the graph.
@@ -174,8 +155,8 @@ Many more examples in the vignette! }
     res <- gt(Y, X, subsets = my.sets1)
 
     # Simple multiple testing
-    multtest(res)
-    multtest(res, "BH")
+    p.adjust(res)
+    p.adjust(res, "BH")
 
     # A whole structure of sets
     my.sets2 <- as.list(LETTERS[1:10])
@@ -192,7 +173,7 @@ Many more examples in the vignette! }
     leafNodes(resF, alpha = .1)
 
     # Compare
-    multtest(resF, "Holm")
+    p.adjust(resF, "holm")
 
     # Focus level with a different test
     Ftest <- function(set) anova(lm(Y~X[,set]))[["Pr(>F)"]][1]

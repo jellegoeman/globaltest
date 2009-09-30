@@ -78,13 +78,13 @@
         cov.term <- 2*mu.num
         ES <- (mu.num/mu.den) * (1 - cov.term/(mu.num*mu.den) + var.den/(mu.den^2))
         VarS <- (mu.num^2/mu.den^2) * (var.num/(mu.num^2)  + var.den/(mu.den^2) - 2*cov.term/(mu.num*mu.den))
-  
+                             
         # calculate the p-value
         if (calculateP)
           p.value <- .getP(lams)
         else
           p.value <- NA
-  
+                                        
         # give back
         return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))
       }

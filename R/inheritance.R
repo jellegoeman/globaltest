@@ -1,4 +1,5 @@
 inheritance <- function(test, sets, weights, ancestors, offspring,  stop = 1, Shaffer, homogeneous=FALSE, trace) {
+
   # input checking 1: sets
   if (missing(sets) && is(test, "gt.object") && !is.null(test@subsets)) 
     sets <- test@subsets
@@ -41,11 +42,10 @@ inheritance <- function(test, sets, weights, ancestors, offspring,  stop = 1, Sh
   if (missing(offspring))
     offspring <- turnListAround(ancestors) 
         
-   broadstructure=do.broadstructure(sets,ancestors,offspring)
-   rm(ancestors,offspring)
+  broadstructure=do.broadstructure(sets,ancestors,offspring)
+  rm(ancestors,offspring)
 
-    
-   if (missing(weights)) weights <- NULL               # prevents confusion with "weights" method
+  if (missing(weights)) weights <- NULL               # prevents confusion with "weights" method
 
   if (is(test,"gt.object")) {
     if(missing(Shaffer)) {
@@ -95,20 +95,27 @@ inheritance <- function(test, sets, weights, ancestors, offspring,  stop = 1, Sh
     rownames(rawgt@result)[found[!is.na(found)]]= names(sets)[!is.na(found)]
     test.id=setdiff(test.id,which(!is.na(found)))
 
-      result <- t(sapply(test.id, function(i) {
-        if (trace) {
-          if (i > 1) cat(rep("\b", digitsK+trunc(log10(i-1))+4), sep="")
-          cat(i, " / ", K, sep="")
-          flush.console()
-        }
-        rawgt@functions$test(sets[[i]])
-      }))
-     if (length(test.id)>0) {
-        rawp[test.id]= result[,1]
-        rawgt@result <- rbind(rawgt@result[found[!is.na(found)],],result)}        
-     rownames(rawgt@result)<- c(names(sets)[!is.na(found)], names(sets)[which(is.na(found))])
-     colnames(rawgt@result) <- c("p-value", "Statistic", "Expected", "Std.dev", "#Cov")
-     rawgt@subsets <- sets
+    result <- t(sapply(test.id, function(i) {
+      if (trace) {
+        if (i > 1) cat(rep("\b", digitsK+trunc(log10(i-1))+4), sep="")
+        cat(i, " / ", K, sep="")
+        flush.console()
+      }
+      rawgt@functions$test(sets[[i]])
+    }))
+    if (length(test.id)>0) {
+      rawp[test.id]= result[,1]
+      rawgt@result <- rbind(rawgt@result[found[!is.na(found)],],result)
+    }        
+    rownames(rawgt@result)<- c(names(sets)[!is.na(found)], names(sets)[which(is.na(found))])
+    colnames(rawgt@result) <- c("p-value", "Statistic", "Expected", "Std.dev", "#Cov")
+    rawgt@subsets <- sets
+    if (any(is.na(found))) {
+      alias <- alias(rawgt)
+      rawgt@extra <- NULL
+      if (!is.null(alias)) 
+        alias(rawgt) <- c(alias[found[!is.na(found)]], rep("", length(rawgt)-length(alias)))
+    }
   } else {
     rawgt <- NULL
     rawp <- sapply(1:K, function(i) {
@@ -321,5 +328,5 @@ turnListAround <- function(aList) {
     }
   }  #end while min p-value is reached
 
-return(list(adj.p=unlist(adj.p),p.value=ps,structure=structure))
+  return(list(adj.p=unlist(adj.p),p.value=ps,structure=structure))
 }    #end function

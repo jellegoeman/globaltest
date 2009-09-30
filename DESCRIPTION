@@ -1,13 +1,13 @@
 Package: globaltest
 Version: 4.99.9
-Date: 2009-09-28
-Title: Locally most powerful testing in high dimensions, with applications to gene set testing
+Date: 2009-09-30
+Title: Testing groups of covariates/features for association with a response variable, with applications to gene set testing
 Author: Jelle Goeman <j.j.goeman@lumc.nl> and Jan Oosting <j.oosting@lumc.nl>
 Maintainer: Jelle Goeman <j.j.goeman@lumc.nl>
 Depends: methods
 Imports: Biobase (>= 2.5.5), survival, AnnotationDbi, annotate, multtest, graphics
 Suggests: vsn, golubEsets, KEGG.db, hu6800.db, Rgraphviz, GO.db, lungExpression, org.Hs.eg.db, annotate, Biobase (>= 2.5.5), survival, GSEABase
-Description: The global test is a locally most powerful test against potentially high-dimensional alternatives. This package implements this test for (generalized linear) regression models, and has several functions to facilitate the use of this test for gene set testing of GO and KEGG terms.
+Description: The global test tests groups of covariates or features for association with a response variable. This package implements the test with diagnostic plots and multiple testing utilities, along with several functions to facilitate the use of this test for gene set testing of GO and KEGG terms.
 License: GPL (>= 2)
 biocViews: Microarray, OneChannel, Bioinformatics, DifferentialExpression, GO, Pathways
 Collate: gt-object.R mlogit.R comparative.R diagnosticplots.R focuslevel.R generalizedFdistribution.R genesettesting.R gt.R inheritance.R models.R options.R utilities.R

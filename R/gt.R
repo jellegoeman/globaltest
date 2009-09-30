@@ -213,7 +213,7 @@ gt <- function(response, alternative, null, data, test.value,
     if (any(sapply(lapply(weights, names), is.null)))
       stop("weights input is not compatible with covariates input.")
   }
-                                  
+  
   # make subsets and weights compatible
   if (many.subsets && many.weights) {
     weights <- lapply(1:length(weights), function(i) {
@@ -224,6 +224,14 @@ gt <- function(response, alternative, null, data, test.value,
     })
   }
 
+  # trim zero weights
+  if (many.weights) {
+    if (any(unlist(weights)==0)) {
+      weights <- lapply(weights, function(wt) wt[wt != 0])
+      many.subsets <- FALSE   # to redo subsets
+    }
+  }
+  
   # make subsets in case of short named weights
   if (many.weights && !many.subsets && any(sapply(weights, length) != ncol(alternative))) {
     subsets <- lapply(weights, names)
@@ -306,7 +314,7 @@ gt <- function(response, alternative, null, data, test.value,
   out@functions <- funs
   if (many.subsets) out@subsets <- subsets
   if (many.weights) out@weights <- weights
-  out@directional <- directional>0
+  out@directional <- directional > 0
   out@legend <- legend
   out@model <- model
   if (!is.null(alias)) alias(out) <- alias

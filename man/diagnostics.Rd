@@ -1,6 +1,7 @@
 \name{Diagnostic plots for globaltest}
 
 \alias{covariates}
+\alias{features}
 \alias{subjects}
 \alias{diagnostics}
 
@@ -14,6 +15,8 @@ covariates(object,
             what = c("p-value", "statistic", "z-score", "weighted"),
             cluster = "average", alpha = 0.05, sort=TRUE,
             legend = TRUE, colors, alias, cex.labels = 0.6, pdf, trace)
+
+features(...)
 
 subjects(object,
             what = c("p-value", "statistic", "z-score", "weighted"),
@@ -35,6 +38,7 @@ subjects(object,
     \item{pdf}{Optional filename (\code{character}) of the pdf file to which the plots are to be written. If a filename is provided in \code{pdf}, many \code{covariates} or \code{subjects} plots of multiple tests can be made with a single call to \code{covariates} or \code{subjects}, writing the results to a pdf file.}
     \item{trace}{If \code{TRUE}, prints progress information. Note that printing progress information involves printing of backspace characters, which is not compatible with use of Sweave. Defaults to \code{\link{gt.options}}\code{()$trace}.}
     \item{mirror}{If \code{TRUE}, plots the reverse of the scores for the subjects with negative residual response, so that "good" scores are positive for all subjects.}
+    \item{...}{All arguments of \code{features} are identical to those of \code{covariates}.}
 }
 
 \details{These two diagnostic plots decompose the test statistics into the contributions of the different covariates and subjects to make the influence of these covariates and subjects visible.
@@ -42,6 +46,8 @@ subjects(object,
 The \code{covariates} plot exploits the fact that the global test statistic for a set of alternative covariates can be written as a weighted sum of the global test statistics for each single contributing covariate. By displaying these component global test results in a bar plot the \code{covariates} plot gives insight into the subset of covariates that is most responsible for the significant test result. The plot can show the \code{p-values} of the component tests on a reversed log scale (the default); their test \code{statistics}, with stripes showing their mean and standard deviation under the null hypothesis; the \code{z-scores} of these test statistics, standardized to mean zero and standard deviation one; or the \code{weighted} test statistics, where the test statistics are multiplied by the relative weight that each covariate carries in the overall test. See the Vignette for more details.
 
 The dendrogram of the \code{covariates} plot is based on correlation distance if the \code{directional} argument was set to \code{TRUE} in the call to \code{\link{gt}}, and uses absolute correlation distance otherwise. The coloring of the dendrogram is based on the multiple testing procedure of Meinshausen (2008): this procedure controls the family-wise error rate on all \code{2n-1} hypotheses associated with the subsets of covariates induced by the clustering graph. All significant subsets are colored black; non-significant ones remain grey. This coloring serves as an additional aid to find the subsets of the covariates most contributing to a significant test result.
+
+The \code{features} function is a synonym for \code{covariates}, using exactly the same arguments.
 
 The \code{subjects} plot exploits the fact that the global test can be written as a sum of contributions of each individual. Each of these contributions is itself a test statistic for the same null hypothesis as the full global test, but one which puts a greater weight on the observed information of a specific subject. These test statistic of subject \code{i} is significant if, for the other subjects, similarity in the alternative covariates to subject \code{i} tends to coincide with similarity in residual response to subject \code{i}. Like the \code{covariates} plot, the \code{subjects} plot can show the \code{p-values} of these component tests on a reversed log scale (the default); their test \code{statistics}, with stripes showing their mean and standard deviation under the null hypothesis; the \code{z-scores} of these test statistics, standardized to mean zero and standard deviation one; or the \code{weighted} test statistics, where the test statistics are multiplied by the relative weight that each covariate carries in the overall test. Setting \code{mirror=FALSE} reverses the bars of subjects with a negative residual response (not applicable if \code{p-values} are plotted). The resulting \code{statistics} values have the additional interpretation that they are proportional to the first order estimates of the linear predictors of each subject under the alternative, i.e. subjects with positive values have higher means under the alternative than under the null, and subjects with negative values have lower means under the alternative than under the null. See the Vignette for more details.
 

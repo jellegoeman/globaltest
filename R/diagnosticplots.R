@@ -39,7 +39,7 @@ covariates <- function(object,
   for (jj in 1:length(object)) {
     obj <- object[jj] 
     if (is.null(obj@weights)) 
-      weights <- rep(1, size(obj))
+      weights <- rep(1, size(obj))                                       
     else
       weights <- obj@weights[[1]]
     if (is.null(obj@subsets)){
@@ -72,7 +72,7 @@ covariates <- function(object,
     if (what == "w") {
       leaves[,c("S", "ES", "sdS")] <- leaves[,c("S", "ES", "sdS")] * matrix(weights(obj),size(obj),3)
     }
-                       
+                      
     # Make bars  
     pps <- -log10(leaves[,"p"] )
     maxlogp <- max(pps[pps!=Inf], 0, na.rm=TRUE)
@@ -111,6 +111,7 @@ covariates <- function(object,
         attr(hc, "height") <- 0
         attr(hc, "class") <- "dendrogram"
         obj@extra <- data.frame(inheritance=p.value(obj))
+        if (!is.null(alias)) alias(obj) <- names(bars)
         obj@subsets <- list(row.names(leaves)[1])
         names(obj) <- obj@functions$cov.names(obj@subsets[[1]])
         sorter <- unlist(hc)
@@ -130,7 +131,9 @@ covariates <- function(object,
         obj@subsets =  c(list(obj@functions$cov.names(obj@subsets[[1]])),  unlist(obj@functions$cov.names(subset)))
         obj@extra <- NULL
         obj@structure <- NULL                           
+        if (!is.null(alias)) alias(obj) <- c("",names(bars))
         obj=inheritance(obj,sets=hc,trace=trace, stop=1)
+        obj <- obj[sort.list(names(obj))]
       }
    
       # Color the dendrogram
@@ -163,9 +166,17 @@ covariates <- function(object,
       plot(hc, leaflab="none", yaxt = "n", ylab=ylab, mgp=c(4,1,0))
       axis(2, at = seq(0,2,by=.2), labels=1-seq(0,2,by=.2), las=2)
     } else {
+      obj@subsets <- as.list(row.names(leaves))
+      obj@result <- leaves
+      obj@extra <- NULL
+      if (!is.null(alias)) alias(obj) <- names(bars)
+      obj@weights <- NULL
+      colnames(obj@result) <- c("p-value", "Statistic", "Expected", "Std.dev", "#Cov")
+      names(obj) <- row.names(leaves)
       sorter <- sort.list(order.bars) 
+      obj <- obj[sorter]
     }
-                             
+                         
     leaves <- leaves[sorter,,drop=FALSE]
     bars <- bars[sorter]
                      
@@ -200,7 +211,7 @@ covariates <- function(object,
       room <- (ylims[2] - max(bars[trunc(nbars*.6):nbars])) / diff(ylims)
       ylims[2] <- ylims[2] + diff(ylims) * max(0,.1*length(colors) - room)
     }
-    mids <- drop(barplot(bars, yaxt="n", las=2, ylab=ylab, ylim=ylims, mgp=c(4,1,0), col=cols, cex.names=cex.labels))
+    mids <- drop(barplot(bars, yaxt="n", border=NA, las=2, ylab=ylab, ylim=ylims, mgp=c(4,1,0), col=cols, cex.names=cex.labels))
     
     # help lines
     if (dendrogram) {
@@ -265,6 +276,13 @@ covariates <- function(object,
   return(invisible(out))
 }
 
+######################################
+# features function
+# Synonym of "covariates"
+######################################
+features <- function(...) {
+  covariates(...)
+}
 
 
 
@@ -405,7 +423,7 @@ subjects <- function(object,
       room <- (ylims[2] - max(bars[trunc(nbars*.6):nbars])) / diff(ylims)
       ylims[2] <- ylims[2] + diff(ylims) * max(0,.125*length(colors) - room)
     }
-    mids <- drop(barplot(bars, yaxt="n", las=2, ylab=ylab, ylim=ylims, mgp=c(4,1,0), col=cols, cex.names=cex.labels))
+    mids <- drop(barplot(bars, yaxt="n", border=NA, las=2, ylab=ylab, ylim=ylims, mgp=c(4,1,0), col=cols, cex.names=cex.labels))
     
     # help lines
     if (dendrogram) {

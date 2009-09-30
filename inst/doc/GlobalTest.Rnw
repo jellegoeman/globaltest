@@ -24,48 +24,62 @@
 
 \chapter{Introduction}
 
-This vignette explains the use of the \Rpackage{globaltest} package. Chapter \ref{general chapter} describes the theory behind the test implemented in this package from a general statistical perspective. Later chapters explain how to use the \Rpackage{globaltest} package for specific applications.
+This vignette explains the use of the \Rpackage{globaltest} package. Chapter \ref{general chapter} describes the use of the test and the package from a general statistical perspective. Later chapters explain how to use the \Rpackage{globaltest} package for specific applications.
 
 
 \section{Citing \Rpackage{globaltest}}
 
-When citing the \Rpackage{globaltest} package, please cite \cite{Goeman2006}, the central paper that explains the general theory of the test. Other papers may be relevant when using the test for specific applications. These are mentioned below.
+When using the \Rpackage{globaltest} package, please cite one or more of the following papers, as appropriate.
+\begin{itemize}
+  \item \cite{Goeman2004} is the original paper describing the global test for linear and logistic regression, and its application to gene set testing.
+  \item \cite{Goeman2005} extends the global test to survival data and explains how to deal with nuisance (null) covariates.
+  \item \cite{Goeman2006} proves the local optimality of the global test and explores its general theoretical properties. This is the core paper of the global test methodology
+  \item \cite{Goeman2008} develops the Focus Level method for multiple testing correction in the Gene Ontology graph
+  \item \cite{Goeman2009} derives the asymptotic distribution of the global test for generalized linear models
+\end{itemize}
 
-\section{Gene set testing}
 
-One of the primary applications of the global test is in gene set testing. Gene set testing using the global test was first introduced in \cite{Goeman2004} for the logistic and linear models. It was extended to survival data and the Cox proportional hazards model in \cite{Goeman2005}. Comparisons with other gene set testing methods can be found in \cite{Goeman2007}.
+\section{Package overview}
+
+The global test is meant for data sets in which many covariates (or features) have been measured for the same subjects, together with a response variable, e.g.\ a class label, a survival time or a continuous measurement. The global test can be used on a group (or subset) of the covariates, testing whether that group of covariates is associated with the response variable.
+
+The null hypothesis of the global test is that none of the covariates in the tested group is associated with the response. The alternative is that at least one of the covariates has such an association. However, the global test is designed in such a way that it is especially directed against the alternative that most of the covariates are associated with the response in a small way. In fact, against such an alternative the global test is the optimal test to use \citep{Goeman2006}.
+
+The global test is based on regression models in which the distribution of the response variable is modeled as a function of the covariates. The type of regression model depends on the response. Currently implemented models are
+\begin{itemize}
+  \item linear regression (continuous response),
+  \item logistic regression (binary response),
+  \item multinomial logistic regression (multi-class response),
+  \item Poisson regression (count response),
+  \item the Cox proportional hazards model (survival response).
+\end{itemize}
+Modeling in terms of a regression model makes it easy to adjust the test for the confounding effect of nuisance covariates: covariates that are known to have an effect on the response and which are correlated with (some of) the covariates of interest, and which may, if not adjusted for, lead to spurious associations.
+
+The \Rpackage{globaltest} package implements the global test along with additional functionality. Several diagnostic plots can be used to visualize the test result and to decompose it to see the influence of individual covariates and subjects. Multiple testing procedures are offered for the situation in which a user wants to perform many global tests on the same data, e.g.\ when testing many alternative subsets. In that case, possible relationships between the test results arise due to subset relationships among tested sets which may be exploited.
+
+The package also offers some functions that are tailored to specific applications of the global test. In the current version, the only application supported in this way is gene set testing (see Chapter \ref{gene set testing}). Tailored functions for other applications (goodness-of-fit testing, prediction/classification pre-testing, testing for the presence of a random effect) are under development.
 
 
 
-\chapter{The global testing: general issues} \label{general chapter}
+\section{Comparison with the likelihood ratio test}
 
-\section{Introduction}
+In its most general form, the global test is a score test for nested parametric models, and as such it is a competitor of the likelihood ratio test. It can be used in every situation in which a likelihood ratio test may also be used, but the global test's properties are different from those of the likelihood ratio test. We summarize the differences briefly from a theoretical statistical perspective. For more details, see \cite{Goeman2006}.
 
-The global test is a general class of score tests for nested parametric models, a competitor of the likelihood ratio test. It can be used in every situation in which a likelihood ratio test may also be used, but the global test's properties are different from those of the likelihood ratio test.
-
-One property of the likelihood ratio test that the global test gives up, is the property that the likelihood ratio test is invariant to the parametrization of the alternative model. The global test depends on the model's parametrization; therefore, there is not a single global test for a given pair of null and alternative hypothesis, but a multitude of tests: one for each possible parametrization of the alternative hypothesis. In return for giving up this parametrization-invariance, the global test gains an optimality-property that it depends on the parametrization of the model: as detailed in \cite{Goeman2006}, the global test is optimal (among all possible tests) on average in a neighborhood of the null hypothesis. The shape of this neighborhood is determined by the parametrization of the alternative hypothesis. In practice, this means that in situations in which a ``natural'' parametrization of the alternative model exists, the global test for that parametrization is often more powerful than the likelihood ratio test \citep[examples in][]{Goeman2006}.
+It is well known that the likelihood ratio test is invariant to the parametrization of the alternative model. The global test does not have this property: it depends on the model's precise parametrization. Therefore, there is not a single global test for a given pair of null and alternative hypothesis, but a multitude of tests: one for each possible parametrization of the alternative hypothesis. In return for giving up this parametrization-invariance, the global test gains an optimality-property that depends on the parametrization of the model. As detailed in \cite{Goeman2006}, the global test is optimal (among all possible tests) on average in a neighborhood of the null hypothesis. The shape of this neighborhood is determined by the parametrization of the alternative hypothesis. In practice, this means that in situations in which a ``natural'' parametrization of the alternative model exists, the global test for that parametrization is often more powerful than the likelihood ratio test \citep[examples in][]{Goeman2006}.
 
 A second important property of the global test is that it may still be used in situations in which the alternative model cannot be fitted to the data, which may happen, for example, if the alternative model is overparameterized, or in high dimensional situations in which there are more parameters than observations. In such cases the likelihood ratio test usually breaks down, but the global test still functions, often with good power.
 
-As a score test, the global test is most focused on alternatives close to the null hypothesis. This means that the global test is good at detecting alternatives that have many small effects (in terms of the chosen parametrization), but that it may not be the optimal test to use if the effects are very large.
+Being a score test, the global test is most focused on alternatives close to the null hypothesis. This means that the global test is good at detecting alternatives that have many small effects (in terms of the chosen parametrization), but that it may not be the optimal test to use if the effects are very large.
 
-The global test as a theoretical construct is very general. In the \Rpackage{globaltest} package the global test is implemented for regression models only. Currently implemented models are
-\begin{itemize}
-  \item linear regression,
-  \item logistic regression,
-  \item multinomial logistic regression,
-  \item Poisson regression,
-  \item the Cox proportional hazards model.
-\end{itemize}
 
-This chapter explains the basics of the test from a general statistical point of view, using simulated data for illustration purposes. Extensive worked out examples of specific applications can be found in later chapters.
 
+\chapter{The global test} \label{general chapter}
 
 \section{Global test basics} \label{basics}
 
-We illustrate most of the features of the \Rpackage{globaltest} package and its functions with a very simple application on simulated data using a linear regression model. More extensive real examples relating to specific areas of application can be found in later chapters of this Vignette.
+We illustrate most of the features of the \Rpackage{globaltest} package and its functions with a very simple application on simulated data using a linear regression model. More extensive real examples relating to specific areas of application can be found in later chapters of this vignette.
 
-\subsection{Example data}
+\subsection{Example data} \label{example data}
 
 We simulate some data
 
@@ -96,20 +110,28 @@ gt.options(trace=FALSE, max.print=45)
 
 \subsection{The test} \label{basic test}
 
-The main workhorse function of the \Rpackage{globaltest} package is the \Rfunction{gt} function, which performs the actual test. To test the null hypothesis \verb:Y ~ A: versus the alternative \verb:Y ~ A + B + C:, we may use a call such as
-<<full formula>>=
-gt(Y~A, Y~A+B+C, data = X)
+The main workhorse function of the \Rpackage{globaltest} package is the \Rfunction{gt} function, which performs the actual test. There are several alternative ways to call this function, depending on the user's preference to work with \Rclass{formula} objects or matrices. We start with the \Rclass{formula}-based way, because this is closest to the statistical theory. Matrix-based calls are detailed in Section \ref{alternative calls}.
+
+In the data set of Section \ref{example data}, if we are interested in testing for association between the group of variables \verb:A:, \verb:B: and \verb:C: with the response \verb:Y:, we can test the null hypothesis \verb:Y ~ 1: that the response depends on none of the variables in the group, against the alternative hypothesis \verb:Y ~ A + B + C: that \verb:A:, \verb:B: and \verb:C: may have an influence on the response. We test this with
+<<full formula simple>>=
+gt(Y~1, Y~A+B+C, data = X)
 @
 Unlike in \Rfunction{anova}, the order of the models matters in this call: the second argument must always be the alternative hypothesis.
 
-The output lists the p-value of the test, the test statistic with its expected value and standard deviation under the null hypothesis. The \verb:#Cov: column give the number of covariates in the alternative model that are not in the null model.
+The output lists the p-value of the test, the test statistic with its expected value and standard deviation under the null hypothesis. The \verb:#Cov: column give the number of covariates in the alternative model that are not in the null model. In the linear model the test statistic is scaled in such a way that it takes values between 0 and 100. The test statistic can be interpreted as 100 times a weighted average (partial) correlation between the covariates of the alternative and the residuals of the response. In other models, the test statistic has a roughly similar scaling and interpretation.
 
-In the linear model the test statistic is scaled in such a way that it takes values between 0 and 100. The test statistic can be interpreted as 100 times a weighted average partial correlation between the covariates of the alternative and the residuals of the response. In other models, the test statistic has a roughly similar scaling and interpretation.
+
+\subsection{Nuisance covariates}
+
+A similar syntax can be used to correct the test for nuisance covariates. To correct the test of the previous section for the possible confounding influence of the covariate \verb:D:, we specify the null hypothesis \verb:Y ~ D: versus the alternative \verb:Y ~ A + B + C + D:. Note that the nuisance covariate occurs both in the null and alternative models.
+<<full formula>>=
+gt(Y~D, Y~A+B+C+D, data = X)
+@
 
 
 \subsection{The \Rclass{gt.object} object: extracting information}
 
-The \Rfunction{gt} function returns a \Rclass{gt.object} object, which stores much more useful information, for example the information to make diagnostic plots. Many methods have been defined for this object. One useful function is the \Rfunction{summary} method
+The \Rfunction{gt} function returns a \Rclass{gt.object} object, which stores some useful information, for example the information to make diagnostic plots. Many methods have been defined for this object. One useful function is the \Rfunction{summary} method
 <<summary>>=
 summary(gt(Y~A, Y~A+B+C, data = X))
 @
@@ -126,7 +148,7 @@ size(res)
 The \Rfunction{z.score} function returns the test statistic standardized by its expectation and standard deviation under the null hypothesis; \Rfunction{result} returns a \Rclass{data.frame} with the test result; \Rfunction{size} returns the number of alternative covariates.
 
 
-\subsection{Alternative function calls}
+\subsection{Alternative function calls} \label{alternative calls}
 
 The call to $\Rfunction{gt}$ is quite flexible, and the null and alternative hypotheses can be specified using either \Rclass{formula} objects or design matrices. We illustrate both types of calls, starting with the \Rclass{formula}-based ones.
 
@@ -145,6 +167,7 @@ The dot (\verb:.:) argument for \Rclass{formula} objects can often be useful. To
 <<>>=
 gt(Y~A, ~., data = X)
 @
+Using the information from the column names in the \Rfunarg{data} argument, the \verb:~.: argument is automatically expanded to \verb:~ A + B + C + D + E + F + G + H + I + J:.
 
 In some applications it is more natural to work with design matrices directly, rather than to specify them through a \Rclass{formula}. To perform the test of \verb:Y ~ 1: against \verb:Y ~ .:, we may write
 <<>>=
@@ -176,7 +199,7 @@ If missing, the function will try to determine the model from the input. If the 
 Use \Rfunction{summary} to check which model was used.
 
 
-\subsection{Asymptotic or permutations} \label{permhist}
+\subsection{Null distribution: asymptotic or permutations} \label{permhist}
 
 By default the global test uses an analytic null distribution to calculate the p-values of the test. This analytic distribution is exact in case of the linear model with normally distributed errors, and asymptotic in all other models. The distribution that is used is described in \cite{Goeman2009} for linear and generalized linear models, and in \cite{Goeman2005} for the Cox proportional hazards model. The assumption underlying the asymptotic distribution is that the sample size is (much) larger than the number of covariates of the null hypothesis; the dimensionality of the alternative is not an issue.
 
@@ -349,7 +372,7 @@ The covariates returns the test results for all tests it performs, invisibly, as
 
 By default, the \Rfunction{covariates} function can only make a plot for a single test result, even if the \Rclass{gt.object} contains multiple test results (see Section \ref{manytests}). However, by providing a filename in the \Rfunarg{pdf} argument of the \Rfunction{covariates} function it is possible to make multiple plots, writing them to a pdf file as separate pages.
 
-
+Those who like a more machine-learning oriented terminology can use the \Rfunction{features} function, which is identical to \Rfunction{covariates} in all respects.
 
 \subsection{The \Rfunction{subjects} plot} \label{subjects}
 
@@ -409,6 +432,12 @@ gt(Y,X, subsets = sets)
 @
 Duplicate identifiers in the subset vectors are not removed, but lead to increased weight for the duplicated covariates in the resulting test, except if the \verb:trim: option was set to \verb:TRUE: (see Section \ref{trim}).
 
+To retrieve the subsets from a \Rclass{gt.object}, use the \Rfunction{subsets} method.
+<<subsets method>>=
+res <- gt(Y,X, subsets = sets)
+subsets(res)
+@
+
 Weighting was already discussed in Section \ref{weighting}. To test many different weights simultaneously, the \Rfunarg{weights} argument can also be given as a (named) list, similar to the subsets argument.
 <<many weights>>=
 wts <- list(up = 1:10, down = 10:1)
@@ -442,7 +471,7 @@ sort(res)
 
 \subsection{Unstructured multiple testing procedures} \label{multtest}
 
-When doing many tests, it is important to correct for multiple testing. The \Rpackage{globaltest} package offers five methods for correcting for multiple testing. Three are for unstructured tests in which the tests are simply considered as an exchangeable list with no inherent structure. These three methods are
+When doing many tests, it is important to correct for multiple testing. The \Rpackage{globaltest} package offers different methods for correcting for multiple testing. For unstructured tests in which the tests are simply considered as an exchangeable list with no inherent structure. These methods are described in the help file of the \Rfunction{p.adjust} function (\Rpackage{stats} package). The three most important ones are
 \begin{itemize}
   \item[Holm] The procedure of \cite{Holm1979} for control of the family-wise error rate
   \item[BH] The procedure of \cite{Benjamini1995} for control of the false discovery rate
@@ -450,11 +479,11 @@ When doing many tests, it is important to correct for multiple testing. The \Rpa
 \end{itemize}
 The procedures of Holm and \cite{Benjamini2001} are valid for any dependency structure between the null hypotheses, but the procedure of \cite{Benjamini1995} is only valid for independent or positively correlated test statistics \citep[see][for details]{Benjamini2001}.
 
-Multiplicity-corrected p-values can be calculated with the \Rfunction{multtest} function. The default procedure is Holm's procedure.
-<<multtest>>=
-multtest(res)
-multtest(res, "BH")
-multtest(res, "BY")
+Multiplicity-corrected p-values can be calculated with the \Rfunction{p.adjust} function. The default procedure is Holm's procedure.
+<<p.adjust>>=
+p.adjust(res)
+p.adjust(res, "BH")
+p.adjust(res, "BY")
 @
 
 
@@ -488,7 +517,7 @@ res <- gt(Y,X)
 res <- focusLevel(res, sets = dag, focus=fl)
 sort(res)
 @
-As the \Rfunction{multtest} function, the \Rfunction{focusLevel} function reports familywise error rate adjusted p-values.
+As the \Rfunction{p.adjust} function, the \Rfunction{focusLevel} function reports familywise error rate adjusted p-values.
 
 It is a property of both the inheritance and the focus level method, that the adjusted p-value of a node can never be smaller than a p-value of an ancestor node. The significant graph at a certain significance level is therefore always a coherent graph, which always contains all ancestor nodes of any rejected node. Such a graph can be succinctly summarized by reporting only its leaf nodes. This can be done using the \Rfunction{leafNodes} function.
 <<focus level leaf nodes>>=
@@ -512,7 +541,7 @@ The \Rfunarg{interactive} argument can be used to make the plot interactive. In 
 
 \subsection{Graph-structured hypotheses 2: the inheritance method}   \label{inheritance}
 
-An alternative method for multiple testing in graph-structured hypotheses is the inheritance method. This procedure is based on the work of \cite{Meinshausen2008}. \Rfunction{inheritance} reports familywise error rate adjusted p-values, as \Rfunction{multtest} and \Rfunction{focusLevel} functions do. Compared with the focus level method, the inheritance procedure is less computationally intensive, and does not require the definition of any (focus) level. However, it requires that the graph has a tree structure, rather than the more general directed acyclic graph structure that the focus level works with.
+An alternative method for multiple testing in graph-structured hypotheses is the inheritance method. This procedure is based on the work of \cite{Meinshausen2008}. \Rfunction{inheritance} reports familywise error rate adjusted p-values, as \Rfunction{p.adjust} and \Rfunction{focusLevel} functions do. Compared with the focus level method, the inheritance procedure is less computationally intensive, and does not require the definition of any (focus) level. However, it requires that the graph has a tree structure, rather than the more general directed acyclic graph structure that the focus level works with.
 
 To illustrate the inheritance method, we make use of the example data. However, we can not make uso of the \verb:dag: object created in Section \ref{focus level} since it does not have a tree structure. For example, \verb:c: in \verb:dag: is a descendant of both \verb:abc: and \verb:cde:. We modify the commands of the previous section to make sure that each element of \verb:dag: has (at maximum) one parent; this guarantees that it is a tree-structured graph.
 
@@ -531,7 +560,7 @@ resI <- inheritance(res, tree)
 resI
 @
 
-The inheritance procedure has two variants: one with and one without the \Rfunarg{Shaffer} variant \citep{Meinshausen2008}. Setting the argument \verb:Shaffer = TRUE: allows uniform improvement of the power of the procedure, but it the familywise error rate control is guaranteed only if the hypotheses tested in each node of the graph with only leaf nodes as offspring is precisely the intersection hypothesis of its child nodes. When doing the inheritance procedure in combination with the global test, this condition is fulfilled if the set of covariates at each node with only leaf nodes as offspring is precisely the union of the sets of covariates of its offspring leaf nodes. This condition is fulfilled for the \verb:tree: graph above, but if we had set \verb:level1 <- as.list(LETTERS[1:9]):, the node \verb:hij: contains a covariate (\verb:J:) that is not present in any of its child nodes, so that the condition for the Shaffer improvement is not fulfilled, and setting 
+The inheritance procedure has two variants: one with and one without the \Rfunarg{Shaffer} variant \citep{Meinshausen2008}. Setting the argument \verb:Shaffer = TRUE: allows uniform improvement of the power of the procedure, but it the familywise error rate control is guaranteed only if the hypotheses tested in each node of the graph with only leaf nodes as offspring is precisely the intersection hypothesis of its child nodes. When doing the inheritance procedure in combination with the global test, this condition is fulfilled if the set of covariates at each node with only leaf nodes as offspring is precisely the union of the sets of covariates of its offspring leaf nodes. This condition is fulfilled for the \verb:tree: graph above, but if we had set \verb:level1 <- as.list(LETTERS[1:9]):, the node \verb:hij: contains a covariate (\verb:J:) that is not present in any of its child nodes, so that the condition for the Shaffer improvement is not fulfilled, and setting
 \verb:Shaffer = TRUE: does not control the familywise error rate. If \Rfunarg{test} is a \Rclass{gt.object} the procedure check if structure of \Rfunarg{sets} allows for a Shaffer improvement, and sets \Rfunarg{Shaffer} to the correct default. In other cases, checking the validity of the Shaffer improvement is left to the user. Note that setting \verb:Shaffer = TRUE: always gives a correct procedure.
 
 The tree structure of the hypotheses may be fixed a priori, based on the prior knowledge rather than on the data. However, in some situations a data-driven definition of the structure is allowed. \cite{Meinshausen2008} suggests to use a hierarchical clustering method using as distance matrix based on the (correlation) distance between explanatory covariates. This is valid for the global test, and may in some cases also be valid if other tests are performed.
@@ -657,7 +686,7 @@ eg <- as.list(hu6800ENTREZID)
 gtKEGG(ALL.AML, Golub_Train, id="04110", probe2entrez = eg, annotation="org.Hs.eg.db")
 @
 
-If more than one KEGG id is tested, multiple testing corrected p-values are automatically provided. The default multiple testing method is Holm's, but others are available through the \Rfunarg{multtest} argument. See also the \Rfunction{multtest} function, described in Section \ref{multtest}. The results are sorted to increasing p-values (using the \Rfunction{sort} method), unless the \Rfunarg{sort} argument of \Rfunction{gtKEGG} is set to \verb:FALSE:.
+If more than one KEGG id is tested, multiple testing corrected p-values are automatically provided. The default multiple testing method is Holm's, but others are available through the \Rfunarg{multtest} argument. See also the \Rfunction{p.adjust} function, described in Section \ref{multtest}. The results are sorted to increasing p-values (using the \Rfunction{sort} method), unless the \Rfunarg{sort} argument of \Rfunction{gtKEGG} is set to \verb:FALSE:.
 <<gtKEGG multtest>>=
 gtKEGG(ALL.AML, Golub_Train, id=c("04110","04210"), multtest="BH")
 @
@@ -686,7 +715,7 @@ It is also possible to test all terms in one or more of the three ontologies: Bi
 gtGO(ALL.AML, Golub_Train, ontology="BP", minsize = 10, maxsize = 500)
 @
 
-If more than one gene ontology term is tested, multiple testing corrected p-values are automatically provided. The default multiple testing method is Holm's, but others are available through the \Rfunarg{multtest} argument. See also the \Rfunction{multtest} function, described in Section \ref{multtest}. The results are sorted to increasing p-values (using the \Rfunction{sort} method), unless the \Rfunarg{sort} argument of \Rfunction{gtGO} is set to \verb:FALSE:.
+If more than one gene ontology term is tested, multiple testing corrected p-values are automatically provided. The default multiple testing method is Holm's, but others are available through the \Rfunarg{multtest} argument. See also the \Rfunction{p.adjust} function, described in Section \ref{multtest}. The results are sorted to increasing p-values (using the \Rfunction{sort} method), unless the \Rfunarg{sort} argument of \Rfunction{gtGO} is set to \verb:FALSE:.
 <<gtGO multtest>>=
 gtGO(ALL.AML, Golub_Train, id=c("GO:0007049","GO:0006915"), multtest="BH")
 @
@@ -730,7 +759,7 @@ gtBroad(ALL.AML, Golub_Train, id = "chr5q33", collection=broad, probe2entrez = e
 @
 See \verb:www.bioconductor.org: for the names of the organism specific packages.
 
-If more than one Broad set is tested, multiple testing corrected p-values are automatically provided. The default multiple testing method is Holm's, but others are available through the \Rfunarg{multtest} argument. See also the \Rfunction{multtest} function, described in Section \ref{multtest}. The results are sorted to increasing p-values (using the \Rfunction{sort} method), unless the \Rfunarg{sort} argument of \Rfunction{gtBroad} is set to \verb:FALSE:.
+If more than one Broad set is tested, multiple testing corrected p-values are automatically provided. The default multiple testing method is Holm's, but others are available through the \Rfunarg{multtest} argument. See also the \Rfunction{p.adjust} function, described in Section \ref{multtest}. The results are sorted to increasing p-values (using the \Rfunction{sort} method), unless the \Rfunarg{sort} argument of \Rfunction{gtBroad} is set to \verb:FALSE:.
 <<gtBroad multtest, eval=FALSE>>=
 gtBroad(ALL.AML, Golub_Train, id=c("chr5q33","chr5q34"), multtest="BH", collection=broad)
 @
@@ -751,20 +780,34 @@ gtBroad(ALL.AML, Golub_Train, category="c1", collection=broad)
 
 \section{Gene and sample plots}
 
-The covariate plot may be used to great effect for investigating to which individual probes or genes or to which subsets of the gene set a significant result for a gene set may be attributed.
+\subsection{Visualizing features}
+
+The covariate (or ``features'') plot may be used to great effect for investigating to which individual probes or genes or to which subsets of the gene set a significant result for a gene set may be attributed.
 \begin{figure}[!ht]
 <<KEGG_covariates, fig=TRUE>>=
 res <- gtKEGG(ALL.AML, Golub_Train, id = "04110")
-covariates(res, alias=hu6800SYMBOL)
+features(res, alias=hu6800SYMBOL)
 @
 \end{figure}
-The details of the \Rfunction{covariates} plot are described in Section \ref{covariates}. The \Rfunarg{alias} argument is useful to replace the probe identifiers with more familiar gene symbols.
+The details of the \Rfunction{features} plot are described in Section \ref{covariates}. The \Rfunarg{alias} argument is useful to replace the probe identifiers with more familiar gene symbols.
 
-When testing many GO or KEGG terms it can be convenient to make covariates plots for all tested gene sets at once, writing all plots to a pdf.
+The black line in the \Rfunction{features} plot represents the significant subgraph of the clustering tree. To find the leaf nodes that characterize the graph, use the function \Rfunction{leafNodes}.
+<<LeafNodes geneplot>>=
+ft <- features(res, alias=hu6800SYMBOL)
+leafNodes(ft)
+@
+It may happen that the leaf nodes of the significant graph are not individual features, but sets of features higher up in the clustering graph. Use the \Rfunction{subsets} method to find which features belong to such a node.
+<<subsets leafNodes, eval=FALSE>>=
+subsets(leafNodes(ft))
+@
+
+When testing many GO or KEGG terms it can be convenient to make features plots for all tested gene sets at once, writing all plots to a pdf.
 <<pdf covariates, eval=FALSE>>=
 res_all <- gtKEGG(ALL.AML, Golub_Train)
-covariates(res_all[1:5], pdf="KEGGcov.pdf", alias=hu6800SYMBOL)
+features(res_all[1:5], pdf="KEGGcov.pdf", alias=hu6800SYMBOL)
 @
+
+\subsection{Visualizing subjects}
 
 Similarly, the subjects plot, described in Section \ref{subjects}, can be used to investigate which subjects are similar in terms of their expression signature to other subjects with the same response variable, and which deviate from that pattern. In the \Rfunction{subjects} diagnostic plot, the subjects associated with strong evidence for the association between the response and the gene expression profile of the pathway have low p-values (tall bars), whereas the subjects with high p-values have weak or even contrary evidence. The most interesting subjects plot to look at is usually the subjects plot for the global test on all genes. From the figure, in this case, we note that the expression profile of the AML subjects seems more homogeneous than that of the ALL subjects: the latter group tends to be less coherent overall, and to contain more outlying subjects.
 \begin{figure}[!ht]

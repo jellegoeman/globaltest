@@ -97,7 +97,7 @@ setMethod("weights", "gt.object", function(object) {
   weights <- colSums(X*X)
   if (object@model == "multinomial")
     weights <- rowSums(matrix(weights, object@functions$df()[3]))
-  
+                                  
   # find weights for specific weights and subsets chosen
   if (length(object@subsets) > 0) {
     weights <- lapply(object@subsets, function(set) weights[set])
@@ -123,6 +123,11 @@ setMethod("weights", "gt.object", function(object) {
   weights      
 })
 
+#==========================================================
+setGeneric("subsets", function(object, ...) standardGeneric("subsets"))
+setMethod("subsets", "gt.object", function(object, ...) {
+  object@subsets
+})
 
 
 #==========================================================
@@ -314,6 +319,18 @@ setMethod("model.matrix", matchSignature(signature(object = "gt.object"), model.
 #==========================================================
 # Multiple testing correction for "gt.object" object
 #==========================================================
+setGeneric("p.adjust")
+setMethod("p.adjust", matchSignature(signature(p = "gt.object"), p.adjust),
+  function(p, method = p.adjust.methods, n = length(p)) {
+    method <- match.arg(method)
+    if (is.null(p@extra))
+      p@extra <- data.frame(matrix(,length(p),0), row.names=names(p))
+    p@extra[[method]] <- p.adjust(p.value(p), method=method, n=n)
+    p
+  }
+)
+
+
 multtest <- function(object, method = c("Holm", "BH", "BY")) {
   
   method <- match.arg(method)
