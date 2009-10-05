@@ -1,3 +1,6 @@
+4.99.10
+- Repaired missing bracket in v4_globaltest.Rd
+
 4.99.9
 - Added trimming of zero weights in gt()
 - removed borders from covariates() and subjects() barplots
