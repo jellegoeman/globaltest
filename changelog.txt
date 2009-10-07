@@ -1,5 +1,8 @@
+4.99.11
+- updated Rd files (xrefs) to new Rcmd check standards.
+
 4.99.10
-- Repaired missing bracket in v4_globaltest.Rd
+- Repaired missing ] in v4_globaltest.Rd
 
 4.99.9
 - Added trimming of zero weights in gt()

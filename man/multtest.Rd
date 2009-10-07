@@ -39,7 +39,8 @@ draw (object, alpha = 0.05, type = c("focuslevel","inheritance"),
 	object will be used. If used in the \code{inheritance},
 	\code{sets} describe a tree structure of hypotheses. In this
 	case, object of class \code{\link[stats:hclust]{hclust}} or
-	\code{\link[stats:dendrogram]{dendrogram}}.} 
+	\code{\link[stats:dendrogram]{dendrogram}}.}
+
     \item{focus}{The focus level of the focus level method. Must be a subset of \code{names(sets)}. Represents the level of the graph at which the method is focused,
         i.e. has most power.}
     \item{ancestors}{An environment or list that maps each set in \code{sets} to all its ancestors, i.e. its proper supersets. If missing, \code{ancestors} is determined
@@ -53,7 +54,8 @@ draw (object, alpha = 0.05, type = c("focuslevel","inheritance"),
         atoms. Doing this often greatly accelerates computation, but sometimes at the cost of some power.}
     \item{trace}{If set to \code{TRUE}, reports progress
       information. The default is obtained from
-      \code{\link[=gt.options]{gt.options()$trace}}. Alternatively, 
+      \code{\link[=gt.options]{gt.options()$trace}}. Alternatively,
+
         setting \code{trace = 2} gives much more extensive output (\code{focusLevel} only).}
     \item{maxsize}{Parameter to choose the height of the focus level. The focus level sets are chosen in such a way that the number of tests that is to be done for each
         focus level set is at most \code{2^maxsize - 1}.}
@@ -61,7 +63,8 @@ draw (object, alpha = 0.05, type = c("focuslevel","inheritance"),
     \item{Shaffer}{If set to \code{TRUE}, it applys the Shaffer
       improvement. If \code{Shaffer} is \code{NULL} and \code{object} is
       a \code{\link{gt.object}} the procedure perfoms a validity
-      control and, if succesfull, sets \code{Shaffer=TRUE}} 
+      control and, if succesfull, sets \code{Shaffer=TRUE}}
+
     \item{weights}{Optional weights vector for the leaves nodes. If it is missing but \code{test} is a \code{\link{gt.object}}, the result of \code{\link{weights}(object)} will be used. In all other cases \code{weights} is set to be uniform among all leaf nodes.}
     \item{homogeneous}{If set to \code{TRUE}, redistributes the alpha of rejected leaf node hypotheses homogeneously over the hypotheses under test, rather than to closest related hypotheses.}
     \item{type}{Argument for specifying which multiple testing correction method should be used. Only relevant if both the inheritance and the focuslevel procedures were
@@ -74,7 +77,7 @@ draw (object, alpha = 0.05, type = c("focuslevel","inheritance"),
 
 \details{Multiple testing correction becomes important if the Global Test is performed on many covariate subsets.
 
-If the hypotheses are structured in such a way that many of the tested subsets are subsets of other sets, more powerful procedures can be applied that take advantage of this structure to gain power. Two methods are implemented in the \code{globaltest} package: the \code{inheritance} method for tree-structured hypotheses and the \code{focusLevel} method for general directed acyclic graphs. For simple multiple testing that does not use such structure, see \code{\link[gt.object-class]{p.adjust}}.
+If the hypotheses are structured in such a way that many of the tested subsets are subsets of other sets, more powerful procedures can be applied that take advantage of this structure to gain power. Two methods are implemented in the \code{globaltest} package: the \code{inheritance} method for tree-structured hypotheses and the \code{focusLevel} method for general directed acyclic graphs. For simple multiple testing that does not use such structure, see \code{\link[=gt.object]{p.adjust}}.
 
 The \code{focusLevel} procedure makes use of the fact that some sets are subsets or supersets of each other, as specified by the user in the \code{offspring} and
 \code{ancestors} arguments. Viewing the subset and superset structure as a graph, the procedure starts testing at a \code{focus} level: a subset of the nodes of the graph.
@@ -85,8 +88,7 @@ The focus level method requires the choice of a ``focus level'' in the graph. Th
 
 The \code{inheritance} method is an alternative method for calculating familywise error rate corrected p-values. Like the focus level method, \code{inheritance} also makes use of the structure of the tested sets to gain power. In this case, however, the graph is restricted to a tree, as can be obtained for example if the tested subsets are obtained from a hierarchical clustering. The inheritance procedure is used in the \code{\link{covariates}} function. Like Holm's method and the focus level method, the inheritance procedure makes no assumptions on the joint distribution of the test statistics.
 
-The \code{leafNodes} function extracts the leave nodes of the significant subgraph after a focus level procedure was performed. As this graph is defined by its leave
-nodes, this is the most efficient summary of the test result. Only implemented for \code{\link{gt.object}} input.
+The \code{leafNodes} function extracts the leaf nodes of the significant subgraph after a focus level procedure was performed. As this graph is defined by its leaf nodes, this is the most efficient summary of the test result. Only implemented for \code{\link{gt.object}} input.
 
 The \code{draw} function draws the graph, displaying the significant nodes. It either draws the full graph with the non-significant nodes grayed out (\code{sign.only = TRUE}), or it draws only the subgraph corresponding to the significant nodes.
 
@@ -99,16 +101,19 @@ The validity of the focus level procedure depends on certain assumptions on the 
 
 \value{The function \code{multtest} returns an object of class
   \code{\link[globaltest:gt.object-class]{gt.object}} with an
-  appropriate column added to the test results matrix. 
+  appropriate column added to the test results matrix.
+
 
 The \code{focusLevel} and \code{inheritance} functions returns a
-\code{\link[gt.object-class]{gt.object}} if a
+\code{\link{gt.object}} if a
 \code{\link[globaltest:gt.object-class]{gt.object}} argument was given
 as input, otherwise it returns a matrix with a column of raw p-values
-and a column of corrected p-values. 
+and a column of corrected p-values.
+
 
 The function \code{leafNodes} returns a
-\code{\link[globaltest:gt.object-class]{gt.object}}. 
+\code{\link[globaltest:gt.object-class]{gt.object}}.
+
 
 \code{findFocus} returns a character vector.}
 
@@ -134,7 +139,7 @@ For references related to applications of the test, see the vignette GlobalTest.
 
 \author{Jelle Goeman: \email{j.j.goeman@lumc.nl}; Livio Finos}
 
-\seealso{ The \code{\link{gt}} function. The \code{\link[gt.object-class]{gt.object}} function and useful functions associated with that object.
+\seealso{ The \code{\link{gt}} function. The \code{\link{gt.object}} function and useful functions associated with that object.
 
 Many more examples in the vignette! }
 
