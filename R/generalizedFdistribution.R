@@ -80,7 +80,6 @@
   while (prod(sqrt(.ruben(lams.neg)/lams.neg)) < .Machine$double.xmin) {     # prevents c=Inf/Inf, sacrificing accuracy
     acc[2] <- mean(c(acc[2],1))
     lams.neg <- .weed(lams.neg, acc=acc[2])
-    print(acc)
   }
   m.neg <- length(lams.neg)
                       

@@ -1,3 +1,6 @@
+4.9.12
+- removed leftover debugging print command in .genF
+
 4.99.11
 - updated Rd files (xrefs) to new Rcmd check standards.
 
