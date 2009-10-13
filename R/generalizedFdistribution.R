@@ -1,13 +1,18 @@
 .getP <- function(lams) {
   if (all(lams==0))
-    p.value <- NaN
+    p.value <- 1
   else {
-    # first try Imhof (quick but less accurate)
-    try.p <- .pImhof(lams)
-    if (is.na(try.p$value) || (try.p$value <= 10*try.p$error))  {
+    lams <- lams[lams != 0]
+    if (length(unique(lams)) == 2) {
       p.value <- .genF(1,lams)
-    } else
-      p.value <- try.p$value
+    } else {
+      # first try Imhof (quick but less accurate)
+      try.p <- .pImhof(lams)
+      if (is.na(try.p$value) || (try.p$value <= 10*try.p$error))  {
+        p.value <- .genF(1,lams)
+      } else
+        p.value <- try.p$value
+    }
   }
   p.value
 }

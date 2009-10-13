@@ -78,7 +78,14 @@
         cov.term <- 2*mu.num
         ES <- (mu.num/mu.den) * (1 - cov.term/(mu.num*mu.den) + var.den/(mu.den^2))
         VarS <- (mu.num^2/mu.den^2) * (var.num/(mu.num^2)  + var.den/(mu.den^2) - 2*cov.term/(mu.num*mu.den))
-                             
+        
+        # repair for case all(X == 0)
+        if (norm.const == 0) {
+          norm.const <- 1
+          ES <- 0
+          VarS <- 0
+        }
+                          
         # calculate the p-value
         if (calculateP)
           p.value <- .getP(lams)
@@ -126,6 +133,10 @@
         # mean and variance of S for z-score
         ES <- mean(permS)
         VarS <- var(permS)
+
+        # repair for case all(X == 0)
+        if (norm.const == 0) 
+          norm.const <- 1
   
         # calculate the p-value
         p.value <- mean(S <= permS)
@@ -367,6 +378,14 @@
     
           ES <- (mu.num/mu.den) * (1 - cov.term/(mu.num*mu.den) + var.den/(mu.den^2))
           VarS <- (mu.num^2/mu.den^2) * (var.num/(mu.num^2)  + var.den/(mu.den^2) - 2*cov.term/(mu.num*mu.den))
+    
+          # repair for case all(X == 0)
+          if (is.na(S)) {
+            S <- 0
+            ES <- 0
+            VarS <- 0
+            p.value <- 1
+          }
     
           # give back
           return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))

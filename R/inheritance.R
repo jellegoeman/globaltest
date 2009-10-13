@@ -66,7 +66,6 @@ inheritance <- function(test, sets, weights, ancestors, offspring,  stop = 1, Sh
   }
 
   # Preprocess gt.object input and calculate focus level p-values
-  if (trace) cat("Getting raw p-values: ")
   K <- length(sets)
   test.id=1:K
   nam=names(sets)
@@ -75,10 +74,12 @@ inheritance <- function(test, sets, weights, ancestors, offspring,  stop = 1, Sh
   rawp=rep(NA,length(sets))
   names(rawp)=nam
   digitsK <- trunc(log10(K))+1
-   get.weights<-function() {
-   if(is.null(test@subsets)) weights= weights(test)
-   else  weights= weights(test[which(sapply(test@subsets,function(x){ identical(sort(x),sort(labels) )})[1])])
-   }                     
+  get.weights<-function() {
+    if(is.null(test@subsets)) 
+      weights= weights(test)
+    else  
+      weights= weights(test[which(sapply(test@subsets,function(x){ identical(sort(x),sort(labels) )})[1])])
+  }                     
   if (is(test, "gt.object")) {
     if (is.list(test@weights)) if (length(test@weights)>1) stop("The inheritance method is not applicable with individually weighted sets")
     if(missing(weights))    weights= get.weights()
@@ -239,6 +240,7 @@ turnListAround <- function(aList) {
 ######################################################################################################################
 ## here start the main function
 .inherit<-function(ps,structure, weights,stop=1,Shaffer=T,homogeneous=F){
+                                                              
   ps=signif(ps,digits =8)
   m=length(structure$leaflist)
   if(length(weights)==1)  weights=rep(weights,m)
@@ -250,7 +252,7 @@ turnListAround <- function(aList) {
   who.next=which.min(ps[founders]/weights[founders])
   alpha=signif(ps[founders[who.next]]/weights[founders[who.next]]*sum(weights[founders]),digits=8)
   alphas[founders]=weights[founders]/sum(weights[founders])*alpha
-
+                                                   
   actives=rep(FALSE,length(alphas)); names(actives)=names(ps)
   rejected=actives
   actives[founders]=TRUE
@@ -266,10 +268,12 @@ turnListAround <- function(aList) {
       if(Shaffer & (any(actives[structure$leaflist]))){ #if Shaffer=T and not all leaf nodes are already rejected or actives
         activesleaves=structure$leaflist[actives[structure$leaflist]]
         while(length(activesleaves)){
-		       sibs=structure$child[[structure$parent[[activesleaves[1]]]]]
-		       if(all(sibs %in% activesleaves)) { alphas.Shaffer[sibs]=alphas[sibs]*sum(weights[sibs])/(sum(weights[sibs])-min(weights[sibs])) }
-		       activesleaves=setdiff(activesleaves,sibs)
+          sibs=structure$child[[structure$parent[[activesleaves[1]]]]]
+		      if (all(sibs %in% activesleaves)) { 
+            alphas.Shaffer[sibs]=alphas[sibs]*sum(weights[sibs])/(sum(weights[sibs])-min(weights[sibs])) 
           }
+		      activesleaves=setdiff(activesleaves,sibs)
+        }
       }
       #### end Shaffer
       
@@ -302,7 +306,8 @@ turnListAround <- function(aList) {
                    if(length(heirs)){
                      search.heirs=FALSE
                      actives[heirs]=TRUE        
-                     alphas[heirs]=alphas[heirs]+to.divide*weights[heirs]/sum(weights[heirs])
+                     if (sum(weights[heirs]) > 0)
+                       alphas[heirs]=alphas[heirs]+to.divide*weights[heirs]/sum(weights[heirs])
                      alphas[i.divide]=0
                    }
                    else{ target=structure$parent[[target]]}
@@ -323,6 +328,8 @@ turnListAround <- function(aList) {
       who.next=test.next[which.min(ps[test.next]/weights[test.next])]
       alphas[test.next]=ps[who.next]/alphas[who.next]  *alphas[test.next]
       alpha=sum(alphas[test.next])
+      if (is.na(alpha)) 
+        alpha <- max(1, stop)
       istep=TRUE
       if(alpha>=stop) rejected[]=TRUE
     }

@@ -34,7 +34,7 @@ covariates <- function(object,
     if (length(alias) == object@functions$df()[3] && is.null(names(alias))) 
       names(alias) <- object@functions$cov.names()
   }
-
+                                 
   # get the right subsets 
   for (jj in 1:length(object)) {
     obj <- object[jj] 
@@ -59,7 +59,7 @@ covariates <- function(object,
     test <- function(set) {
       obj@functions$test(subset[set], weights[set])
     }
-  
+                                              
     # Test covariates  
     leaves <- t(sapply(1:size(obj), function(i) {
       test(i)
@@ -67,12 +67,13 @@ covariates <- function(object,
     rownames(leaves) <- obj@functions$cov.names(subset)
     if (is.null(rownames(leaves)))
       rownames(leaves) <- subset
-  
+                                              
     # revert to weighted if asked
     if (what == "w") {
       leaves[,c("S", "ES", "sdS")] <- leaves[,c("S", "ES", "sdS")] * matrix(weights(obj),size(obj),3)
     }
-                      
+    leaves[leaves[,"sdS"] == 0, "sdS"] <- 1
+                                    
     # Make bars  
     pps <- -log10(leaves[,"p"] )
     maxlogp <- max(pps[pps!=Inf], 0, na.rm=TRUE)
@@ -135,7 +136,7 @@ covariates <- function(object,
         obj=inheritance(obj,sets=hc,trace=trace, stop=1)
         obj <- obj[sort.list(names(obj))]
       }
-   
+                                 
       # Color the dendrogram
       sigcol <- function(branch, sig, top) {      
         setlist=obj@subsets
@@ -245,7 +246,7 @@ covariates <- function(object,
     if (what %in% c("s","w")) {
       sapply(seq_along(mids), function(i) { 
         lines(c(mids[i]-0.5, mids[i]+0.5), rep(leaves[i,"ES"],2), lwd=3)
-        sapply(seq_len(max(0, (bars[i] - leaves[i,"ES"])/leaves[i,"sdS"])), function(k)
+         sapply(seq_len(max(0, (bars[i] - leaves[i,"ES"])/leaves[i,"sdS"])), function(k)
           lines(c(mids[i]-0.5, mids[i]+0.5), rep(leaves[i,"ES"]+k*leaves[i,"sdS"],2))
         )
       })

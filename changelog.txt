@@ -1,5 +1,8 @@
 4.9.12
 - removed leftover debugging print command in .genF
+- .calculateP() now uses F distribution rather than Imhof if possible
+- repaired problem in covariates() in case of zero-variance covariates 
+
 
 4.99.11
 - updated Rd files (xrefs) to new Rcmd check standards.
