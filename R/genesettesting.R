@@ -59,6 +59,7 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
   # map back
   if (!missing(probe2entrez)) {
     if (is.environment(probe2entrez)) probe2entrez <- as.list(probe2entrez)
+    if (is(probe2entrez, "AnnotationDbBimap")) probe2entrez <- as.list(probe2entrez)
     if (is.list(probe2entrez)) probe2entrez <- unlist(probe2entrez)
     sets <- lapply(sets, function(set) {
       names(probe2entrez)[probe2entrez %in% set]
@@ -169,6 +170,7 @@ gtKEGG <- function(response, exprs, ..., id, annotation, probe2entrez,
   # map back
   if (!missing(probe2entrez)) {
     if (is.environment(probe2entrez)) probe2entrez <- as.list(probe2entrez)
+    if (is(probe2entrez, "AnnotationDbBimap")) probe2entrez <- as.list(probe2entrez)
     if (is.list(probe2entrez)) probe2entrez <- unlist(probe2entrez)
     sets <- lapply(sets, function(set) {
       names(probe2entrez)[probe2entrez %in% set]
@@ -255,6 +257,7 @@ gtBroad <- function(response, exprs, ..., id, annotation, probe2entrez, collecti
   # map to probe identifiers
   if (!missing(probe2entrez)) {
     if (is.environment(probe2entrez)) probe2entrez <- as.list(probe2entrez)
+    if (is(probe2entrez, "AnnotationDbBimap")) probe2entrez <- as.list(probe2entrez)
     if (is.list(probe2entrez)) probe2entrez <- unlist(probe2entrez)
     sets <- lapply(sets, function(st) {
       names(probe2entrez)[probe2entrez %in% st]

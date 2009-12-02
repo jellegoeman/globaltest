@@ -1,4 +1,7 @@
-4.9.12
+5.1.1
+- repaired bug in covariates() that gave wrong alias labels
+
+4.99.12
 - removed leftover debugging print command in .genF
 - .calculateP() now uses F distribution rather than Imhof if possible
 - repaired problem in covariates() in case of zero-variance covariates 
