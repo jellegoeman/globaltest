@@ -1,3 +1,6 @@
+5.1.2
+- Added importFrom(AnnotationDbi, as.list) to NAMESPACE
+
 5.1.1
 - repaired bug in covariates() that gave wrong alias labels
 
@@ -5,7 +8,6 @@
 - removed leftover debugging print command in .genF
 - .calculateP() now uses F distribution rather than Imhof if possible
 - repaired problem in covariates() in case of zero-variance covariates 
-
 
 4.99.11
 - updated Rd files (xrefs) to new Rcmd check standards.

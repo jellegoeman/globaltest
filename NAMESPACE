@@ -9,7 +9,7 @@ importFrom(stats, coefficients, fitted.values, residuals, weights, alias,
 
 importFrom(annotate, lookUp)
 
-importFrom(AnnotationDbi, Term, Secondary)
+importFrom(AnnotationDbi, Term, Secondary, as.list)
 
 import(Biobase, methods)
 
