@@ -24,7 +24,7 @@ gt <- function(response, alternative, null, data, test.value,
   formula.response <- (length(call$response) > 1) && (call$response[[1]] == "~")
 
   # settle null, alternative and response if response is a formula
-  if (missing(null)) {
+  if (missing(null) || is.null(null)) {
     if ((!missing(alternative)) && formula.response)
       null <- response
     else

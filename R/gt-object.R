@@ -168,6 +168,7 @@ setMethod("[", "gt.object",
 {
   if (all(i %in% names(x)) || 
           all(i %in% 1:length(x)) ||
+          all(i %in% -1:-length(x)) ||
           (is.logical(i) & (length(i) == length(x)))) {
     x@extra <- x@extra[i, ,drop=FALSE]
     if (!is.null(x@subsets)) x@subsets <- x@subsets[i]
@@ -325,7 +326,7 @@ setMethod("p.adjust", matchSignature(signature(p = "gt.object"), p.adjust),
     method <- match.arg(method)
     if (is.null(p@extra))
       p@extra <- data.frame(matrix(,length(p),0), row.names=names(p))
-    p@extra[[method]] <- p.adjust(p.value(p), method=method, n=n)
+    p@extra[[method]] <- p.adjust(p.value(p), method=method)
     p
   }
 )

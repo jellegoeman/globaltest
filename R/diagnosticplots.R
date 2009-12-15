@@ -4,7 +4,7 @@
 ######################################
 covariates <- function(object, 
             what = c("p-value", "statistic", "z-score", "weighted"), cluster = "average", 
-            alpha = 0.05, sort=TRUE, legend = TRUE, colors, alias, 
+            alpha = 0.05, sort=TRUE, legend = TRUE, colors, alias, help.lines = FALSE,
             cex.labels = 0.6, pdf, trace) {
                                                 
   if ((length(object) > 1) && missing(pdf))
@@ -29,15 +29,14 @@ covariates <- function(object,
                           
   # prepare alias
   if (!is.null(alias)) {
-    if (is.environment(alias)) alias <- as.list(alias)
-    if (is(alias, "ProbeAnnDbBimap")) alias <- as.list(alias)
+    if (is.environment(alias) || is(alias, "AnnDbBimap")) alias <- as.list(alias)
     if (is.list(alias)) alias <- unlist(alias)
     if (length(alias) == object@functions$df()[3] && is.null(names(alias))) 
       names(alias) <- object@functions$cov.names()
   }
                                  
   # get the right subsets 
-  for (jj in 1:length(object)) {
+  for (jj in (1:length(object))[size(object)>0]) {
     obj <- object[jj] 
     if (is.null(obj@weights)) 
       weights <- rep(1, size(obj))                                       
@@ -216,7 +215,7 @@ covariates <- function(object,
     mids <- drop(barplot(bars, yaxt="n", border=NA, las=2, ylab=ylab, ylim=ylims, mgp=c(4,1,0), col=cols, cex.names=cex.labels))
     
     # help lines
-    if (dendrogram) {
+    if (dendrogram && help.lines) {
       mb <- max(bars)
       for (i in 1: length(bars))
         lines(c(mids[i],mids[i]),c(max(0,bars[i])+.01*mb,mb*1.2),col=gray(.8),lty=3 )
@@ -295,7 +294,8 @@ features <- function(...) {
 ######################################
 subjects <- function(object,
             what = c("p-value", "statistic", "z-score", "weighted"), cluster = "average",
-            sort=TRUE, mirror = TRUE, legend = TRUE, colors, alias, cex.labels = 0.6, pdf) {
+            sort=TRUE, mirror = TRUE, legend = TRUE, colors, alias, help.lines = FALSE, 
+            cex.labels = 0.6, pdf) {
             
   if ((length(object) > 1) && missing(pdf))
     stop("length(object) > 1. Please reduce to a single test result or specify an output file.")
@@ -428,7 +428,7 @@ subjects <- function(object,
     mids <- drop(barplot(bars, yaxt="n", border=NA, las=2, ylab=ylab, ylim=ylims, mgp=c(4,1,0), col=cols, cex.names=cex.labels))
     
     # help lines
-    if (dendrogram) {
+    if (dendrogram && help.lines) {
       mb <- max(bars)
       for (i in 1: length(bars))
         lines(c(mids[i],mids[i]),c(max(0,bars[i])+.01*mb,mb*1.2),col=gray(.8),lty=3 )

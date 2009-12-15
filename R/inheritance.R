@@ -13,7 +13,6 @@ inheritance <- function(test, sets, weights, ancestors, offspring,  stop = 1, Sh
     if(is(sets,"dendrogram"))       sets=dendro2sets(sets)
   if (is.null(names(sets)))
     stop("sets input has no names attribute.")
-
   # input checking 2: ancestors and offspring
   if (missing(ancestors) && is(test, "gt.object") && !is.null(test@structure$ancestors))
     ancestors <- test@structure$ancestors
@@ -23,15 +22,21 @@ inheritance <- function(test, sets, weights, ancestors, offspring,  stop = 1, Sh
     ancestors <- new.env(hash=TRUE)
     offspring <- new.env(hash=TRUE)
     for (i in 1:length(sets)) {
-      namei <- names(sets)[i]
+      truenamei <- names(sets)[i]
+      namei <- as.character(i)      # workaround: variable names in environments may not be over 256 characters
       for (j in 1:length(sets)) {
-        namej <- names(sets)[j]
+        truenamej <- names(sets)[j]
+        namej <- as.character(j)
         if (i != j && length(sets[[i]]) <= length(sets[[j]]) && all(sets[[i]] %in% sets[[j]])) {
-          ancestors[[namei]] <- c(ancestors[[namei]], namej)
-          offspring[[namej]] <- c(offspring[[namej]], namei)
+          ancestors[[namei]] <- c(ancestors[[namei]], truenamej)
+          offspring[[namej]] <- c(offspring[[namej]], truenamei)
         }
       }
     }
+    ancestors <- as.list(ancestors)
+    names(ancestors) <- names(sets)[as.numeric(names(ancestors))]
+    offspring <- as.list(offspring)
+    names(offspring) <- names(sets)[as.numeric(names(offspring))]
   }      
   if ((!missing(ancestors)) && is.environment(ancestors))
     ancestors <- as.list(ancestors)
@@ -41,7 +46,7 @@ inheritance <- function(test, sets, weights, ancestors, offspring,  stop = 1, Sh
     ancestors <- turnListAround(offspring)
   if (missing(offspring))
     offspring <- turnListAround(ancestors) 
-        
+                                         
   broadstructure=do.broadstructure(sets,ancestors,offspring)
   rm(ancestors,offspring)
 
@@ -186,7 +191,7 @@ dendro2sets<-function(hc){
     }
   return=sets}
     ####################
-
+                    
   sets=list();
   sets[[1]]=labels(hc)
   names(sets)[1]="O1"

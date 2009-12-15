@@ -1,3 +1,12 @@
+5.1.3
+- covariates() with pdf option now removes empty subsets
+- added option of negative indexing for gt.object
+- removed n=n from p.adjust call, so p.adjust works better with NA p-values
+- Worked around long variable names problem in covariates with large cluster tree
+- added option that null input can be NULL, (equivalent to missing)
+- made help.lines optional in covariates() and subjects(), defaulting to FALSE
+- missing transpose leading to error in cox model with covariates fixed
+
 5.1.2
 - Added importFrom(AnnotationDbi, as.list) to NAMESPACE
 

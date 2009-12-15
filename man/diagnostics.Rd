@@ -14,14 +14,16 @@
 covariates(object,
             what = c("p-value", "statistic", "z-score", "weighted"),
             cluster = "average", alpha = 0.05, sort=TRUE,
-            legend = TRUE, colors, alias, cex.labels = 0.6, pdf, trace)
+            legend = TRUE, colors, alias, help.lines = FALSE,
+            cex.labels = 0.6, pdf, trace)
 
 features(...)
 
 subjects(object,
             what = c("p-value", "statistic", "z-score", "weighted"),
             cluster = "average", sort = TRUE, mirror = TRUE,
-            legend = TRUE, colors, alias, cex.labels = 0.6, pdf)
+            legend = TRUE, colors, alias, help.lines = FALSE,
+            cex.labels = 0.6, pdf)
 }
 
 
@@ -34,6 +36,7 @@ subjects(object,
     \item{legend}{If \code{TRUE}, draws a legend in the plot. To override the default labels of the legend, \code{legend} may also be given as a character vector with the labels of the legend.}
     \item{colors}{The colors to be used for the bars. See \code{\link[grDevices:rgb]{rgb}} for details on color specification.}
     \item{alias}{Optional alternative labels for the bars in the plots. Should be a character vector of the same length as the number of covariates or subjects, respectively.}
+    \item{help.lines}{If \code{TRUE}, prints grey dotted lines that help connect the dendrogram to the bars.}
     \item{cex.labels}{Magnification factor for the x-axis labels.}
     \item{pdf}{Optional filename (\code{character}) of the pdf file to which the plots are to be written. If a filename is provided in \code{pdf}, many \code{covariates} or \code{subjects} plots of multiple tests can be made with a single call to \code{covariates} or \code{subjects}, writing the results to a pdf file.}
     \item{trace}{If \code{TRUE}, prints progress information. Note that printing progress information involves printing of backspace characters, which is not compatible with use of Sweave. Defaults to \code{\link{gt.options}}\code{()$trace}.}

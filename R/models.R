@@ -598,7 +598,7 @@
     ZW <- crossprod(Z, matrixW)
     ZWZ <- ZW %*% Z
     ZWZinvZ <- solve(ZWZ, t(Z))
-    X <- X - Z %*% solve(ZWZ, t(ZW)) %*% X
+    X <- X - Z %*% solve(ZWZ, ZW) %*% X
     csm <- colSums(X*X)
     X[,csm < max(csm)*1e-14] <- 0
   }
