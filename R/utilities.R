@@ -103,10 +103,11 @@
       offset <- model.offset(model.frame(null, data=data))
       tnull <- terms(null, data=data)
     }
-    # suppress intercept if necessary
-    if (model == "cox") attr(tnull, "intercept") <- 0
     data <- model.frame(tnull, data, drop.unused.levels = TRUE)
     null <- model.matrix(tnull, data)
+ 
+    # suppress intercept if necessary (can this be done more elegantly?)
+    if (model == "cox") null <- null[,names(null) != "(Intercept)"]
   }
 
   # check dimensions

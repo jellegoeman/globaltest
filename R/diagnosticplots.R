@@ -180,7 +180,8 @@ covariates <- function(object,
                          
     leaves <- leaves[sorter,,drop=FALSE]
     bars <- bars[sorter]
-                     
+      
+    # adjust bottom margin to length of labels                 
     labwidth <- max(strwidth(names(bars),"inches", cex.labels)) + .2
     par(mai = c(max(margins[1], labwidth*1.3), max(1,margins[2]), if (dendrogram) 0 else margins[3], margins[4]))
   

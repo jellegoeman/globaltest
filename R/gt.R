@@ -20,31 +20,33 @@ gt <- function(response, alternative, null, data, test.value,
   if (is.matrix(data))  
     data <- data.frame(data)
 
-  # Is the response a formula
-  formula.response <- (length(call$response) > 1) && (call$response[[1]] == "~")
+  # should the survival package be loaded?
+  if (length(call$response) > 1 && deparse(call$response[1]) == "Surv()")
+    require("survival") || stop("Surv input but survival package not available")
+
+  # evaluate response, which may be one of the colnames of data
+  response <- eval(call$response, data, parent.frame())
 
   # settle null, alternative and response if response is a formula
   if (missing(null) || is.null(null)) {
-    if ((!missing(alternative)) && formula.response)
+    if ((!missing(alternative)) && is(response, "formula"))
       null <- response
     else
       null <- ~1
   } 
   if (missing(alternative))
-    if (formula.response)
+    if (is(response, "formula"))
       alternative <- response
     else
       stop("argument \"alternative\" is missing, with no default")  
-  if (formula.response) {
+  if (is(response, "formula")) {
+    # should the survival package be loaded (second chance)?
     if ((length(response[[2]]) > 1) && deparse(response[[2]][1]) == "Surv()")
       require("survival") || stop("Surv input but survival package not available")
     name.response <-  as.character(eval(response)[[2]])
     response <- eval(attr(terms(response, data=data), "variables"), data, environment(response))[[attr(terms(response, data=data), "response")]]
   } else {
-    if (length(call$response) > 1 && deparse(call$response[1]) == "Surv()")
-      require("survival") || stop("Surv input but survival package not available")
     name.response <- deparse(call$response)
-    response <- eval(call$response, data, parent.frame())
   }
    
   # remove redundant levels from factor response

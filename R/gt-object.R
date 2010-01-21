@@ -323,10 +323,16 @@ setMethod("model.matrix", matchSignature(signature(object = "gt.object"), model.
 setGeneric("p.adjust")
 setMethod("p.adjust", matchSignature(signature(p = "gt.object"), p.adjust),
   function(p, method = p.adjust.methods, n = length(p)) {
-    method <- match.arg(method)
+    method <- method[1]
+    method <- p.adjust.methods[grep(method, p.adjust.methods, ign=T)]
+    if(length(method)==(0))   # this is just to get a good error message
+      method <- match.arg(method)
     if (is.null(p@extra))
       p@extra <- data.frame(matrix(,length(p),0), row.names=names(p))
-    p@extra[[method]] <- p.adjust(p.value(p), method=method)
+    if (missing(n))
+      p@extra[[method]] <- p.adjust(p.value(p), method=method)
+    else
+      p@extra[[method]] <- p.adjust(p.value(p), method=method, n=n)
     p
   }
 )

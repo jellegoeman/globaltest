@@ -1,3 +1,10 @@
+5.1.4
+- fixed input checking of formula object response
+- readded option n=n from p.adjust call, but in an improved way
+- made p.adjust case-insensitive for method specification
+- repaired intercept-removal in a Cox model in case of factor covariates
+- reimplemented .inherit to get the algorthm in line with the submitted paper
+
 5.1.3
 - covariates() with pdf option now removes empty subsets
 - added option of negative indexing for gt.object

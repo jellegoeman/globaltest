@@ -138,8 +138,11 @@ inheritance <- function(test, sets, weights, ancestors, offspring,  stop = 1, Sh
   #extract weigths for leaves nodes
   weights.sets=sapply(sets,function(x) sum(weights[x]))
   #now recall core function:
-  res=.inherit(ps=rawp,structure=broadstructure, weights=weights.sets,stop=maxalpha,Shaffer=Shaffer,homogeneous)
-  adjustedP=res$adj.p[names(rawgt)]
+  
+  #res=.inherit(ps=rawp,structure=broadstructure, weights=weights.sets,stop=maxalpha,Shaffer=Shaffer,homogeneous)
+  #adjustedP=res$adj.p[names(rawgt)]
+  adjustedP <- .inherit2(ps=rawp, structure=broadstructure, weights=weights.sets, stop=maxalpha,Shaffer=Shaffer, homogeneous =homogeneous)             # named vector
+  
   if (trace==1) cat("\n")
   if (!is.null(rawgt)) {
     extra <- rawgt@extra
@@ -244,7 +247,7 @@ turnListAround <- function(aList) {
 
 ######################################################################################################################
 ## here start the main function
-.inherit<-function(ps,structure, weights,stop=1,Shaffer=T,homogeneous=F){
+.inherit<-function(ps, structure, weights, stop=1, Shaffer=T, homogeneous=F){
                                                               
   ps=signif(ps,digits =8)
   m=length(structure$leaflist)
@@ -342,3 +345,118 @@ turnListAround <- function(aList) {
 
   return(list(adj.p=unlist(adj.p),p.value=ps,structure=structure))
 }    #end function
+
+
+######################################################################################################################
+## here start the main function
+.inherit2<- function( ps,             # named vector
+                      weights,        # named vector
+                      structure,      # named list
+                      stop=1,
+                      Shaffer = TRUE,
+                      homogeneous = FALSE) {
+
+  # how many tests?
+  m <- length(ps)
+  nms <- names(ps)
+                                        
+  # unravel structure
+  children <- structure$child
+  parents <- structure$parent
+  offspring <- structure$offspring
+
+  # equal weights?
+  if (missing(weights)) weights <- rep(1,m)
+
+  # find top and leaves
+  top <- sapply(parents[nms], length) == 0
+  leaf <- sapply(children[nms], length) == 0
+                    
+  # find parents of leaves
+  leaf.parents <- children[sapply(children, function(ch) all(ch %in% nms[leaf]))]
+
+  # initialize
+  basealpha <- rep(0,m)
+  basealpha[top] <- weights[top]/sum(weights[top])   # basealpha should add up to 1. Is multiplied by alpha later
+  shaffer <- rep(1, m)
+  rejected <- rep(FALSE, m)
+  extinct <- rep(FALSE, m)
+  adjp <- rep(1, m)
+  names(adjp) <- names(ps)
+  
+  # a flag to do plain Meinshausen
+  Meinshausen <- FALSE
+  
+  # start the procedure
+  alpha <- 0
+  ready <- FALSE
+  while (!ready) {
+                      
+    # phase 1: reject
+    testalpha <- basealpha * shaffer
+    newly.rejected <- (ps/testalpha <= alpha) & (!rejected)
+                    
+    if (any(newly.rejected)) {
+      adjp[newly.rejected] <- alpha
+      rejected <- rejected | newly.rejected
+
+      # phase 2: recalculate extinctness
+      extinct[(!extinct) & rejected] <- sapply((1:m)[(!extinct) & rejected], function(i) 
+        leaf[i] || all(rejected[nms %in% offspring[[nms[i]]]]))
+
+      # phase 3: recalculate Shaffer
+      if (Shaffer) {
+        shaffer <- rep(1, m)
+        if (homogeneous) {
+          if (rejected[top] && (!any(rejected[leaf])))
+            shaffer[!rejected] <- sum(weights[leaf]) /  (sum(weights[leaf]) - min(weights[leaf]))
+        } else {
+          for (lp in names(leaf.parents)) {
+            lvs <- match(leaf.parents[[lp]], nms)
+            if (rejected[match(lp, nms)] && (!any(rejected[lvs])))
+              if (length(lvs) == 1)
+                shaffer[lvs] <- Inf
+              else
+                shaffer[lvs] <- sum(weights[lvs]) /  (sum(weights[lvs]) - min(weights[lvs]))
+          }
+        }
+      }
+                        
+      # phase 4: inherit
+      while (any(rejected & (basealpha > 0))) {
+        for (i in 1:m) {
+          if (rejected[i] && basealpha[i] > 0) {
+                     
+            # find heirs
+            if (extinct[i])
+              if (top[i])         # whole tree is rejected
+                heirs <- top & (!extinct)
+              else                # heirs of leaf nodes or nodes under which all leaves are rejected
+                if (Meinshausen)
+                  heirs <- rep(FALSE, m)
+                else if (homogeneous)
+                  heirs <- (basealpha > 0) & (1:m != i)
+                else
+                  heirs <- (nms %in% parents[[nms[i]]])
+            else                  # heirs of internal nodes
+              heirs <- (nms %in% children[[nms[i]]]) & (!extinct)
+                         
+            # inherit basealpha to heirs
+            basealpha[heirs] <- basealpha[heirs] + basealpha[i] * weights[heirs]/sum(weights[heirs])
+            basealpha[i] <- 0
+          }
+        }
+      }
+    } else {        # no new rejections: increase alpha
+      if (all(rejected))
+        ready <- TRUE
+      else {
+        alpha <- min(ps / (basealpha * shaffer))
+        ready <- (alpha >= stop)
+        newalpha <- TRUE
+      }
+    }
+  }
+  adjp[!rejected] <- max(1, stop)
+  return(adjp)
+}
