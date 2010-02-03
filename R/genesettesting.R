@@ -83,20 +83,20 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
   if (length(sets) > 1) {
     multtest <- match.arg(multtest)
     if (multtest == "focuslevel") { 
-      ancestors <- unlist(sapply(ontology, function(ont) {
+      ancestors <- lapply(as.list(ontology), function(ont) {
         ext <- paste(ont, "ANCESTOR", sep="")
         GOOBJ <- eval(as.name(paste("GO", ont, "ANCESTOR", sep="")))
         ontid <- intersect(keys(GOOBJ), id)
         if (length(ontid) > 0) lookUp(ontid, "GO", ext) else list()
-      }), recursive=FALSE)
-      names(ancestors) <- substring(names(ancestors), 4)
-      offspring <- unlist(sapply(ontology, function(ont) {
+      })
+      ancestors <- do.call(c, ancestors)
+      offspring <- lapply(as.list(ontology), function(ont) {
         ext <- paste(ont, "OFFSPRING", sep="")
         GOOBJ <- eval(as.name(paste("GO", ont, "OFFSPRING", sep="")))
         ontid <- intersect(keys(GOOBJ), id)
         if (length(ontid) > 0) lookUp(ontid, "GO", ext) else list()
-      }), recursive=FALSE)      
-      names(offspring) <- substring(names(offspring), 4)
+      })
+      offspring <- do.call(c, offspring)      
       offspring <- sapply(offspring, function(os) if (all(is.na(os))) character(0) else os)
       if (is.numeric(focuslevel))
         focuslevel <- findFocus(sets, ancestors = ancestors, offspring = offspring, maxsize = focuslevel)

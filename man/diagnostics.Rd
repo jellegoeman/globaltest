@@ -13,7 +13,7 @@
 \usage{
 covariates(object,
             what = c("p-value", "statistic", "z-score", "weighted"),
-            cluster = "average", alpha = 0.05, sort=TRUE,
+            cluster = "average", alpha = 0.05, sort = TRUE, zoom = FALSE,
             legend = TRUE, colors, alias, help.lines = FALSE,
             cex.labels = 0.6, pdf, trace)
 
@@ -32,7 +32,8 @@ subjects(object,
     \item{what}{Gives a choice between various presentations of the same plot. See below under details.}
     \item{cluster}{The type of hierarchical clustering performed for the dendrogram. Default is average linkage clustering. For other options, see \code{\link[stats:hclust]{hclust}}. Setting \code{cluster = "none"} or \code{cluster = FALSE} suppresses the dendrogram altogether.}
     \item{alpha}{Parameter between 0 and 1. Sets the level of family-wise error control in the multiple testing procedure performed on the dendrogram. See below under details.}
-    \item{sort}{If \code{TRUE}, an attempt is made to sort the plot with the most influential covariates and subjects to the left, as far as is possible within the constraints of the dendrogram (if present).}
+    \item{sort}{If \code{TRUE}, the plot sorts the bars with the most significant covariates and subjects to the left, as far as is possible within the constraints of the dendrogram (if present).}
+    \item{zoom}{If \code{TRUE}, discards non-significant branches from the dendrogram with the corresponding covariates. This is especially useful for large sets to "zoom" in on the significant results. If no dendrogram is requested, \code{zoom = TRUE} discards all covariates that are not significant after Holm multiple testing correction.}
     \item{legend}{If \code{TRUE}, draws a legend in the plot. To override the default labels of the legend, \code{legend} may also be given as a character vector with the labels of the legend.}
     \item{colors}{The colors to be used for the bars. See \code{\link[grDevices:rgb]{rgb}} for details on color specification.}
     \item{alias}{Optional alternative labels for the bars in the plots. Should be a character vector of the same length as the number of covariates or subjects, respectively.}
@@ -100,6 +101,7 @@ Many more examples in the vignette!
     # Covariates
     covariates(res)
     covariates(res, what = "w")
+    covariates(res, zoom = TRUE)
 
     # Subjects
     subjects(res)

@@ -4,9 +4,9 @@
 ######################################
 covariates <- function(object, 
             what = c("p-value", "statistic", "z-score", "weighted"), cluster = "average", 
-            alpha = 0.05, sort=TRUE, legend = TRUE, colors, alias, help.lines = FALSE,
+            alpha = 0.05, sort = TRUE, zoom = FALSE, legend = TRUE, colors, alias, help.lines = FALSE,
             cex.labels = 0.6, pdf, trace) {
-                                                
+                                              
   if ((length(object) > 1) && missing(pdf))
     stop("length(object) > 1. Please reduce to a single test result or specify an output file.")
   if (missing(trace)) trace <- gt.options()$trace
@@ -20,6 +20,8 @@ covariates <- function(object,
 
   # What to plot
   what <- substr(match.arg(tolower(what),  c("p-value", "statistic", "z-score", "weighted")),1,1)
+  dendrogram <- ((!is.logical(cluster)) || (cluster)) && (substr(cluster,1,1) != "n")
+
 
   # update legend if asked
   if (is.character(legend)) {
@@ -42,11 +44,10 @@ covariates <- function(object,
       weights <- rep(1, size(obj))                                       
     else
       weights <- obj@weights[[1]]
-    if (is.null(obj@subsets)){
+    if (is.null(obj@subsets)) {
       subset <- seq_len(size(obj))
-      if(length(subset)==1){ obj@subsets[[1]]=c(subset,NA); obj@subsets[[1]]=obj@subsets[[1]][1]  }
-      else 
-          obj@subsets[[1]]=subset}
+      obj@subsets[[1]] <- subset
+    }
     else
       subset <- obj@subsets[[1]]
 
@@ -61,10 +62,28 @@ covariates <- function(object,
     }
                                               
     # Test covariates  
-    leaves <- t(sapply(1:size(obj), function(i) {
-      test(i)
-    }))
+    leaves <- matrix(0, size(obj), 5)
+    colnames(leaves) <-  c("p", "S", "ES", "sdS", "ncov")
     rownames(leaves) <- obj@functions$cov.names(subset)
+    progress <- 1
+    if (dendrogram) {
+      progress <- 1
+      K <- 2*size(obj)-1 
+    } else {
+      K <- size(obj)
+      progress <- 0
+    }
+    digitsK <- trunc(log10(K)+1)
+    for (i in 1:size(obj)) {
+      if (trace) {
+        cat(rep("\b", digitsK+trunc(log10(progress))+4), sep="")
+        progress <- progress +1
+        cat(progress, "/", K)
+        flush.console()
+      }
+      leaves[i,] <- test(i)
+    }
+                                                 
     if (is.null(rownames(leaves)))
       rownames(leaves) <- subset
                                               
@@ -73,7 +92,7 @@ covariates <- function(object,
       leaves[,c("S", "ES", "sdS")] <- leaves[,c("S", "ES", "sdS")] * matrix(weights(obj),size(obj),3)
     }
     leaves[leaves[,"sdS"] == 0, "sdS"] <- 1
-                                    
+                                
     # Make bars  
     pps <- -log10(leaves[,"p"] )
     maxlogp <- max(pps[pps!=Inf], 0, na.rm=TRUE)
@@ -91,7 +110,7 @@ covariates <- function(object,
         names(bars) <- alias[names(bars)]
       }
     }
-    
+                             
     if (sort) 
       order.bars <- -pps
     else
@@ -101,7 +120,6 @@ covariates <- function(object,
     margins <- par("mai")
                                     
     # Make the dendrogram
-    dendrogram <- ((!is.logical(cluster)) || (cluster)) && (substr(cluster,1,1) != "n")
     if (is.logical(cluster) && dendrogram) cluster <- "average"
     if (dendrogram) {
       if(dim(leaves)[1]==1){
@@ -111,6 +129,7 @@ covariates <- function(object,
         attr(hc, "leaf") <- TRUE
         attr(hc, "height") <- 0
         attr(hc, "class") <- "dendrogram"
+        d2s <- dendro2sets(hc)
         obj@extra <- data.frame(inheritance=p.value(obj))
         if (!is.null(alias)) alias(obj) <- names(bars)
         obj@subsets <- list(row.names(leaves)[1])
@@ -118,12 +137,12 @@ covariates <- function(object,
         sorter <- unlist(hc)
       } else {
         # Get residuals of the alternative regressing out the null
-        cors <- obj@functions$cor(subset)
+        cors <- obj@functions$dist.cor(subset)
         # Make a distance matrix and a dendrogram
         if (obj@directional)
           dd <- as.dist(1-cors)
         else
-        dd <- as.dist(1-abs(cors))   
+          dd <- as.dist(1-abs(cors))   
         hc <- as.dendrogram(hclust(dd, method = cluster))
         # reorder to get the most significant ones to the left
         hc <- reorder(hc, wts=order.bars, agglo.FUN=min)
@@ -131,35 +150,76 @@ covariates <- function(object,
         obj@result =rbind(obj@result,leaves)
         obj@subsets =  c(list(obj@functions$cov.names(obj@subsets[[1]])),  unlist(obj@functions$cov.names(subset)))
         obj@extra <- NULL
-        obj@structure <- NULL                           
+        obj@structure <- NULL         
         if (!is.null(alias)) alias(obj) <- c("",names(bars))
-        obj=inheritance(obj,sets=hc,trace=trace, stop=1)
+        d2s <- dendro2sets(hc)
+        obj <- inheritance(obj, sets=d2s$sets, ancestors=d2s$ancestors, trace=trace, Shaffer=TRUE)
         obj <- obj[sort.list(names(obj))]
       }
-                                 
+                                  
+      # sort and select bars
+      if (zoom) {
+        if (dendrogram) {
+          select <- unique(do.call(c, subsets(leafNodes(obj))))
+          select <- which(rownames(leaves) %in% select)
+        } else {
+          select <- obj@extra[,"holm"] <= alpha
+        }
+        sorter <- sorter[sorter %in% select]
+      }
+      leaves <- leaves[sorter,,drop=FALSE]
+      bars <- bars[sorter]
+          
+      # Construct a mapping from branch ids to the name of the corresponding set                                 
+      branch2name <- names(d2s$branch)
+      names(branch2name) <- unlist(lapply(d2s$branch, function(br) paste(".", br, collapse="", sep="")))
+                                                   
       # Color the dendrogram
-      sigcol <- function(branch, sig, top) {      
-        setlist=obj@subsets
-        labels=unlist(dendrapply(branch, function(n) attributes(n)$label))  
-        newlabels=unlist(branch)
-        labels[newlabels]=labels
-        branchset <- unlist(branch) 
-        selected <- names(setlist)[sapply(setlist, setequal, labels[ branchset])]         
-        if (sig) { 
-          sig <- obj@extra$inheritance[which(names(obj)==selected)]<=alpha
-        }
-        uit <- branch
+      sigcol <- function(tree, branch, sig, top) {
+        branch.name <- branch2name[paste(".", branch, collapse="", sep="")]
+      
+        # significant node?
+        sig <- sig && (obj@extra[branch.name, "inheritance"] <= alpha)
+      
+        # set colors
+        uit <- tree
         attr(uit, "edgePar") <- list(col=ifelse(sig, 1, gray(.8)), lwd= ifelse(sig, 2, 1))
-        if (sig && top) attr(uit, "nodePar") <- list(pch=20)
-        if (!is.leaf(branch)) {
-          for (i in 1:length(branch)) {
-            uit[[i]] <- sigcol(branch[[i]], sig, FALSE)
+        if (sig && top) 
+          attr(uit, "nodePar") <- list(pch=20)
+
+        # continue with the child branches
+        if (!is.leaf(tree)) {
+          select.branch <- 1:length(tree)
+          if (zoom) {
+            sigs <- lapply(1:length(tree), function(i) {
+              subbranch <- branch2name[paste(".", c(branch, i), collapse="", sep="")]
+              obj@extra[subbranch, "inheritance"] <= alpha
+            })
+            if (do.call(any, sigs) && (!do.call(all, sigs))) {
+              select.branch <- which(do.call(c, sigs))
+              attrs <- attributes(uit)
+              uit <- list()
+              attributes(uit) <- attrs
+            } 
+            attr(uit, "members") <- sum(select %in% unlist(tree))
+          }  
+          for (i in 1:length(select.branch)) {
+            uit[[i]] <- Recall(tree[[select.branch[i]]], c(branch, select.branch[i]), sig, FALSE)
           }
-        }
+          if (length(uit) == 1)
+            attr(uit, "midpoint") <- attr(uit[[1]], "midpoint")
+          else {
+            leftmid <- attr(uit[[1]], "midpoint")
+            rightmid <- attr(uit[[2]], "midpoint") + attr(uit[[1]], "members")
+            attr(uit, "midpoint") <- (leftmid + rightmid)/2
+          }  
+        } else {
+          attr(uit, "midpoint") <- 0
+        }  
         return(uit)
       }
-      hc <- sigcol(hc, sig = TRUE, top=TRUE)
-     
+      hc <- sigcol(hc, numeric(0), sig = TRUE, top=TRUE)
+                  
       # draw
       par(mai=c(0, max(1,margins[2]), margins[3:4]))
       layout(as.matrix(1:2), heights=c(1,2))
@@ -175,12 +235,10 @@ covariates <- function(object,
       colnames(obj@result) <- c("p-value", "Statistic", "Expected", "Std.dev", "#Cov")
       names(obj) <- row.names(leaves)
       sorter <- sort.list(order.bars) 
+      if (zoom) obj <- p.adjust(obj, "holm")
       obj <- obj[sorter]
     }
                          
-    leaves <- leaves[sorter,,drop=FALSE]
-    bars <- bars[sorter]
-      
     # adjust bottom margin to length of labels                 
     labwidth <- max(strwidth(names(bars),"inches", cex.labels)) + .2
     par(mai = c(max(margins[1], labwidth*1.3), max(1,margins[2]), if (dendrogram) 0 else margins[3], margins[4]))
@@ -372,7 +430,7 @@ subjects <- function(object,
     if (is.logical(cluster) && dendrogram) cluster <- "average"
     if (dendrogram) {
       # Get residuals of the alternative regressing out the null
-      cors <- obj@functions$cor(subset, weights, transpose=TRUE)
+      cors <- obj@functions$dist.cor(subset, weights, transpose=TRUE)
                                                        
       # Make a distance matrix and a dendrogram
       dd <- as.dist(1-cors)

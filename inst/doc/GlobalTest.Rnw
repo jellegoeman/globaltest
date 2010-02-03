@@ -352,19 +352,26 @@ covariates(gt(Y,X), what="w")
 
 The plotted covariates are ordered in a hierarchical clustering graph. The distance measure used for the graph is absolute correlation distance if the \Rfunarg{directional} argument of \Rfunction{gt} was \Robject{FALSE} (the default), or correlation distance otherwise. (Absolute) correlation distance is appropriate here because the test results for the individual covariates can be expected to be similar if the covariates are strongly correlated, and because the sign of the correlation matters only if a directional test was used. The default clustering method is average linkage. This can be changed if desired, using the \Rfunarg{cluster} argument. Clustering can also be turned off by setting \verb:cluster = FALSE:.
 
-The hierarchical clustering graph induces a collection of subsets of the tested covariates between the full set that is the top of the clustering graph and the single covariates that are the leaves. There are $2k-1$ such sets for a graph with $k$ leave nodes, including top and leaves. It is possible to do a multiple testing procedure on all $2k-1$ sets, controlling the family-wise error rate while taking the structure of the graph into account. The \Rfunction{covariates} function performs such a procedure, called the \emph{inheritance} procedure, which is an adaptation of the method of \cite{Meinshausen2008}: see Section \ref{inheritance}. By coloring the part of the clustering graph that has a significant multiplicity-corrected p-value in black, the user can get an impression what covariates and clusters of covariates are most clearly associated with the response variable. The significance threshold at which a multiplicity-corrected p-value is called significant can be adjusted with the \Rfunarg{alpha} argument (default 0.05).
+The hierarchical clustering graph induces a collection of subsets of the tested covariates between the full set that is the top of the clustering graph and the single covariates that are the leaves. There are $2k-1$ such sets for a graph with $k$ leave nodes, including top and leaves. It is possible to do a multiple testing procedure on all $2k-1$ sets, controlling the family-wise error rate while taking the structure of the graph into account. The \Rfunction{covariates} function performs such a procedure, called the \emph{inheritance} procedure, which is an adaptation of the method of \cite{Meinshausen2008}: see Section \ref{inheritance}. By coloring the part of the clustering graph that has a significant multiplicity-corrected p-value in black, the user can get an impression what covariates and clusters of covariates are most clearly associated with the response variable. The significance threshold at which a multiplicity-corrected p-value is called significant can be adjusted with the \Rfunarg{alpha} argument (default 0.05). In some situations the significant branches do not reach all the way to the leaf nodes. The interpretation of this is that the multiple testing procedure can infer with confidence that at least one of the covariates below the last significant branch is associated with the response, but it cannot pinpoint with enough confidence which one(s).
 
 The result of the covariates function can be stored to access the information in the graph. The \Rfunction{covariates} function returns a \Rclass{gt.object} containing all tests on all subsets induced by the clustering graph, with their familywise error adjusted p-values.
 <<covariates output>>=
 res <- covariates(gt(Y,X))
 res[1:10]
 @
-The names of the subsets should be read as follows. \"O1\" refers to the first origin (there is only one origin here), and each ``[1'' refers to a first (or left) branch, whereas each ``[2'' refers to a second (or right) branch. Leaf nodes are also referred to by name. To get the leaf nodes of the subgraph that is significant after multiple testing correction, use the \Rfunction{leafNodes} function
+The names of the subsets should be read as follows. \"O\" refers to the origin or root, and each ``[1'' refers to a first (or left) branch, whereas each ``[2'' refers to a second (or right) branch. Leaf nodes are also referred to by name. To get the leaf nodes of the subgraph that is significant after multiple testing correction, use the \Rfunction{leafNodes} function
 <<covariates leafNodes>>=
 leafNodes(res, alpha=0.10)
 @
 
 The function tries to sort the bars in such a way that the most significant covariates appear on the left. This sorting is, of course, constrained by the dendrogram if present. Setting the \Rfunarg{sort} argument to \verb:FALSE: to keep the bars in the original order as much as possible under the same constraints.
+
+An additional option \Rfunarg{zoom} is available that ``zooms in'' on the significant branches by discarding the non-significant ones. If the whole graph is non-significant \Rfunarg{zoom} has no effect.
+\begin{figure}[!ht]
+<<covariates_zoom, fig=TRUE>>=
+covariates(gt(Y,X), zoom=TRUE)
+@
+\end{figure}
 
 The default colors, legend and labels in the plot can be adjusted with the \Rfunarg{colors}, \Rfunarg{legend} and \Rfunarg{alias} arguments.
 
@@ -800,6 +807,13 @@ It may happen that the leaf nodes of the significant graph are not individual fe
 <<subsets leafNodes, eval=FALSE>>=
 subsets(leafNodes(ft))
 @
+It is possible to only plot the significant subtree with the \Rfunarg{zoom} argument. This is especially useful if the set of features is large.
+\begin{figure}[!ht]
+<<KEGG_covariates_zoom, fig=TRUE>>=
+res <- gtKEGG(ALL.AML, Golub_Train, id = "04110")
+features(res, alias=hu6800SYMBOL, zoom=TRUE)
+@
+\end{figure}
 
 When testing many GO or KEGG terms it can be convenient to make features plots for all tested gene sets at once, writing all plots to a pdf.
 <<pdf covariates, eval=FALSE>>=

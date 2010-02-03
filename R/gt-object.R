@@ -11,7 +11,7 @@ setClass("gt.object",
     result = "matrix",
     extra = "data.frameOrNULL",
     call = "call", 
-    functions = "list",
+    functions = "environment",#"list",
     subsets = "listOrNULL",
     structure = "listOrNULL",
     weights = "listOrNULL",
@@ -169,7 +169,7 @@ setMethod("[", "gt.object",
   if (all(i %in% names(x)) || 
           all(i %in% 1:length(x)) ||
           all(i %in% -1:-length(x)) ||
-          (is.logical(i) & (length(i) == length(x)))) {
+          (is.logical(i) && (length(i) == length(x)))) {
     x@extra <- x@extra[i, ,drop=FALSE]
     if (!is.null(x@subsets)) x@subsets <- x@subsets[i]
     if (!is.null(x@weights)) x@weights <- x@weights[i]

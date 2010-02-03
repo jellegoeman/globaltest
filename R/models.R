@@ -260,17 +260,9 @@
     drop(xy >= 0)+0
   }
 
-  return(list(test=test,
-    getX = getX,
-    cov.names = cov.names,
-    cor=dist.cor,
-    getY = getY,
-    subjectplot = subjectplot,
-    positive = positive,
-    permutations = permutations,
-    nperms = nperms,
-    df=df))
+  out <- sys.frame(sys.nframe())
 
+  return(out)
 }
 
 
@@ -544,16 +536,7 @@
       drop(xy >= 0)+0
     }
   
-    out <- list(test=test,
-      getX = getX,
-      cov.names = cov.names,
-      cor=dist.cor,
-      getY = getY,
-      subjectplot = subjectplot,
-      permutations = permutations,
-      nperms = nperms,
-      positive = positive,
-      df=df)
+    out <- sys.frame(sys.nframe())
   }
   
   return(out)
@@ -814,17 +797,9 @@
   
   getY <- function() Y
 
-  return(list(test=test,
-    getX = getX,
-    cov.names = cov.names,
-    cor=dist.cor,
-    getY = getY,
-    subjectplot = subjectplot,
-    permutations = permutations,
-    nperms = nperms,
-    positive = positive,
-    df=df))
+  out <- sys.frame(sys.nframe())
 
+  return(out)
 }
 
 
@@ -1127,20 +1102,9 @@
     drop(apply(cor(X, null.fit@y - fitted), 1, which.max))
   }  
           
-
-  
   getY <- function() bY
 
-  return(list(test=test,
-    getX = getX,
-    cov.names = cov.names,
-    cor=dist.cor,
-    getY = getY,
-    subjectplot = subjectplot,
-    permutations = permutations,
-    nperms = nperms,
-    positive = positive,
-    df=df))
-
-
+  out <- sys.frame(sys.nframe())
+  
+  return(out)
 }
