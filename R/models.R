@@ -588,7 +588,7 @@
 
   # martingale residuals
   Y <- rowSums(matrixPO) - d
-
+                           
   if (perms > 0) {
     # unlike the glm and lm models, we make permutations of the index vector rather than Y itself
     # This is for also being able to permute tr(XXW)

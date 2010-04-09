@@ -1,6 +1,8 @@
 .getP <- function(lams) {
   if (all(lams==0))
     p.value <- 1
+  else if (all(lams <= 0))
+    p.value <- 0
   else {
     lams <- lams[lams != 0]
     if (length(unique(lams)) == 2) {

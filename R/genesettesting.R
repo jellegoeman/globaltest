@@ -22,9 +22,12 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
   }  
 
   # get the right annotation package
-  if (missing(annotation) && is(exprs, "eSet")) {
-    annotation <- NULL
-    annotation <- annotation(exprs)
+  if (missing(annotation)) {
+    if (is(exprs, "eSet")) {
+      annotation <- NULL
+      annotation <- annotation(exprs)
+    } else
+      stop("argument \"annotation\" is missing with no default.")
   }
   if (substr(annotation, nchar(annotation)-2, nchar(annotation)) == ".db")
     annotation <- substr(annotation, 1, nchar(annotation)-3)
@@ -69,7 +72,10 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
   if (is(exprs, "eSet"))
     probes <- featureNames(exprs)
   else
-    probes <- rownames(exprs)
+    if (gt.options()$transpose)
+      probes <- rownames(exprs)
+    else
+      probes <- colnames(exprs)
   sets <- lapply(sets, function(set) intersect(set, probes))
 
   # size restrictions
@@ -103,7 +109,7 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
       res <- gt(response, exprs, ...)
       res <- focusLevel(res, sets=sets, focus=focuslevel, ancestors = ancestors, offspring = offspring)
     } else {
-      res <- multtest(gt(response, exprs, ..., subsets = sets), method = multtest)
+      res <- p.adjust(gt(response, exprs, ..., subsets = sets), method = multtest)
     }
   } else 
     res <- gt(response, exprs, ..., subsets = sets) 
@@ -141,9 +147,12 @@ gtKEGG <- function(response, exprs, ..., id, annotation, probe2entrez,
   }  
 
   # get the right annotation package
-  if (missing(annotation) && is(exprs, "eSet")) {
-    annotation <- NULL
-    annotation <- annotation(exprs)
+  if (missing(annotation)) {
+    if (is(exprs, "eSet")) {
+      annotation <- NULL
+      annotation <- annotation(exprs)
+    } else
+      stop("argument \"annotation\" is missing with no default.")
   }
   if (substr(annotation, nchar(annotation)-2, nchar(annotation)) == ".db")
     annotation <- substr(annotation, 1, nchar(annotation)-3)
@@ -179,13 +188,16 @@ gtKEGG <- function(response, exprs, ..., id, annotation, probe2entrez,
   if (is(exprs, "eSet"))
     probes <- featureNames(exprs)
   else
-    probes <- rownames(exprs)
+    if (gt.options()$transpose)
+      probes <- rownames(exprs)
+    else
+      probes <- colnames(exprs)
   sets <- lapply(sets, function(set) intersect(set, probes))
 
   # perform tests and do multiple testing
   if (length(sets) > 1) {
     multtest <- match.arg(multtest)
-    res <- multtest(gt(response, exprs, ..., subsets = sets), method = multtest)
+    res <- p.adjust(gt(response, exprs, ..., subsets = sets), method = multtest)
   } else 
     res <- gt(response, exprs, ..., subsets = sets) 
   
@@ -222,9 +234,12 @@ gtBroad <- function(response, exprs, ..., id, annotation, probe2entrez, collecti
   }  
 
   # get the right annotation package
-  if (missing(annotation) && is(exprs, "eSet")) {
-    annotation <- NULL
-    annotation <- annotation(exprs)
+  if (missing(annotation)) {
+    if (is(exprs, "eSet")) {
+      annotation <- NULL
+      annotation <- annotation(exprs)
+    } else
+      stop("argument \"annotation\" is missing with no default.")
   }
   if (substr(annotation, nchar(annotation)-2, nchar(annotation)) == ".db")
     annotation <- substr(annotation, 1, nchar(annotation)-3)
@@ -265,13 +280,16 @@ gtBroad <- function(response, exprs, ..., id, annotation, probe2entrez, collecti
   if (is(exprs, "eSet"))
     probes <- featureNames(exprs)
   else
-    probes <- rownames(exprs)
+    if (gt.options()$transpose)
+      probes <- rownames(exprs)
+    else
+      probes <- colnames(exprs)
   sets <- lapply(sets, function(set) intersect(set, probes))
 
   # perform tests and do multiple testing
   if (length(sets) > 1) {
     multtest <- match.arg(multtest)
-    res <- multtest(gt(response, exprs, ..., subsets = sets), method = multtest)
+    res <- p.adjust(gt(response, exprs, ..., subsets = sets), method = multtest)
   } else 
     res <- gt(response, exprs, ..., subsets = sets) 
   

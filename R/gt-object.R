@@ -338,58 +338,6 @@ setMethod("p.adjust", matchSignature(signature(p = "gt.object"), p.adjust),
 )
 
 
-multtest <- function(object, method = c("Holm", "BH", "BY")) {
-  
-  method <- match.arg(method)
-  
-  stepup <- function(pv) {
-    out <- pv
-    for (i in length(pv):2 - 1)
-      if (out[i] > out[i+1]) 
-        out[i] <- out[i+1]
-    out
-  }
- 
-  stepdown <- function(pv) {
-    out <- pv
-    for (i in 2:length(pv))
-      if (out[i] < out[i-1]) 
-        out[i] <- out[i-1]
-    out
-  }
-  
-                        
-  pps <- p.value(object)
-  notNA <- !is.na(pps)
-  pps <- pps[notNA]
-                     
-  K <- length(pps)
-  order <- sort.list(pps)
-  reverse <- sort.list(order)
-  
-  if (K <= 1)
-    out <- pps
-  else {
-    if (method == "BH") 
-      out <- stepup(pps[order] * K/(1:K))[reverse]
-    else if (method == "BY")
-      out <- stepup(pps[order] * K/(1:K) * sum(1/(1:K)))[reverse]
-    else if (method == "Holm")
-      out <- stepdown(pps[order] * K:1)[reverse]
-  }
-  
-  out[out > 1] <- 1
-  
-  outNA <- rep(NA, length(object))
-  outNA[notNA] <- out
-
-  if (is.null(object@extra))
-    object@extra <- data.frame(matrix(,length(object),0), row.names=names(object))
-  object@extra[[method]] <- outNA
-  object
-    
-}
-
 
 #==========================================================
 # Histogram method to visualize permutations

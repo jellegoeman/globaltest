@@ -83,7 +83,7 @@ covariates <- function(object,
       }
       leaves[i,] <- test(i)
     }
-                                                 
+                                               
     if (is.null(rownames(leaves)))
       rownames(leaves) <- subset
                                               
@@ -133,7 +133,7 @@ covariates <- function(object,
         obj@extra <- data.frame(inheritance=p.value(obj))
         if (!is.null(alias)) alias(obj) <- names(bars)
         obj@subsets <- list(row.names(leaves)[1])
-        names(obj) <- obj@functions$cov.names(obj@subsets[[1]])
+        names(obj) <- d2s$names
         sorter <- unlist(hc)
       } else {
         # Get residuals of the alternative regressing out the null
@@ -173,14 +173,14 @@ covariates <- function(object,
       # Construct a mapping from branch ids to the name of the corresponding set                                 
       branch2name <- names(d2s$branch)
       names(branch2name) <- unlist(lapply(d2s$branch, function(br) paste(".", br, collapse="", sep="")))
-                                                   
+                                                       
       # Color the dendrogram
       sigcol <- function(tree, branch, sig, top) {
         branch.name <- branch2name[paste(".", branch, collapse="", sep="")]
       
         # significant node?
         sig <- sig && (obj@extra[branch.name, "inheritance"] <= alpha)
-      
+                                                   
         # set colors
         uit <- tree
         attr(uit, "edgePar") <- list(col=ifelse(sig, 1, gray(.8)), lwd= ifelse(sig, 2, 1))
@@ -223,7 +223,7 @@ covariates <- function(object,
       # draw
       par(mai=c(0, max(1,margins[2]), margins[3:4]))
       layout(as.matrix(1:2), heights=c(1,2))
-      ylab <- ifelse(obj@directional, "correlation", "absolute correlation")
+      ylab <- ifelse(obj@directional, "correlation", "abs. correlation")
       plot(hc, leaflab="none", yaxt = "n", ylab=ylab, mgp=c(4,1,0))
       axis(2, at = seq(0,2,by=.2), labels=1-seq(0,2,by=.2), las=2)
     } else {

@@ -226,6 +226,8 @@ dendro2sets <- function(hc){
   
   if (!is.leaf(hc))
     struct <- do.sets(hc, "O", numeric(0), struct)
+  else
+    struct$names <- paste(struct$names, labels(hc), sep=":")
   
   #convert to lists
   struct$sets <- as.list(struct$sets)
@@ -314,7 +316,7 @@ turnListAround <- function(aList) {
   shaffer <- rep(1, m)
   rejected <- rep(FALSE, m)
   names(rejected) <- nms
-  extinct <- rep(FALSE, m)
+  extinct <- weights == 0    # nodes with weight zero are never inherited to
   names(extinct) <- nms
   adjp <- rep(1, m)
   names(adjp) <- nms
@@ -330,14 +332,15 @@ turnListAround <- function(aList) {
     # phase 1: reject
     testalpha <- basealpha * shaffer
     newly.rejected <- (ps/testalpha <= alpha) & (!rejected)
-                    
+    newly.rejected[ps == 0 & testalpha == 0] <- FALSE     # do not reject when 0/0
+                                                 
     if (any(newly.rejected)) {
       adjp[newly.rejected] <- alpha
       rejected <- rejected | newly.rejected
 
       # phase 2: recalculate extinctness
       extinct[(!extinct) & rejected] <- sapply((1:m)[(!extinct) & rejected], function(i) 
-        leaf[i] || all(rejected[offspring[[nms[i]]]]))
+        leaf[i] || all(rejected[offspring[[nms[i]]]]) || sum(weights[offspring[[nms[[i]]]]]) == 0)
 
       # phase 3: recalculate Shaffer
       if (Shaffer) {
@@ -390,7 +393,9 @@ turnListAround <- function(aList) {
       if (all(rejected))
         ready <- TRUE
       else {
-        alpha <- min(ps / (basealpha * shaffer))
+        next.rejection <- ps / (basealpha * shaffer)
+        next.rejection[ps == 0 & basealpha == 0] <- Inf
+        alpha <- min(next.rejection)
         ready <- (alpha >= 1)
         newalpha <- TRUE
       }

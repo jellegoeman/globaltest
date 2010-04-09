@@ -1,3 +1,14 @@
+5.1.6
+- prevented warning in .getP if all lams<=0 (result p-value=0)
+- prevented 0/0 problem with p.value exactly zero in inheritance
+- prevented 0/0 problem with weight exactly zero in inheritance
+- fixed imputation of missing values for cox model with no covariates
+- more informative error message with missing annotation argument in gtGO, gtKEGG and gtBroad
+- fixed covariates() for the case of a single covariate
+- label "absolute correlation" in covariates plot abbreviated
+- repaired multiple testing in gtGO, gtKEGG, GTBroad
+- Repaired gtGO, gtKEGG, GTBroad in case of gt.options()$transpose is FALSE
+
 5.1.5
 - added Shaffer=TRUE to call to inheritance() from covariates()
 - calculate ancestors from dendrogram rather than from sets to speed up covariates() in large sets
