@@ -1,3 +1,9 @@
+5.3.1
+- rewritten .weed for better performance
+- rewritten part of .genF to prevent numerical problems (non-convergence due to c==0). Thanks to Katsuhito Yasuno for the bug report.
+- solved bug in .inherit associated with named subsets. Thanks to Jan Oosting for the bug report.
+- Solved bug in covariates when cluster=FALSE and trace=TRUE. Thanks to Katsuhito Yasuno for the bug report.
+
 5.1.6
 - prevented warning in .getP if all lams<=0 (result p-value=0)
 - prevented 0/0 problem with p.value exactly zero in inheritance

@@ -76,7 +76,8 @@ covariates <- function(object,
     digitsK <- trunc(log10(K)+1)
     for (i in 1:size(obj)) {
       if (trace) {
-        cat(rep("\b", digitsK+trunc(log10(progress))+4), sep="")
+        if (progress > 0)
+          cat(rep("\b", digitsK+trunc(log10(progress))+4), sep="")
         progress <- progress +1
         cat(progress, "/", K)
         flush.console()
@@ -156,7 +157,7 @@ covariates <- function(object,
         obj <- inheritance(obj, sets=d2s$sets, ancestors=d2s$ancestors, trace=trace, Shaffer=TRUE)
         obj <- obj[sort.list(names(obj))]
       }
-                                  
+                                
       # sort and select bars
       if (zoom) {
         if (dendrogram) {
@@ -237,6 +238,8 @@ covariates <- function(object,
       sorter <- sort.list(order.bars) 
       if (zoom) obj <- p.adjust(obj, "holm")
       obj <- obj[sorter]
+      if (trace)
+        cat("\n")
     }
                          
     # adjust bottom margin to length of labels                 

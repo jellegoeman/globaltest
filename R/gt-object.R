@@ -97,6 +97,7 @@ setMethod("weights", "gt.object", function(object) {
   weights <- colSums(X*X)
   if (object@model == "multinomial")
     weights <- rowSums(matrix(weights, object@functions$df()[3]))
+  names(weights) <- object@functions$cov.names()
                                   
   # find weights for specific weights and subsets chosen
   if (length(object@subsets) > 0) {

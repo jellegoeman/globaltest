@@ -20,36 +20,47 @@
 }
 
 
-.weed <- function(lam, acc = 50)
-{
-  thresh <- 1/acc
+.weed <- function(lam, acc = 50) {
   lam <- sort(lam,decreasing=TRUE)
   mmm <- length(lam)
-  while ((mmm > 0) && (lam[mmm]/lam[1] < thresh)) {
-    qqq <- mmm-1
-    rrr <- mmm-2
-    lam[qqq]  <-  lam[qqq] + lam[mmm]
-    while ((rrr>0) && (lam[rrr]<lam[qqq])) {
-      lam[rrr:qqq] <- mean(lam[rrr:qqq])
-      rrr <- rrr-1
-    }
-    mmm <- qqq
+  target <- lam[1]/acc
+  weedM <- function(m) {
+    join <- lam[!(1:mmm %in% seq_len(m))]
+    rest <- lam[1:mmm %in% seq_len(m)]
+    newlength <- min(sum(join) %/% target, length(join))
+    if (length(rest) == 0)
+      newlength <- 1
+    join <- rep(sum(join)/newlength, newlength)
+    OK <- (length(rest) == 0) || ((length(join) > 0) && (rest[m] >= join[1]))
+    if (OK)
+      c(rest, join)
+    else
+      NA
   }
-  lam <- lam[seq_len(mmm)]
-  return(lam)
+  weeds <- NA
+  i <- mmm-1
+  while (is.na(weeds[1])) {
+    weeds <- weedM(i)
+    i <- i - 1
+  }
+  weeds
 }
+
 
 .getC <- function(lams, beta, eps = 1e-10) {
                                        
   lams <- sort(lams)
-  ready <- FALSE
   ix <- 1
   d <- NULL
   c <- prod(sqrt(beta/lams))
+  if (c == 0 || c > 1) {
+    return(NULL)
+  }
   rest.c <- 1-c
   d.base <- 1-beta/lams
   m <- length(lams)
-               
+
+  ready <- FALSE
   while (!ready)
   {
     d <- c(d, 0.5*sum(d.base^ix))
@@ -78,18 +89,10 @@
 .genF <- function(x, lams, eps = 1e-10, acc = c(50,50)) {
 
   lams.pos <- .weed(lams[lams>0], acc = acc[1])
-  while (prod(sqrt(.ruben(lams.pos)/lams.pos)) < .Machine$double.xmin) {     # prevents c=Inf/Inf, sacrificing accuracy
-    acc[1] <- mean(c(acc[1],1))
-    lams.pos <- .weed(lams.pos, acc=acc[1])
-  }
   m.pos <- length(lams.pos)
-  lams.neg <- .weed(-lams[lams<0], acc = acc[2])  
-  while (prod(sqrt(.ruben(lams.neg)/lams.neg)) < .Machine$double.xmin) {     # prevents c=Inf/Inf, sacrificing accuracy
-    acc[2] <- mean(c(acc[2],1))
-    lams.neg <- .weed(lams.neg, acc=acc[2])
-  }
+  lams.neg <- .weed(-lams[lams<0], acc = acc[2])
   m.neg <- length(lams.neg)
-                      
+
   if (m.neg == 0)
     p.value <- as.numeric(x>0)
   else if (m.pos == 0)
@@ -100,7 +103,15 @@
     c.pos <- NULL
     choice <- 0
     while (is.null(c.pos)) {
-      choice <- choice + 1
+      if (choice < length(beta))
+        choice <- choice + 1
+      else {  # numerical problems: weed sacrifice accuracy for convergence
+        acc[1] <- mean(c(acc[1],1))
+        lams.pos <- .weed(lams.pos, acc=acc[1])
+        m.pos <- length(lams.pos)
+        beta <- seq(.ruben(lams.pos), min(lams.pos), length = 10)
+        choice <- 1
+      }
       c.pos <- .getC(lams.pos, beta[choice], eps)
     }
     beta.pos <- beta[choice]
@@ -110,11 +121,19 @@
     c.neg <- NULL
     choice <- 0
     while (is.null(c.neg)) {
-      choice <- choice + 1
+      if (choice < length(beta))
+        choice <- choice + 1
+      else {  # numerical problems: weed sacrifice accuracy for convergence
+        acc[2] <- mean(c(acc[2],1))
+        lams.neg <- .weed(lams.neg, acc=acc[2])
+        m.neg <- length(lams.neg)
+        beta <- seq(.ruben(lams.neg), min(lams.neg), length = 10)
+        choice <- 1
+      }
       c.neg <- .getC(lams.neg, beta[choice], eps)
     }
     beta.neg <- beta[choice]
-                 
+
     # find the p-value
     i <- 1:length(c.pos)
     df.1 <- m.pos+2*(i-1)

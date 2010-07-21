@@ -109,7 +109,7 @@ inheritance <- function(test, sets, weights, ancestors, offspring, Shaffer, homo
     for (i in 1:K) {
       if (is.na(where.found[i])) {
         if (trace) {
-          if (progress > 1) 
+          if (progress > 1)
             cat(rep("\b", digitsK+trunc(log10(progress))+4), sep="")
           progress <- progress +1
           cat(progress, "/", K)
@@ -147,7 +147,7 @@ inheritance <- function(test, sets, weights, ancestors, offspring, Shaffer, homo
       test(sets[[i]])
     })
   }
-                      
+
   # Get weights for inheritance: 1) get leaf weights if missing
   if (is.null(weights) && is(test, "gt.object")) {
     # most likely case: single top: first check
@@ -296,7 +296,7 @@ turnListAround <- function(aList) {
                       offspring,
                       Shaffer = TRUE,
                       homogeneous = FALSE) {
-                                                
+
   # how many tests? 
   m <- length(ps)
   nms <- names(ps)
@@ -333,7 +333,7 @@ turnListAround <- function(aList) {
     testalpha <- basealpha * shaffer
     newly.rejected <- (ps/testalpha <= alpha) & (!rejected)
     newly.rejected[ps == 0 & testalpha == 0] <- FALSE     # do not reject when 0/0
-                                                 
+
     if (any(newly.rejected)) {
       adjp[newly.rejected] <- alpha
       rejected <- rejected | newly.rejected
