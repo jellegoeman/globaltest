@@ -784,6 +784,33 @@ To test all gene sets from a certain category, use
 gtBroad(ALL.AML, Golub_Train, category="c1", collection=broad)
 @
 
+\section{Concept profiles}
+
+A drawback of the three gene set databases above is that they have hard criterion for membership: each gene either belongs to the set or it does not. In reality, however, association of genes with biological concepts is gradual. Some genes are more central to a certain biological process than others, and for some genes the association with a process is more certain or well-documented than for others. To take this into account, databases can be used that contain associations between genes and concepts, rather than simply gene sets. One of these is the Anni tool, available from \verb&http://www.biosemantics.org/anni&. A function to test concepts from Anni is given in the function \Rfunction{gtConcept}.
+
+Like \Rfunction{gtBroad}, the function \Rfunction{gtConcept} requires the user to download files that are not available within \verb:R:, but can be found on \verb:www.biosemantics.org/weightedglobaltest:. The examples for \Rfunction{gtConcept} in this vignette are displayed without results, because we the concept files are too large to be included in the \Rpackage{globaltest} package. To test a certain collection, for example \verb:Body System.txt:, we say
+
+<<gtConcept, eval=FALSE>>=
+gtConcept(ALL.AML, Golub_Train, conceptmatrix="Body System.txt")
+@
+
+This automatically tests all concepts included in the file. Note that the files \verb"conceptID2name.txt" and \verb"entrezGeneToConceptID.txt" must also be downloaded from the same website or the function to work.
+
+The function automatically maps the gene set to the probe identifiers from the annotation package of the \Rpackage{hu6800} Affymetrix chip; the reference to this annotation package is contained in the \verb:Golub_Train: \Rclass{ExpressionSet} object. If \Rclass{ExpressionSet} objects are not used, the name of the annotation package can be supplied in the \Rfunarg{annotation} argument of \Rfunction{gtConcept}.
+
+Annotation packages are not always available for all microarray types. Therefore, a general Entrez-based annotation package is available for many organisms. This general annotation package may be substituted for a specific annotation package if a mapping from probe(set) ids to Entrez is given (as a list or as a vector). For the Golub data we use the mapping from the \Rpackage{hu6800.db} package to obtain this mapping.
+<<gtConcept organism package, eval=FALSE>>=
+eg <- as.list(hu6800ENTREZID)
+gtConcept(ALL.AML, Golub_Train, conceptmatrix="Body System.txt", probe2entrez = eg, annotation="org.Hs.eg.db")
+@
+
+The \Rfunction{gtConcept} function uses the weighted version of the global test (see also Section \ref{weighting}), with weights given by each gene's association with a concept. An argument \Rfunarg{threshold} sets weights below the given threshold to zero, which limits computation time. The \verb:#Cov: column in the results output gives the number of probes with non-zero weight. A further argument \Rfunarg{share}, determines what to do with genes that have multiple probes. If \Rfunarg{share} is set to \Robject{TRUE}, the weight for each probe is set to the weight of the gene divided by the number of probes of that gene, making the probes share the total weight allocated to the gene. If \Rfunarg{share} is set to \Robject{FALSE}, each probe gets the full weight allocated to the gene.
+
+Multiple testing corrected p-values are automatically provided by \Rfunction{gtConcept}. The default multiple testing method is Holm's, but others are available through the \Rfunarg{multtest} argument. See also the \Rfunction{p.adjust} function, described in Section \ref{multtest}. The results are sorted to increasing p-values (using the \Rfunction{sort} method), unless the \Rfunarg{sort} argument of \Rfunction{gtConcept} is set to \verb:FALSE:.
+<<gtConcept multtest, eval=FALSE>>=
+gtConcept(ALL.AML, Golub_Train, conceptmatrix="Body System.txt", multtest="BH")
+@
+
 
 \section{Gene and sample plots}
 

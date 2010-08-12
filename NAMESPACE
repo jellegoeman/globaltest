@@ -22,6 +22,6 @@ exportMethods("[", "[[", show, result, p.value, length, names, "names<-",
 
 export(globaltest, gt, permutations, sampling, geneplot, sampleplot, 
 	regressionplot, checkerboard, gt.multtest, mlogit,
-	gtGO, combine, leafNodes, draw, gtKEGG, gtBroad,
+	gtGO, combine, leafNodes, draw, gtKEGG, gtBroad, gtConcept,
 	comparative, focusLevel, inheritance, covariates, features, subjects, 
 	gt.options, findFocus, getFocus, makeGOstructure)

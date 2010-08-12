@@ -1,3 +1,6 @@
+5.3.2
+- added the gtConcept function to the package
+
 5.3.1
 - rewritten .weed for better performance
 - rewritten part of .genF to prevent numerical problems (non-convergence due to c==0). Thanks to Katsuhito Yasuno for the bug report.
