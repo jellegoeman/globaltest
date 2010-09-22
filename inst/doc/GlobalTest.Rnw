@@ -359,7 +359,7 @@ The result of the covariates function can be stored to access the information in
 res <- covariates(gt(Y,X))
 res[1:10]
 @
-The names of the subsets should be read as follows. \"O\" refers to the origin or root, and each ``[1'' refers to a first (or left) branch, whereas each ``[2'' refers to a second (or right) branch. Leaf nodes are also referred to by name. To get the leaf nodes of the subgraph that is significant after multiple testing correction, use the \Rfunction{leafNodes} function
+The names of the subsets should be read as follows. ``O'' refers to the origin or root, and each ``[1'' refers to a first (or left) branch, whereas each ``[2'' refers to a second (or right) branch. Leaf nodes are also referred to by name. To get the leaf nodes of the subgraph that is significant after multiple testing correction, use the \Rfunction{leafNodes} function
 <<covariates leafNodes>>=
 leafNodes(res, alpha=0.10)
 @

@@ -154,7 +154,7 @@ covariates <- function(object,
         obj@structure <- NULL         
         if (!is.null(alias)) alias(obj) <- c("",names(bars))
         d2s <- dendro2sets(hc)
-        obj <- inheritance(obj, sets=d2s$sets, ancestors=d2s$ancestors, trace=trace, Shaffer=TRUE)
+        obj <- inheritance(obj, sets=d2s$sets, ancestors=d2s$ancestors, trace=trace, Shaffer=TRUE, homogeneous=TRUE)
         obj <- obj[sort.list(names(obj))]
       }
                                 

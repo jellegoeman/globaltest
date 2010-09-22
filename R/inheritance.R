@@ -347,8 +347,13 @@ turnListAround <- function(aList) {
         shaffer <- rep(1, m)
         names(shaffer) <- names(ps)
         if (homogeneous) {
-          if (rejected[top] && (!any(rejected[leaf])))
-            shaffer[!rejected] <- sum(weights[leaf]) /  (sum(weights[leaf]) - min(weights[leaf]))
+          bottom <- setdiff(nms[rejected], unlist(parents[nms[rejected]]))
+          bottom <- setdiff(bottom, nms[leaf])
+          minweights <- unlist(lapply(bottom, function(bt) {
+            min(weights[intersect(offspring[[bt]], nms[leaf])])
+          }))
+          sumweights <- sum(weights[leaf & !rejected])
+          shaffer <- sumweights / (sumweights - sum(minweights))
         } else {
           for (lp in names(leaf.parents)[rejected[names(leaf.parents)]]) {
             lvs <- leaf.parents[[lp]]
