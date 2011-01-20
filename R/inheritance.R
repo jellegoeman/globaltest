@@ -1,4 +1,4 @@
-inheritance <- function(test, sets, weights, ancestors, offspring, Shaffer, homogeneous=FALSE, trace) {
+inheritance <- function(test, sets, weights, ancestors, offspring, Shaffer, homogeneous=TRUE, trace) {
                                               
   # input checking 1: sets
   if (missing(sets) && is(test, "gt.object") && !is.null(test@subsets)) 
@@ -60,7 +60,7 @@ inheritance <- function(test, sets, weights, ancestors, offspring, Shaffer, homo
                                         
   # prevent confusion between "weights" method and argument
   if (missing(weights)) weights <- NULL               
-  if (is.list(test@weights) && length(test@weights) > 1)
+  if (is(weights, "gt.object") && is.list(test@weights) && length(test@weights) > 1)
     stop("The inheritance method is not applicable with individually weighted sets")
                               
   # Check whether Shaffer may be used
@@ -75,6 +75,7 @@ inheritance <- function(test, sets, weights, ancestors, offspring, Shaffer, homo
                                    
   # Perform test for sets
   K <- length(sets)
+  digitsK <- trunc(log10(K))+1
   if (is(test, "gt.object")) {
     # find out which tests have already been performed
     # sort subsets for quicker checking
@@ -104,7 +105,6 @@ inheritance <- function(test, sets, weights, ancestors, offspring, Shaffer, homo
     newgt <- test
     where.found <- match(1:K, found)
     progress <- sum(!is.na(where.found))
-    digitsK <- trunc(log10(K))+1
     newgt@result <- matrix(0,K,5)
     for (i in 1:K) {
       if (is.na(where.found[i])) {
@@ -146,6 +146,7 @@ inheritance <- function(test, sets, weights, ancestors, offspring, Shaffer, homo
       }
       test(sets[[i]])
     })
+    names(rawp) <- names(sets)
   }
 
   # Get weights for inheritance: 1) get leaf weights if missing
@@ -170,8 +171,7 @@ inheritance <- function(test, sets, weights, ancestors, offspring, Shaffer, homo
 
   #now call core function:
   adjustedP <- .inherit(ps=rawp, parents=parents, children=children, offspring=offspring, weights=set.weights, Shaffer=Shaffer, homogeneous =homogeneous)             # named vector
-     
-                                            
+
   if (trace==1) cat("\n")
   if (!is.null(newgt)) {
     extra <- newgt@extra

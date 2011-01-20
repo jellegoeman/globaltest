@@ -157,11 +157,11 @@ covariates <- function(object,
         obj <- inheritance(obj, sets=d2s$sets, ancestors=d2s$ancestors, trace=trace, Shaffer=TRUE, homogeneous=TRUE)
         obj <- obj[sort.list(names(obj))]
       }
-                                
+
       # sort and select bars
       if (zoom) {
         if (dendrogram) {
-          select <- unique(do.call(c, subsets(leafNodes(obj))))
+          select <- unique(do.call(c, subsets(leafNodes(obj, alpha=alpha))))
           select <- which(rownames(leaves) %in% select)
         } else {
           select <- obj@extra[,"holm"] <= alpha
@@ -170,7 +170,7 @@ covariates <- function(object,
       }
       leaves <- leaves[sorter,,drop=FALSE]
       bars <- bars[sorter]
-          
+
       # Construct a mapping from branch ids to the name of the corresponding set                                 
       branch2name <- names(d2s$branch)
       names(branch2name) <- unlist(lapply(d2s$branch, function(br) paste(".", br, collapse="", sep="")))

@@ -1,3 +1,12 @@
+5.5.1
+- changed homogeneous default in inheritance to true 
+- repaired error: trying to get slot "weights" in inheritance with custom test
+- repaired missing set names in inheritance with custom test
+- added example for inheritance with custom test
+- fixed error in mlogit in case mu numerically 1 or 0
+- fixed zoom option in covariates for case alpha != 0.05
+
+
 5.3.3
 - changed homogeneous option of inheritance to the final version of the sequential rejection principle paper
 - changed covariates() to use the homogeneous version of inheritance

@@ -21,7 +21,7 @@ findFocus (sets, ancestors, offspring, maxsize = 10, atoms = TRUE)
 
 # The inheritance method:
 inheritance (test, sets, weights, ancestors, offspring, Shaffer,
-            homogeneous = FALSE, trace)
+            homogeneous = TRUE, trace)
 
 
 # Utilities for focus level and inheritance method:
@@ -52,7 +52,7 @@ draw (object, alpha = 0.05, type = c("focuslevel","inheritance"),
         to exactly 1, the algorithm calculates all familywise error rate corrected p-values. Corrected p-values that are not calculated are reported as \code{NA}.}
     \item{atoms}{If set to \code{TRUE}, the focus level algorithm partitions the offspring of each focus level set into the smallest possible building blocks, called
         atoms. Doing this often greatly accelerates computation, but sometimes at the cost of some power.}
-    \item{trace}{If set to \code{TRUE}, reports progress information. The default is obtained from \code{\link[=gt.options]{gt.options()$trace}}. Alternatively, 
+    \item{trace}{If set to \code{TRUE}, reports progress information. The default is obtained from \code{\link[=gt.options]{gt.options()$trace}}. Alternatively,
         setting \code{trace = 2} gives much more extensive output (\code{focusLevel} only).}
     \item{maxsize}{Parameter to choose the height of the focus level. The focus level sets are chosen in such a way that the number of tests that is to be done for each
         focus level set is at most \code{2^maxsize - 1}.}
@@ -173,7 +173,7 @@ Many more examples in the vignette! }
     # Compare
     p.adjust(resF, "holm")
 
-    # Focus level with a different test
+    # Focus level with a custom test
     Ftest <- function(set) anova(lm(Y~X[,set]))[["Pr(>F)"]][1]
     focusLevel(Ftest, sets=my.sets, focus=my.focus)
 
@@ -185,6 +185,9 @@ Many more examples in the vignette! }
     resI=inheritance(res, sets = hcl)
     resI
     leafNodes(resI, alpha = .1)
+
+    # inheritance procedure with a custom test
+    inheritance(Ftest, sets = hcl, Shaffer=TRUE)
 
 }
 

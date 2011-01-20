@@ -127,7 +127,7 @@ mlogit <- function(formula, data, control = glm.control())
     XWX.MP <- crossprod(t(weightedEigens))
     gamma <- gamma + matrix(XWX.MP %*% as.vector(crossprod(X, matrixY - mu)), p, g)
     iter <- iter + 1
-    dev <- -2 * sum(log(mu) * matrixY)  
+    dev <- -2 * sum(log(mu)[matrixY==1])
     finished <- ( abs(dev - olddev) / (abs(dev) + 0.1) < control$epsilon ) | (iter >= control$maxit)
     olddev <- dev
   }
