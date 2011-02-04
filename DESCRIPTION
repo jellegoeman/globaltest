@@ -13,5 +13,4 @@ biocViews: Microarray, OneChannel, Bioinformatics, DifferentialExpression, GO, P
 Collate: gt-object.R mlogit.R comparative.R diagnosticplots.R focuslevel.R generalizedFdistribution.R genesettesting.R gt.R inheritance.R models.R options.R utilities.R
 	v4_000.R v4_gtresult.R v4_gtbarplot.R v4_internal.R v4_checkerboard.R v4_geneplot.R v4_globaltest.R v4_multtest.R v4_permutations.R v4_regressionplot.R v4_sampleplot.R v4_sampling.R v4_GOstructure.R  
 LazyLoad: yes
-ZipData: yes
 URL: http://www.msbi.nl/goeman
