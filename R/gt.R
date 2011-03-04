@@ -157,7 +157,7 @@ gt <- function(response, alternative, null, data, test.value,
   null <- null$null
   if (model == "multinomial" && !is.null(offset))
     stop("offset term and test.value not yet implemented for the multinomial model")
-                                                      
+
   # conservatively impute missing values in alternative
   all.na <- apply(is.na(alternative), 2, all)
   some.na <- apply(is.na(alternative), 2, any) & !all.na
@@ -172,7 +172,9 @@ gt <- function(response, alternative, null, data, test.value,
   } else {
     alternative[,some.na] <- apply(alternative[,some.na, drop=FALSE], 2, function(cov) {
       fit <- lm(cov ~ 0 + null, x = TRUE)
-      cov[is.na(cov)] <- drop(null %*% coef(fit))[is.na(cov)]
+      coefs <- coef(fit)
+      coefs[is.na(coefs)] <- 0
+      cov[is.na(cov)] <- drop(null %*% coefs)[is.na(cov)]
       cov
     })
     alternative[,all.na] <- 0 
