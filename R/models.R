@@ -139,7 +139,7 @@
           norm.const <- 1
   
         # calculate the p-value
-        p.value <- mean(S <= permS)
+        p.value <- mean(S <= c(Inf,permS))
   
         # give back
         return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov = p))
@@ -419,7 +419,7 @@
           VarS <- var(permS)
     
           # calculate the p-value
-          p.value <- mean(S <= permS)
+          p.value <- mean(S <= c(Inf,permS))
     
           # give back
           return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))
@@ -677,7 +677,7 @@
         norm.const <- (n-m) * EQ / 100
   
         # calculate the p-value
-        p.value <- mean(Q - EQ <= permQ - permEQ)
+        p.value <- mean(Q - EQ <= c(Inf, permQ - permEQ))
   
         # mean and variance of S for z-score
         ES <- EQ + mean(permQ - permEQ)
@@ -972,7 +972,7 @@
         VarS <- var(permS)
   
         # calculate the p-value
-        p.value <- mean(S <= permS)
+        p.value <- mean(S <= c(Inf,permS))
   
         # give back
         return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov=p))

@@ -359,15 +359,19 @@ gtConcept <- function(response, exprs, ..., annotation, probe2entrez,
   nms <- entrez2concept[,1]
   entrez2concept <- as.list(entrez2concept[,2])
   names(entrez2concept) <- nms
-
+                    
   # prepare concept2probe mapping
   if (is(exprs, "eSet"))
     probes <- featureNames(exprs)
   else
     probes <- rownames(exprs)
-  if (missing(probe2entrez))
-    probe2entrez <- lookUp(probes, annotation, "ENTREZID")
-  else
+  if (missing(probe2entrez)) {
+    if (substr(annotation,1,3) == "org") {
+      probe2entrez <- as.list(probes)    # assuming probe ids are entrez ids
+      names(probe2entrez) <- probes
+    } else
+      probe2entrez <- lookUp(probes, annotation, "ENTREZID")
+  } else
     if (is.environment(probe2entrez) || is(probe2entrez, "AnnDbBimap"))
       probe2entrez <- as.list(probe2entrez)
   probe2entrez <- lapply(probe2entrez, as.character)
@@ -397,7 +401,7 @@ gtConcept <- function(response, exprs, ..., annotation, probe2entrez,
   nms <- concept2name[,1]
   concept2name <- as.list(concept2name[,2])
   names(concept2name) <- nms
-
+                           browser()
   # perform tests and do multiple testing
   if (length(weights) > 1) {
     multtest <- match.arg(multtest)
