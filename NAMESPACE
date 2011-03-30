@@ -24,4 +24,5 @@ export(globaltest, gt, permutations, sampling, geneplot, sampleplot,
 	regressionplot, checkerboard, gt.multtest, mlogit,
 	gtGO, combine, leafNodes, draw, gtKEGG, gtBroad, gtConcept,
 	comparative, focusLevel, inheritance, covariates, features, subjects, 
-	gt.options, findFocus, getFocus, makeGOstructure)
+	gt.options, findFocus, getFocus, makeGOstructure, 
+gtPS, gtK, gtI, bbase, repdes, getPS, getK)

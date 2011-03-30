@@ -890,6 +890,236 @@ comparative(res)
 
 The number of random gene sets of each size that are sampled can be controlled with the argument \Rfunarg{N} (default 1000). The argument \Rfunarg{zscores} (default: \verb:TRUE:) controls whether the comparison between the test results of the gene set and its random competitors is based on the p-values or on the z-scores of the test.
 
+\chapter{Goodness of Fit Testing}\label{gof testing}
+
+
+\section{Introduction}
+
+Another application of the global test is in goodness of fit testing for regression models.
+Currently implemented models are the linear, logistic, multinomial logistic, Poisson and the Cox proportional hazards regression.
+Generalized linear models, while flexible in terms of the supported response distributions, obey rather strong assumptions like linearity of the effect of the covariates on the predictor and the independence of the observations. 
+The Cox regression model, even though leaves the baseline hazard unspecified, relies on the quite restrictive proportional hazards assumption. 
+Therefore, in practical regression problems, lack of fit comes in many different shapes and sizes:
+\begin{itemize}
+\item Unit- or cluster-specific heterogeneity may exist;
+\item The effect of continuous covariates on the predictor may be of non-linear form;
+\item Interactions between covariates may be missed or be more complex;
+\item The proportional hazards assumption may not hold.
+\end{itemize}
+
+Understanding the type of lack of fit is of practical importance: if we find evidence against the model, we generally want to know the reason why the model does not fit. An adequate diagnosis of lack of fit requires a specified alternative model.
+There are two aspects to this. First, the alternative points out the type of lack of fit of interest and will result in a test sensitive to it. 
+Secondly, the alternative model can be fitted and interpreted, giving some guide as to the type of lack of fit that may be present.
+ 
+In this Chapter we introduce a goodness of fit testing approach based on the global test that embeds the different types of lack of fit in one unifying framework and include well known tests as special cases.
+Suppose that we are concerned with the adequacy of some regression model \verb:Y ~ X:, where \verb:X: represents the null design matrix.
+The alternative model can be cast into the generic form  \verb:Y ~ X + Z:, which comprises different models corresponding to different types of lack of fit. Then, the specification of the alternative model, or equivalently, of \verb:Z:, is required. It identifies the type of lack of fit the test is directed against.
+Once \verb:Z: has been chosen, the global test is applied for testing \verb:Y ~ X: against \verb:Y ~ X + Z:.
+However, while it is always possible to re-parameterize the alternative model, the global test's power depends on the chosen parameterization. This raises the question: which parameterization should be chosen?
+
+The main idea is to re-parameterize the alternative model either as 
+a ridge regression model where the coefficients associated with \verb:Z: are subject to the ridge penalty or as 
+a mixed effects model where coefficients associated with \verb:Z: are i.i.d. random effects. 
+Both representations have their theoretical value because they ensure compatibility with the Global test's properties. 
+
+In order to demonstrate the generality of the proposed approach, in the following we point out how different choices of \verb:Z:
+correspond to testing for specific types of lack of fit. 
+
+\section{Heterogeneity}
+
+The data \verb"rats" comes from a carcinogen experiment using 150 female rats, 3 each from 50 litters \cite{Mantel1977}. 
+One rat from each litter was injected with a powerful carcinogen, and the time to tumor development, measured in weeks, was recorded.
+It is conceivable that the risk of tumor formation may depend on the genetic background or the early environmental conditions shared by siblings within litters, but differing between litters. Thus there could be an intra-litter correlation in time to tumor appearance. 
+Intra-litter correlation can be represented by adding to the null model a vector of i.i.d. random effects, one for each litter, in such a way that all animals in the same litter have a common random effect. Then, testing the hypothesis of no intra-litter correlation requires the specification of
+$\Robject{Z}$ as the block matrix where each row is a vector of zeros except for a 1 in one position that indicates which litter the rat is from. 
+<<litters>>=
+library("survival")
+data(rats)
+nlitters<-length(unique(rats$litter))
+Z<-matrix(NA,dim(rats)[1],nlitters, dimnames=list(NULL,1:nlitters))
+for (i in 1:nlitters) Z[,i]<-(rats[,1]==i)*1
+gt(Surv(time,status)~rx,alternative=Z,data=rats,model="cox")
+@
+The hypothesis of no intra-litter correlation can not be rejected at the significance level of 5\%. 
+
+\section{Non-linearity}
+
+The simplest way to model the dependence of the response on a single continuous covariate \verb:X: is through
+\verb:Y~X:. However, the dependence may be of some non-linear form, and the alternative model 
+\verb:Y~X+s(X): lets the data `speak for themselves', where \verb:s: is some smooth function of \verb:X:.
+
+\subsection{P-Splines}
+
+One increasingly popular idea to representing \verb:s(X): is the penalized splines or P-splines approach, introduced by \cite{Eilers1996}. 
+In this approach the term \verb:s(X): is replaced by a B-spline basis \verb:B:, giving the alternative model \verb:Y~X+B: where the
+coefficients associated with \verb:B: are penalized to guarantee sufficient smoothness.
+
+The function \Rfunction{gtPS} can be used to define P-splines. We need to specify the following arguments: 
+ i) \Rfunarg{bdeg}, the degree of B-spline basis, 
+ii) \Rfunarg{nint}, the number of intervals determined by equally-spaced knots placed on the \verb:X:-axis, and  
+iii) \Rfunarg{pord}, the order of the differences indicating the type of the penalty imposed to the coefficients.
+
+The \Rfunarg{bdeg} and \Rfunarg{nint} arguments are used to construct a B-spline basis \verb:B: with a number of columns equal the sum of \Rfunarg{bdeg} and \Rfunarg{nint}. Default values are \verb:bdeg=3: and \verb:nint=10:.
+The order of differences \Rfunarg{pord} deserves more attention. 
+By using zero-order differences, the alternative model has a ridge regression representation with \verb:B = Z:. 
+If \Rfunarg{pord} is greater than zero, a reparameterization of the alternative model is needed. The basis 
+\verb:B: is decomposed into the matrices \verb:N: and \verb:Z:, giving the re-parameterized alternative model \verb:Y~X+N+Z: where the coefficients associated with \verb"N" are fixed whereas the coefficients associated with \verb"Z" are penalized by a ridge penalty. However, because only the parameters associated with \verb:Z: are tested to be zero, we have to make sure that the columns of \verb:N: spans a subspace of the columns of \verb:X:. If so, \verb:N: is absorbed into \verb:X: and we recover the general formulation of the alternative model \verb:Y~X+Z:. 
+
+However, how does one decide on suitable values for \Rfunarg{bdeg}, \Rfunarg{nint}, and \Rfunarg{pord}?
+We can best illustrate this with a simple example:  we add some noise to the second data set reported in Anscombe (1973), where \verb"Y" has a quadratic relation with \verb"X". To test \verb:Y~X: against \verb:Y~X+s(X): with default values, use: 
+<<anscombe>>=
+data(anscombe)
+set.seed(0)
+X<-anscombe$x2
+Y<-anscombe$y2 + rnorm(length(X),0,3)
+gtPS(Y~X)
+@
+
+To see what happens with different values of \Rfunarg{pord}, use: 
+<<different pord>>=
+gtPS(Y~X, pord=list(a=0,b=1,c=2,d=3))
+@
+Here \verb"pord=2" detects the deviation from linearity at the significance level of 5\%, whereas the other orders do not. In the following, we see also that the outcome of the test with \verb"pord=2" is only slightly affected by changing \verb"nint" (or \verb"bdeg"), in contrast with \verb"pord" different from 2:
+<<different nint>>=
+lpord<-list(a0=0,b0=0,c0=0,a2=2,b2=2,c2=2)
+lnint<-list(a0=2,b0=5,c0=100, a2=2,b2=5,c2=100)
+gtPS(Y~X, nint=lnint, pord=lpord)
+@
+
+Thorough considerations show that the column space of \verb"N" is the same as the column space of the null design matrix \verb"cbind(1,X)". More generally, the column space of \verb"N" with \verb"pord=n+1" is the same as the column space of \verb"cbind(1,X,X^2, ..., X^n)". 
+In practice, second-order differences are recommended for detecting local deviations from \verb"null~1+X", third-order differences  for detecting local deviations from \verb"~1+X+X^2", and so on.
+
+To check whether the column space of \verb:N: is contained in the column space of the null design matrix or not, use the function \Rfunction{bbase} to get the basis \verb:B: and then use \Rfunction{repdes} to decompose it into \verb:N: and \verb:Z:. If \verb:N: is absorbed into the null design matrix, the rank of \verb:cbind(cbind(1,X),N): is equal to the rank of \verb"cbind(1,X)". This is not true for \verb"pord>2":
+<<psplines span>>=
+B<-bbase(X, bdeg=3, nint=10)
+N<-repdes(B, pord=3)$N
+qr(cbind(model.matrix(~X),N))$rank
+@
+
+
+
+
+The data \verb"stanford2" consist of 184 observations of time to failure (months) and two covariates, age (years) and
+T5 mismatch score. Here we consider only the age variable and delete the observations with missing values:
+
+<<union>>=
+data("stanford2")
+cc<-complete.cases(stanford2)
+stanford2cc<-stanford2[cc,]
+fit0<-coxph(Surv(time,status)~age,data=stanford2cc)
+gtPS(fit0)
+@
+
+From the result it is clear that there is a convincing evidence of a non-linear effect in the covariate \verb:age:. The estimation of the
+alternative model \verb:Surv(time,status)~age+Z: may give some guide about the nature of the relationship.
+
+First obtain the re-parameterized B-spline basis \verb:Z: by using the function \Rfunction{getPS}, where it is required to specify 
+\verb"age" as the covariate of interest (\verb"pord=2" is by default). 
+Then use the package \Rpackage{penalized} to perform ridge regression estimation 
+with the amount of shrinkage determined by the tuning parameter \Rfunarg{lambda2}. We set \Rfunarg{lambda2} equal to 15,
+which is very close to the smallest value that shrinks all regression coefficient to zero.
+<<stanford2 fit>>=
+Z<-getPS(stanford2cc,covs="age")
+require("penalized")
+fit1 <- penalized(Surv(time,status), penalized=~ Z, unpenalized=~age, data = stanford2cc, model="cox", lambda2 = 15, trace=FALSE)
+@
+
+\begin{figure}[h!]
+\begin{center}
+<<label=goodness_stanford2,fig=TRUE,echo=FALSE>>=
+ages<-sort(stanford2cc$age, index.return=T)
+plot(ages$x,fit1@lin.pred,type="l",xlab="age",ylab="linear predictor", ylim=c(-0.4,3.3))
+@
+\end{center}
+\caption{Stanford health transplant data.}
+\label{fig:stanford}
+\end{figure}
+
+Figure \ref{fig:stanford} shows the linear predictor as a function of age obtained by fitting the alternative model. It suggests that the relative risk stays 
+about constant up to age 45, then rises sharply. A similar remark was made by Hastie and Tibshirani (1993). 
+
+
+\subsection{Additive models}
+
+One use of additive regression models, including generalized additive models, is to test for nonlinearity.
+For instance, the null linear predictor \verb:~ X1+X2: may be extended to \verb:~ X1 + X2 + s(X1) + s(X2):, where \verb"X1" and \verb"X2" are continuos covariates. To illustrate this, consider the following example, where we are faced with many covariates for a limited number of observations.
+
+The \verb"wpbc" dataset consist of 198 breast cancer patients at the University of Wisconsin Hospital. 
+We analyze these data with a logistic regression model (recurrence vs. nonrecurrence) based on 32 covariates: the first 30 have been computed from a digitized image of a fine needle aspirate of breast tissue, while the last two are the diameter of the excised tumour and the number of positive axillary lymph nodes observed at time of surgery. 
+
+Each smooth term requires the specification of \Rfunarg{bdeg}, \Rfunarg{nint} and \Rfunarg{pord}; to test with default values, use:
+<<wpbc>>=
+require("mboost")
+data("wpbc")
+cc <- complete.cases(wpbc)
+wpbc2 <- wpbc[cc, colnames(wpbc) != "time"]
+gtPS(status ~ ., data = wpbc2, model="logistic")
+@
+Note that if a single specification is given, e.g. \Rfunarg{nint=10}, then it is taken for all terms, e.g. as with \Rfunarg{nint=rep(10,32)}.
+From the test result we can suspect that there is a non-linear effect in at least one covariate.
+Follow-up questions concern finding out which components like \verb:cov + s(cov): are really necessary or whether \verb:cov: would do just as well, one can examine the results of the fitted alternative model. Four selected covariates are depicted in Figure \ref{fig:wpbc}, indicating a remarkable degree of nonlinearity.
+
+\begin{figure}[h!]
+\begin{center}
+<<label=goodness_wpbc,fig=TRUE,echo=FALSE>>=
+covnames<-names(wpbc2)[-1]
+bd=3
+ni=10
+po=2
+d<-bd+ni-po
+Z<-getPS(wpbc2,covs=covnames, bdeg=bd, nint=ni, pord=po)
+
+fit1<-penalized(response=status, penalized=~ Z, unpenalized=~mean_radius + mean_texture + mean_perimeter + mean_area + 
+    mean_smoothness + mean_compactness + mean_concavity + mean_concavepoints + 
+    mean_symmetry + mean_fractaldim + SE_radius + SE_texture + 
+    SE_perimeter + SE_area + SE_smoothness + SE_compactness + 
+    SE_concavity + SE_concavepoints + SE_symmetry + SE_fractaldim + 
+    worst_radius + worst_texture + worst_perimeter + worst_area + 
+    worst_smoothness + worst_compactness + worst_concavity + 
+    worst_concavepoints + worst_symmetry + worst_fractaldim + 
+    tsize + pnodes, data = wpbc2, model="logistic", lambda2 = 7, trace=FALSE)
+
+gammas<-fit1@penalized
+betas<-fit1@unpenalized
+l<-length(covnames)
+cd<-c(0,cumsum(rep(d,l)))
+
+op <- par(mfrow = c(2, 2))
+for (i in c(12,21,25,31)){
+x<-wpbc2[,covnames[i]]
+sx<-sort(x,index.return=T)
+ind<-vector("list", l)
+ind[[i]]<-(cd[i]+1):(cd[i+1])
+plot(sx$x, (Z[sx$ix,ind[[i]]]%*%gammas[ind[[i]]] ), type="b", xlab=covnames[i], ylab=paste("f(",covnames[i],")", sep=""), ylim=c(-.5,.65))
+lines(abline(h=0,lty="dotted"))
+rug(x)
+}
+par(op)
+@
+\end{center}
+\caption{Wisconsin prognostic breast cancer data.}
+\label{fig:wpbc}
+\end{figure}
+
+
+\section{Non-proportional hazards}
+
+Different extensions of the Cox's model have been proposed to deal with non-proportional hazards.
+The most straightforward extension is the addition of an interaction term of the covariates with a time function, leading to
+time varying effects of the covariates. This allows the effect of the covariates to change over time, such as the 
+effect of a treatment that might wash away. Time-varying effects can also be cast into the framework 
+of varying coefficients if the survival time itself is considered to be the effect modifier.
+
+Consider again the data \verb"rats". Now we are interested in testing the null model against \verb"Surv(time,status)~rx + rx:s(time)".
+Linear, logarithmic, and  exponential are commonly used monotonic functions of time. 
+Rather than adopting a known function, which limits the scope of possible departures from the null model, 
+we consider an arbitrary smooth function of time, where \verb"f(futime)" is replaced by the B-spline basis \verb:Z:. 
+It is reasonable to consider penalty functions that shrinks \verb"f(futime)" towards a constant, that is, to use first order differences:
+<<rats ph>>=
+gtPS(Surv(time,status)~rx,covs="time", by="rx",data=rats, model="cox", pord=1)
+@
+The hypothesis of proportional hazards can be rejected at the significance level of 5\%. 
+
 
 \addcontentsline{toc}{chapter}{References} \label{references}
 \bibliography{GlobalTest}
