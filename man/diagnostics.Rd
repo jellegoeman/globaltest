@@ -111,6 +111,11 @@ Many more examples in the vignette!
     covariates(res, legend = c("upregulated", "downregulated"))
     covariates(res, col = rainbow(2))
     covariates(res, alias = letters[1:10])
+    
+    # Extract data from the plot
+    out <- covariates(res)
+    result(out)
+    extract(out)
 }
 
 \keyword{htest}

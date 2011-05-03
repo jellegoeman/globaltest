@@ -89,6 +89,26 @@ setMethod(".result", "gt.object",
     object@result
 )
 
+
+#==========================================================
+setGeneric("extract", function(object, ...) standardGeneric("extract"))
+setMethod("extract", "gt.object", function(object, ...) {
+  if (is.null(object@structure$ancestors))
+    stop("Object is not the result of a call to features() or covariates().")
+  uit <- leafNodes(object, alpha=1)
+  cols <- factor(uit@functions$positive(unlist(subsets(uit))))
+  if (uit@model == "multinomial") {
+    levels(cols) <- uit@legend$cov
+  } else {
+    levels(cols) <- rev(uit@legend$cov)
+  }
+  names(uit) <- uit@functions$cov.names(unlist(subsets(uit)))
+  uit@extra$direction <- as.character(cols)
+  uit
+})
+
+
+
 setGeneric("weights") 
 setMethod("weights", "gt.object", function(object) {
   

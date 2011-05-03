@@ -5,6 +5,7 @@
 \alias{result}
 \alias{size}
 \alias{subsets}
+\alias{extract}
 \alias{gt.object-class}
 \alias{show,gt.object-method}
 \alias{summary,gt.object-method}
@@ -26,6 +27,7 @@
 \alias{alias<-}
 \alias{alias<-,gt.object-method}
 \alias{sort,gt.object-method}
+\alias{extract,gt.object-method}
 
 
 \title{Class "gt.object" for storing the result of the function gt}
@@ -58,6 +60,7 @@
     \item{p.value}{(gt.object): Extracts the p-values.}
     \item{z.score}{(gt.object): Extracts z-score: (Test statistic - Expected value) / Standard deviation.}
     \item{result}{(gt.object): Extracts the results matrix together with the additional (e.g. multiple testing) information in the \code{extra} slot.}
+    \item{extract}{(gt.object): Extracts the results matrix for the leaf nodes after a call to \code{link{covariates}}, with information on direction of association.}
     \item{sort}{(gt.object): Sorts the pathways to increasing p-values. Equal p-values are sorted on decreasing z-scores.}
     \item{"["}{(gt.object): Extracts results of one or more test results if multiple tests were performed. Identical to "[[".}
     \item{"[["}{(gt.object): Extracts results of one or more test results if multiple tests were performed. Identical to "[".}
@@ -117,6 +120,7 @@
     # Diagnostics
     weights(res)
     covariates(res[1])
+    extract(covariates(res[1]))
     subjects(res[1])
 
     # Permutation testing
