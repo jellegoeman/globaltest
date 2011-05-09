@@ -363,7 +363,7 @@ The names of the subsets should be read as follows. ``O'' refers to the origin o
 <<covariates leafNodes>>=
 leafNodes(res, alpha=0.10)
 @
-To get a nice table of only the information of the single covariates, including their direction of association, use the \Rfuncton{extract} function.
+To get a nice table of only the information of the single covariates, including their direction of association, use the \Rfunction{extract} function.
 <<extract>>=
 extract(res)
 @
