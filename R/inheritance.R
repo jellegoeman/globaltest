@@ -305,9 +305,14 @@ turnListAround <- function(aList) {
   # find top and leaves
   top <- sapply(parents[nms], length) == 0
   leaf <- sapply(children[nms], length) == 0
-                    
+  names(leaf) <- nms
+                          
   # find parents of leaves
-  leaf.parents <- children[sapply(children, function(ch) all(ch %in% nms[leaf]))]
+  leaf.parents <- children[sapply(children, function(ch) any(ch %in% nms[leaf]))]
+  leaf.siblings <- lapply(leaf.parents, function(lp) {
+    nleaves <- sum(leaf[lp])
+    if (nleaves > 1) lp else lp[!leaf[lp]]
+  })
 
   # initialize
   basealpha <- rep(0,m)
@@ -353,15 +358,33 @@ turnListAround <- function(aList) {
             min(weights[intersect(offspring[[bt]], nms[leaf])])
           }))
           sumweights <- sum(weights[leaf & !rejected])
-          shaffer <- sumweights / (sumweights - sum(minweights))
+          shaffer[1:m] <- sumweights / (sumweights - sum(minweights))
+          for (bt in bottom) {
+            mw <- unlist(lapply(children[[bt]], function(ch) {
+              min(weights[intersect(c(ch,offspring[[ch]]), nms[leaf])])
+            }))  
+            names(mw) <- children[[bt]]
+            smallest <- names(which.min(mw))
+            second <- min(mw[names(mw) != smallest])
+            shaffer[smallest] <- sumweights / (sumweights - sum(minweights) + mw[smallest] - second)
+          }
         } else {
           for (lp in names(leaf.parents)[rejected[names(leaf.parents)]]) {
-            lvs <- leaf.parents[[lp]]
-            if (!any(rejected[lvs]))
-              if (length(lvs) == 1)
-                shaffer[lvs] <- Inf
-              else
-                shaffer[lvs] <- sum(weights[lvs]) /  (sum(weights[lvs]) - min(weights[lvs]))
+            desc <- leaf.parents[[lp]]
+            lsibs <- leaf.siblings[[lp]]
+            if (!any(rejected[desc])) {
+              lvs <- desc[leaf[desc]]
+              if (length(desc) == 1)
+                shaffer[desc] <- Inf
+              else {             
+                smallest <- names(which.min(weights[lvs])) 
+                shaffer[lsibs] <- sum(weights[desc]) /  (sum(weights[desc]) - weights[smallest])
+                if (smallest %in% lsibs) {
+                  second <- min(weights[setdiff(lvs, smallest)])
+                  shaffer[smallest] <- sum(weights[desc]) / (sum(weights[desc]) - second)
+                }  
+              }
+            }
           }
         }
       }

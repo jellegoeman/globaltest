@@ -50,7 +50,8 @@ gt <- function(response, alternative, null, data, test.value,
   }
    
   # remove redundant levels from factor response
-  if (is.factor(response))
+  # and coerce response to factor in case of levels input
+  if (is.factor(response) || !is.null(levels))
     response <- factor(response) 
                                      
   # get the model
@@ -90,9 +91,11 @@ gt <- function(response, alternative, null, data, test.value,
   # get null and alternative
   null <- .getNull(null, data, n, model)
   alternative <- .getAlternative(alternative, data, n)
-                                                    
+
   # Adjust input due to levels argument
   if ((!is.null(levels)) && is.factor(response)) {
+    if (!all(levels %in% levels(response)))
+      stop("argument \"levels\" does not match levels(response)")
     if (length(levels) > 1) {
       select <- response %in% levels
       response <- factor(response[select], levels=levels)

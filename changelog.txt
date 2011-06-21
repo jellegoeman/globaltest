@@ -1,3 +1,9 @@
+5.7.3
+- updated inheritance() to latest version of inheritance paper
+- updated treatment of levels argument in gt: specifying levels coerces response to a factor
+- updated treatment of levels argument in gt: specifying levels not in levels(response) now returns error
+- fixed bug in cox model ignoring covariates
+
 5.7.1
 - added extract() method.
 

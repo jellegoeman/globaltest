@@ -107,7 +107,7 @@
     null <- model.matrix(tnull, data)
  
     # suppress intercept if necessary (can this be done more elegantly?)
-    if (model == "cox") null <- null[,names(null) != "(Intercept)"]
+    if (model == "cox") null <- null[,colnames(null) != "(Intercept)",drop=FALSE]
   }
 
   # check dimensions
