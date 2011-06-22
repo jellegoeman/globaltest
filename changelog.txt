@@ -1,3 +1,12 @@
+5.7.4
+- rewritten goodnessoffit.R function
+- replaced gtPS, gtK, gtI, repdes, getPS, getK with gtPS, gtKS, gtLI, btensor, reparamZ, reweighZ in NAMESPACE/export 
+- added sterms in NAMESPACE/exportMethods
+- removed mboost and added gss, MASS, boot, rpart in DESCRIPTION/suggested
+- updated Rd goodnessoffit file
+- added sterms in Methods gt.object-class.Rd
+- rewritten goodness-of-fit chapter in the vignette
+
 5.7.3
 - updated inheritance() to latest version of inheritance paper
 - updated treatment of levels argument in gt: specifying levels coerces response to a factor

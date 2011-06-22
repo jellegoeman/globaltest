@@ -1,12 +1,12 @@
 Package: globaltest
-Version: 5.7.3
-Date: 2011-06-20
+Version: 5.7.4
+Date: 2011-06-21
 Title: Testing groups of covariates/features for association with a response variable, with applications to gene set testing
 Author: Jelle Goeman and Jan Oosting, with contributions by Livio Finos and Aldo Solari
 Maintainer: Jelle Goeman <j.j.goeman@lumc.nl>
 Depends: methods
 Imports: Biobase (>= 2.5.5), survival, AnnotationDbi, annotate, multtest, graphics
-Suggests: vsn, golubEsets, KEGG.db, hu6800.db, Rgraphviz, GO.db, lungExpression, org.Hs.eg.db, annotate, Biobase (>= 2.5.5), survival, GSEABase, mboost, penalized
+Suggests: vsn, golubEsets, KEGG.db, hu6800.db, Rgraphviz, GO.db, lungExpression, org.Hs.eg.db, annotate, Biobase (>= 2.5.5), survival, GSEABase, penalized, gss, MASS, boot, rpart
 Description: The global test tests groups of covariates (or features) for association with a response variable. This package implements the test with diagnostic plots and multiple testing utilities, along with several functions to facilitate the use of this test for gene set testing of GO and KEGG terms.
 License: GPL (>= 2)
 biocViews: Microarray, OneChannel, Bioinformatics, DifferentialExpression, GO, Pathways

@@ -28,7 +28,7 @@
 \alias{alias<-,gt.object-method}
 \alias{sort,gt.object-method}
 \alias{extract,gt.object-method}
-
+\alias{sterms,gt.object-method}
 
 \title{Class "gt.object" for storing the result of the function gt}
 
@@ -77,6 +77,7 @@
     \item{subjects}{(gt.object): Produces a plot to show the influence of individual subjects on the test result. See \code{\link{subjects}} for details.}
     \item{p.adjust}{(gt.object): Performs multiple testing correction and produces multiplicity-corrected p-values. See \code{\link{p.adjust}} for details.}
     \item{comparative}{(gt.object): Compares the p-values of tests performed on a subsets or weights with p-values of random subsets of covariates of same size or randomly distributed weights.  See \code{\link{comparative}} for details.}
+    \item{sterms}{(gt.object): Prints the smooth terms specified by \code{\link{gtPS}},  \code{\link{gtKS}} or \code{\link{gtLI}}.}
     }
 }
 
