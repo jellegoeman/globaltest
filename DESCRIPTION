@@ -1,5 +1,5 @@
 Package: globaltest
-Version: 5.8.0
+Version: 5.9.0
 Date: 2011-06-21
 Title: Testing groups of covariates/features for association with a response variable, with applications to gene set testing
 Author: Jelle Goeman and Jan Oosting, with contributions by Livio Finos and Aldo Solari
