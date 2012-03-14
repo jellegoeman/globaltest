@@ -296,7 +296,7 @@ reparamZ <-function (Z, pord, K=NULL, tol = 1e-10, returnU=FALSE) {
     colnames(P)<-1:ncol(P)
   }
   else {
-    U <- matrix(0, nr = nrow(Z), nc = 0)
+    U <- matrix(0, nrow = nrow(Z), ncol = 0)
     P <- Z
   }
   if (!returnU) return(P)

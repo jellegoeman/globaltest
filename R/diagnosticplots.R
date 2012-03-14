@@ -238,6 +238,7 @@ covariates <- function(object,
       sorter <- sort.list(order.bars) 
       if (zoom) obj <- p.adjust(obj, "holm")
       obj <- obj[sorter]
+      bars <- bars[sorter]
       if (trace)
         cat("\n")
     }
@@ -598,10 +599,10 @@ similarity <- function(object, cluster = "average", legend = TRUE) {
 
   if (dendrogram)
     heatmap(XX, Rowv= dend, Colv=rev(dend), col=color, scale= "none",
-      RowSideColor = sidecolor, ColSideColors = sidecolor)
+      RowSideColors = sidecolor, ColSideColors = sidecolor)
   else
     heatmap(XX, Rowv= NA, Colv=NA, col=color, scale= "none", 
-      RowSideColor = sidecolor, ColSideColors = sidecolor)
+      RowSideColors = sidecolor, ColSideColors = sidecolor)
       
   if (legend && dendrogram)
     legend("topleft", c("similar", "neutral", "dissimilar"), fill=c(3,1,2), cex=.6)

@@ -281,10 +281,10 @@
 
   Y <- null.fit$y - fitted.values(null.fit)
   W <- null.fit$weights          
-  if (all(W==W[1]))
+  if (max(abs(W-W[1]))<1e-15)
     out <- .lineartest(as.numeric(response), Z, X, offset, dir, perms)
   else {
-    if ((perms > 0) && (!all(W == W[1])))
+    if ((perms > 0) && (!(max(abs(W-W[1]))<1e-15)))
       stop("Generalized linear model with covariates:\n\tPermutation testing is not possible.", call.=FALSE)
   
     if (perms == 0) {

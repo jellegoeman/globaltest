@@ -4,9 +4,17 @@
 .getAlternative <- function(alternative, data, n) {
 
   # coerce alternative into a matrix
-  if (is.data.frame(alternative) || is.vector(alternative)) {
+  if (is.data.frame(alternative)) {
     if (all(sapply(alternative, is.numeric))) {
       alternative <- as.matrix(alternative)
+    } else {
+      stop("argument \"alternative\" could not be coerced into a matrix")
+    }
+  }
+  if (is.vector(alternative)) {
+    if (is.numeric(alternative)) {
+      alternative <- as.matrix(alternative)
+      colnames(alternative) <- "x"
     } else {
       stop("argument \"alternative\" could not be coerced into a matrix")
     }

@@ -1,4 +1,12 @@
+5.9.2
+- fixed error message in case p-value is exactly 1
+
+5.9.1
+- repaired sorting and coloring of bars in covariates(..., cluster=FALSE, sort=TRUE)
+- repaired colnames missing error if gt is called with a vector in alternative
+
 5.7.4
+- changed W==W[1] check in logistic model to max(abs(W-W[1]))<1e-15 to avoid rounding errors (Thanks to Florian Klinglmueller for the bug report).
 - rewritten goodnessoffit.R function
 - replaced gtPS, gtK, gtI, repdes, getPS, getK with gtPS, gtKS, gtLI, btensor, reparamZ, reweighZ in NAMESPACE/export 
 - added sterms in NAMESPACE/exportMethods

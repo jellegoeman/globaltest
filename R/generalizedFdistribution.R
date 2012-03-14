@@ -1,5 +1,6 @@
 .getP <- function(lams) {
-  if (all(lams==0))
+
+  if (all(lams >= 0))
     p.value <- 1
   else if (all(lams <= 0))
     p.value <- 0
@@ -72,7 +73,7 @@
     ready <- (rest.c<eps) || (c[ix+1] < 0)
     ix <- ix+1
   }
-  if (rest.c > 0) 
+  if (rest.c > 0)
     c <- c(c, rest.c)
   if (any(c<0))
     return(NULL)
@@ -156,7 +157,6 @@
 .pImhof <- function(lams, eps = 1e-10) {
   lams <- lams[lams != 0]
   integrand <- function(u) {          # the Imhof integrand. Domain: 0...Inf
-    u <- u
     theta <- 0.5 * colSums(atan(outer(lams,u))) # - 0.5 * x * u
     rho <- exp(colSums(0.25 * log(1 + outer(lams^2,u^2))))
     out <- ifelse(u==0, sum(lams)/2, sin(theta)/(u*rho))
@@ -166,7 +166,7 @@
     K <- sum(abs(lams))/20            # Scaling constant of the transformation (to make it invariant to the scale of lams)
     0.5 + integrand(-log(1-v)/K) / (pi*K*(1-v))
   }
-  rt <- max(50*.Machine$double.eps, eps)
+  rt <- max(sqrt(.Machine$double.eps), eps)
   res <- try(integrate(tr.integrand, 0, 1, rel.tol = rt), silent=TRUE)
   if (is(res, "try-error")) {
     out <- list(value = NA, error = NA)
@@ -175,4 +175,3 @@
   }
   out
 }
-  

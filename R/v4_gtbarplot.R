@@ -115,7 +115,7 @@ setMethod("sort", matchSignature(signature(x = "gt.barplot"), sort),
 
 
 #==========================================================
-setMethod("plot", signature(x="gt.barplot",y="ANY"),
+setMethod("plot", matchSignature(signature(x= "gt.barplot"), plot),
   function(x, y, ...) {
     plot.gt.barplot <- function(x, genesubset, drawlabels, labelsize, addlegend = TRUE, ...) {
       if (!missing(genesubset))
