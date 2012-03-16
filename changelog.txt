@@ -1,3 +1,6 @@
+5.9.3
+- Minor change to documentation of gt-barplot
+
 5.9.2
 - fixed error message in case p-value is exactly 1
 

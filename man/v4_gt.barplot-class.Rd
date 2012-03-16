@@ -8,6 +8,7 @@
 \alias{length,gt.barplot-method}
 \alias{result,gt.barplot-method}
 \alias{plot,gt.barplot-method}
+\alias{plot,gt.barplot,ANY-method}
 \alias{scale,gt.barplot-method}
 \alias{sort,gt.barplot-method}
 \alias{gt.barplot}
