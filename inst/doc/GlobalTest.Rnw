@@ -846,9 +846,9 @@ features(res, alias=hu6800SYMBOL, zoom=TRUE)
 @
 \end{figure}
 
-The \Rfunction{extract} function can be useful to get information on the individual features
+The \Rfunction{extract} function can be useful to get information on the individual features, and the \Rfunarg{plot} argument can be used to suppress plotting.
 <<extract geneset>>=
-ft <- features(res, alias=hu6800SYMBOL, zoom=TRUE)
+ft <- features(res, alias=hu6800SYMBOL, plot=FALSE)
 extract(ft)
 @
 
@@ -916,21 +916,21 @@ Therefore, in practical regression problems, lack of fit comes in all shapes and
 \item The proportional hazards assumption may not hold.
 \end{itemize}
 
-Distinguishing the different types of lack of fit is of practical importance: 
-if we find evidence against the model, we generally also want to know why the model does not fit. 
+Distinguishing the different types of lack of fit is of practical importance:
+if we find evidence against the model, we generally also want to know why the model does not fit.
 
-In this Chapter we introduce a goodness-of-fit testing approach based on the global test. 
+In this Chapter we introduce a goodness-of-fit testing approach based on the global test.
 It requires the specification of an alternative model, which identifies the type of lack of fit the test is directed against. Various types of lack of fit are treated within the same framework and many existing tests can be considered as special cases.
 
-Suppose that we are concerned with the adequacy of some regression model \verb:Y ~ X:, where \verb:X: represents the null design matrix. The alternative model can be cast into the generic form  \verb:Y ~ X + Z:, where 
-the choice of \verb:Z: depends on the type of lack of fit under investigation. 
+Suppose that we are concerned with the adequacy of some regression model \verb:Y ~ X:, where \verb:X: represents the null design matrix. The alternative model can be cast into the generic form  \verb:Y ~ X + Z:, where
+the choice of \verb:Z: depends on the type of lack of fit under investigation.
 Once \verb:Z: has been chosen, the global test is applied for testing \verb:Y ~ X: against \verb:Y ~ X + Z:.
 
 Sometimes a reparameterization of the alternative model is necessary.
-The required parameterization is either a penalized regression model with a ridge penalty on the coefficients associated with \verb:Z: or a mixed effect model where the coefficients associated with \verb:Z: are i.i.d. random effects. 
+The required parameterization is either a penalized regression model with a ridge penalty on the coefficients associated with \verb:Z: or a mixed effect model where the coefficients associated with \verb:Z: are i.i.d. random effects.
 
-The examples listed below illustrate testing against several types of lack of fit. 
-We have not attempted to write an exhaustive list, but rather to show how different 
+The examples listed below illustrate testing against several types of lack of fit.
+We have not attempted to write an exhaustive list, but rather to show how different
 choices of \verb:Z: accomodate to various types of lack of fit.
 
 
@@ -938,14 +938,14 @@ choices of \verb:Z: accomodate to various types of lack of fit.
 
 The data \verb"faults" gives the number of faults in rolls of textile fabric with varying
 length \citep{Bissell1972}. We consider a Poisson log-linear model with logarithm of the
-roll length as covariate. However, we may allow for the possibility of extra-Poisson variation 
-by using a mixed model with i.i.d. random effects, one for each observation. 
+roll length as covariate. However, we may allow for the possibility of extra-Poisson variation
+by using a mixed model with i.i.d. random effects, one for each observation.
 Here $\Robject{Z}$ is specified as the identity matrix with ones on the
 main diagonal and zeros elsewhere. For testing against overdispersion, use
 <<faults>>=
 require("boot")
 data(cloth)
-Z <- matrix(diag(nrow(cloth)), ncol = nrow(cloth), dimnames = list(NULL, 1:nrow(cloth))) 
+Z <- matrix(diag(nrow(cloth)), ncol = nrow(cloth), dimnames = list(NULL, 1:nrow(cloth)))
 gt(y ~ log(x), alternative = Z, data = cloth, model = "poisson")
 @
 The null hypothesis of no overdispersion can be rejected at the significance level of 5\%.
@@ -979,11 +979,11 @@ ii) \Rfunarg{nint}, the number of intervals determined by equally-spaced knots p
 iii) \Rfunarg{pord}, the order of the differences indicating the type of the penalty imposed to the coefficients.
 
 The \Rfunarg{bdeg} and \Rfunarg{nint} arguments are used to construct a B-spline basis \verb:Z: (default values are \verb:bdeg=3: and \verb:nint=10:).
-The order of differences \Rfunarg{pord} deserves more attention (default value is \verb:pord=2:). 
-Remember that we should obtain a ridge penalty on the coefficients associated with \verb:Z:. 
-This is true with \verb:pord=0:, but in the world of P-splines it is common to use a roughness penalty based on differences of adjacent B-Spline coefficients, for instance, second order differences \verb:pord=2:.  
+The order of differences \Rfunarg{pord} deserves more attention (default value is \verb:pord=2:).
+Remember that we should obtain a ridge penalty on the coefficients associated with \verb:Z:.
+This is true with \verb:pord=0:, but in the world of P-splines it is common to use a roughness penalty based on differences of adjacent B-Spline coefficients, for instance, second order differences \verb:pord=2:.
 
-In this case we have to reparameterize the alternative model by decomposing \verb:Z: into \verb:U: and \verb:P:. This gives the alternative model \verb:Y~X+U+P: where the coefficients associated with \verb:U: are unpenalized whereas the coefficients associated with \verb"P" are penalized by a ridge penalty. However, the global test is not meant for testing the unpenalized coefficient, but it is concerned with the penalized coefficients. To get around this and test only for the penalized coefficients to be zero, we have to make sure that the columns of \verb:U: spans a subspace of the columns of \verb:X:, so that \verb:U: can be absorbed into \verb:X:. Otherwise, we are inadvertently changing the null hypothesis, or equivalently, we are considering the null model \verb:Y~X+U:. 
+In this case we have to reparameterize the alternative model by decomposing \verb:Z: into \verb:U: and \verb:P:. This gives the alternative model \verb:Y~X+U+P: where the coefficients associated with \verb:U: are unpenalized whereas the coefficients associated with \verb"P" are penalized by a ridge penalty. However, the global test is not meant for testing the unpenalized coefficient, but it is concerned with the penalized coefficients. To get around this and test only for the penalized coefficients to be zero, we have to make sure that the columns of \verb:U: spans a subspace of the columns of \verb:X:, so that \verb:U: can be absorbed into \verb:X:. Otherwise, we are inadvertently changing the null hypothesis, or equivalently, we are considering the null model \verb:Y~X+U:.
 
 We can best illustrate this with a simple example: we add some Gaussian noise to the second data set reported in \cite{Anscombe1973}, where \verb:Y: has a quadratic relation with \verb:X:. To test \verb:Y~X: against \verb:Y~X+s(X): with default values, use:
 <<anscombe>>=
@@ -1023,14 +1023,14 @@ comb@result
 However, it may not be satisfactory because the component matrices \verb:Z: and \verb:P: do not contribute equally in the test statistic. In constrast, the \Rfunarg{robust} argument assigns equal weight to each component:
 <<robust weights>>=
 colrange<-list(Z=1:ncol(Z), P=(ncol(Z)+1):(ncol(Z)+ncol(P)))
-sapply(list(combined=comb,robust=rob), function(x){sapply(colrange, 
+sapply(list(combined=comb,robust=rob), function(x){sapply(colrange,
 function(y){sum(weights(x)[y])/sum(weights(x))})})
 @
 
 \subsection{Generalized additive models}
 
 With multiple covariates, generalized addittive models (GAMs) augment the linear predictor
-\verb:~X1+X2+...: by a sum of smooth terms \verb:s(X1)+s(X2)+...:. 
+\verb:~X1+X2+...: by a sum of smooth terms \verb:s(X1)+s(X2)+...:.
 
 A classic example dataset for GAMs is \verb:kyphosis:, representing observations
 on 81 children undergoing corrective surgery of the spine.
@@ -1047,10 +1047,10 @@ From the test result we can suspect that there is a non-linear effect in at leas
 sterms(res)
 @
 
-A follow-up question concerns which covariates exhibit non-linearity. 
+A follow-up question concerns which covariates exhibit non-linearity.
 To address this question, we can fit the the same alternative model used for the test to decide what modifications to the model may be appropriate to consider.
 An advantage of having a specified alternative is that the same alternative model that was used in the test can be fitted.
-We use the package \Rpackage{penalized} to perform ridge regression estimation 
+We use the package \Rpackage{penalized} to perform ridge regression estimation
 with the amount of shrinkage determined by the tuning parameter \Rfunarg{lambda2}. We set \Rfunarg{lambda2} equal to 0.086, the value maximizing the cross-validated likelihood.
 To get the alternative design matrix used in the test, set the argument \Rfunarg{returnZ}
 to \verb"TRUE":
@@ -1090,7 +1090,7 @@ par(op)
 \label{fig:kyphosis}
 \end{figure}
 
-Figure \ref{fig:kyphosis} shows the component smooth terms of the fitted GAM. 
+Figure \ref{fig:kyphosis} shows the component smooth terms of the fitted GAM.
 From the plots it seems that all the covariates have a quadratic pattern, though \verb:Number: it is much less pronounced than for the other two variables.
 
 The argument \Rfunarg{covs} can be used to select a subset of the covariates, and testing for non-linearity is done for that subset only:
@@ -1099,13 +1099,13 @@ gtPS(fit0, covs=c("Age","Start"))
 @
 
 Because \verb:Number: and \verb:Start: are heavily tied, one can
-modify the number of intervals for those covariates: 
+modify the number of intervals for those covariates:
 <<arg nint>>=
 gtPS(fit0,covs=c("Age","Number","Start"), nint=list(a=5, b=c(5,1,1)), pord=0)
 @
-With \verb:pord=0:, the choice of \verb:nint: is crucial: too small may not be flexible enough to capture the variability of the data, too large tends to overfit the data. In constrast, higher-order penalties guarantee sufficient smoothness and are less affected by the choice of \verb:nint:. 
+With \verb:pord=0:, the choice of \verb:nint: is crucial: too small may not be flexible enough to capture the variability of the data, too large tends to overfit the data. In constrast, higher-order penalties guarantee sufficient smoothness and are less affected by the choice of \verb:nint:.
 
-An alternative GAM construction is to build and concatenate each model component like building blocks: 
+An alternative GAM construction is to build and concatenate each model component like building blocks:
 <<cbind GAM>>=
 covs=c("Age","Number","Start")
 bd=c(3,3,3);ni=c(10,10,10);po=c(2,2,2);cs<-c(0,cumsum(bd+ni-po))
@@ -1114,8 +1114,8 @@ combZ<-do.call(cbind,lapply(1:length(covs),function(x){reparamZ(bbase(kyphosis[,
 comb<-gt(Kyphosis~., alternative=combZ, data = kyphosis, model="logistic")
 comb@result
 @
-However, the model components may not contribute equally in the test statistic:                                                          
-<<cbind weights GAM>>=                                                          
+However, the model components may not contribute equally in the test statistic:
+<<cbind weights GAM>>=
 range<-lapply(1:length(covs),function(x){(cs[x]+1):(cs[x+1])})
 names(range)<-covs
 sapply(range,function(x){sum(weights(comb)[x])/sum(weights(comb))})
@@ -1129,8 +1129,8 @@ sapply(range,function(x){sum(weights(rwgt)[x])/sum(weights(rwgt))})
 
 \section{Non-linear and missed interactions}
 
-Suppose we are modelling the dependence of the response on several covariates, expressed as 
-\verb:Y~X1+X2+...:. For testing against the alternative that any non-linearities or interaction effects have been missed, one can consider the model \verb:Y~X1+X2+...+s(X1,X2,...):, where \verb:s(): is an unspecified multi-dimensional smooth function. 
+Suppose we are modelling the dependence of the response on several covariates, expressed as
+\verb:Y~X1+X2+...:. For testing against the alternative that any non-linearities or interaction effects have been missed, one can consider the model \verb:Y~X1+X2+...+s(X1,X2,...):, where \verb:s(): is an unspecified multi-dimensional smooth function.
 
 \subsection{Kernel smoothers}
 
@@ -1146,7 +1146,7 @@ res@result
 sterms(res)
 @
 The smoothing matrix \verb:Z: is defined by a distance measure \Rfunarg{metric}, a kernel shape \Rfunarg{kernel} and a bandwidth \Rfunarg{quant}, expressed as the percentile of the distribution of distance between observations, which controls the amount of smoothing.
-If the argument \Rfunarg{termlabels} is set to \verb:TRUE:, the smoothing term \verb:s(log10(cal),lat,lon): is obtained. 
+If the argument \Rfunarg{termlabels} is set to \verb:TRUE:, the smoothing term \verb:s(log10(cal),lat,lon): is obtained.
 
 <<trace>>=
 gtKS(fit0, quant=seq(.01,.99,.02), data=LakeAcidity, termlabels=TRUE, robust=T)
@@ -1167,7 +1167,7 @@ abline(h=gtKS(ph~log10(cal)+lat+lon, quant=seq(.01,.99,.02), data=LakeAcidity, r
 The choice of the bandwidth may be crucial: the plot of Figure \ref{fig:trace} illustrates the influence of \verb"quant" (from .01 to .99 with increment of .02) on the significance of the test. The result seems conclusive since it stays mostly under the conventional 5\% level. \cite{Azzalini1993} considered the same plot, which they refer to as the `significance trace'. The global significance (dotted line) is obtained by setting \verb:robust=TRUE::
 
 
-Latitude and longitude are included in the model to allow for geographical effects in the pattern of water acidity. However, it is less natural to include these terms separately since they define a two-dimensional co-ordinate system. 
+Latitude and longitude are included in the model to allow for geographical effects in the pattern of water acidity. However, it is less natural to include these terms separately since they define a two-dimensional co-ordinate system.
 For testing whether the interaction between latitude and longitude is linear or is of a more complex non-linear form, a two-dimensional interaction surface \verb"s(lat,lon)" can be constructed by a tensor product of univariate P-splines penalized by a Kroneker sum of penalties. To test \verb"ph~lat+lon+lat:lon" against \verb"ph~...+s(lat,lon)", use:
 <<btensor>>=
 fit0<-lm(ph~lat*lon, data=LakeAcidity)
@@ -1176,7 +1176,7 @@ res@result
 sterms(res)
 @
 
-Figure \ref{fig:lake} displays the fitted alternative model, which suggests a non-linear interaction between latitude and longitude. 
+Figure \ref{fig:lake} displays the fitted alternative model, which suggests a non-linear interaction between latitude and longitude.
 
 \begin{figure}[h!]
 \begin{center}
@@ -1196,8 +1196,8 @@ persp(lon,lat,fitted,theta=-25)
  \end{figure}
 
 
-To test against non-linear main effects or non-linear interactions, we can consider the 
-alternative \verb"ph~...+s(lat)+s(lon)+s(lat,lon)". Each model component can be constructed and combined like building blocks. The function \Rfunction{bbase} in combination with \Rfunction{reparamZ} can be used for constructing \verb"s(lat)" and \verb"s(lon)", whereas \Rfunction{btensor} for constructing \verb"s(lat,lon)" as tensor product of P-splines (reparameterized according to Kroneker sum of penalties). Finally, \Rfunction{reweighZ} can be used to give to each component the same contribution in the test statistic: 
+To test against non-linear main effects or non-linear interactions, we can consider the
+alternative \verb"ph~...+s(lat)+s(lon)+s(lat,lon)". Each model component can be constructed and combined like building blocks. The function \Rfunction{bbase} in combination with \Rfunction{reparamZ} can be used for constructing \verb"s(lat)" and \verb"s(lon)", whereas \Rfunction{btensor} for constructing \verb"s(lat,lon)" as tensor product of P-splines (reparameterized according to Kroneker sum of penalties). Finally, \Rfunction{reweighZ} can be used to give to each component the same contribution in the test statistic:
 <<anova type>>=
 Z1<-reweighZ(reparamZ(bbase(LakeAcidity$lat, bdeg=3, nint=10), pord=2), fit0)
 Z2<-reweighZ(reparamZ(bbase(LakeAcidity$lon, bdeg=3, nint=10), pord=2), fit0)
@@ -1237,7 +1237,7 @@ res<-gtLI(medv~., data=Boston)
 res@result
 round(weights(res)/sum(weights(res)),4)
 @
-To prevent very unbalanced interaction terms contributions in the test statistic, we recommend to 
+To prevent very unbalanced interaction terms contributions in the test statistic, we recommend to
 rescale the covariates to unit standard deviation by \verb"standardize=TRUE" or to center and scale the data:
 <<>>=
 gtLI(medv~., data=Boston, standardize=T)
@@ -1254,7 +1254,7 @@ the covariates. This allows the effect of the covariates to change over time, su
 effect of a treatment that might wash away. However, time-varying covariates are not yet implemented in the function \Rfunction{gt} (but are likely to be in the future).
 
 
-\addcontentsline{toc}{chapter}{References} 
+\addcontentsline{toc}{chapter}{References}
 \label{references}
 \bibliography{GlobalTest}
 

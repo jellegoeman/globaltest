@@ -93,9 +93,10 @@ setMethod(".result", "gt.object",
 #==========================================================
 setGeneric("extract", function(object, ...) standardGeneric("extract"))
 setMethod("extract", "gt.object", function(object, ...) {
-  if (is.null(object@structure$ancestors))
-    stop("Object is not the result of a call to features() or covariates().")
-  uit <- leafNodes(object, alpha=1)
+  if (!is.null(object@structure$ancestors))
+    uit <- leafNodes(object, alpha=1)
+  else
+    uit <- object
   cols <- factor(uit@functions$positive(unlist(subsets(uit))))
   if (uit@model == "multinomial") {
     levels(cols) <- uit@legend$cov
@@ -103,7 +104,11 @@ setMethod("extract", "gt.object", function(object, ...) {
     levels(cols) <- rev(uit@legend$cov)
   }
   names(uit) <- uit@functions$cov.names(unlist(subsets(uit)))
-  uit@extra$direction <- as.character(cols)
+  if (is.null(uit@extra)) {
+    uit@extra <- as.data.frame(as.matrix(cols))
+    colnames(uit@extra) <- "direction"
+  } else
+    uit@extra$direction <- as.character(cols)
   uit
 })
 

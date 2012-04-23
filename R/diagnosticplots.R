@@ -4,7 +4,7 @@
 ######################################
 covariates <- function(object, 
             what = c("p-value", "statistic", "z-score", "weighted"), cluster = "average", 
-            alpha = 0.05, sort = TRUE, zoom = FALSE, legend = TRUE, colors, alias, help.lines = FALSE,
+            alpha = 0.05, sort = TRUE, zoom = FALSE, legend = TRUE, plot = TRUE, colors, alias, help.lines = FALSE,
             cex.labels = 0.6, pdf, trace) {
                                               
   if ((length(object) > 1) && missing(pdf))
@@ -20,7 +20,7 @@ covariates <- function(object,
 
   # What to plot
   what <- substr(match.arg(tolower(what),  c("p-value", "statistic", "z-score", "weighted")),1,1)
-  dendrogram <- ((!is.logical(cluster)) || (cluster)) && (substr(cluster,1,1) != "n")
+  dendrogram <- plot && (((!is.logical(cluster)) || (cluster)) && (substr(cluster,1,1) != "n"))
 
 
   # update legend if asked
@@ -275,7 +275,7 @@ covariates <- function(object,
       room <- (ylims[2] - max(bars[trunc(nbars*.6):nbars])) / diff(ylims)
       ylims[2] <- ylims[2] + diff(ylims) * max(0,.1*length(colors) - room)
     }
-    mids <- drop(barplot(bars, yaxt="n", border=NA, las=2, ylab=ylab, ylim=ylims, mgp=c(4,1,0), col=cols, cex.names=cex.labels))
+    mids <- drop(barplot(bars, yaxt="n", border=NA, las=2, ylab=ylab, ylim=ylims, mgp=c(4,1,0), col=cols, cex.names=cex.labels, plot=plot))
     
     # help lines
     if (dendrogram && help.lines) {
@@ -285,46 +285,48 @@ covariates <- function(object,
     }    
     
     # construct appropriate axes
-    if (what == "p") {
-      labs <- seq(0,maxlogp, by = max(1,maxlogp %/% 5))
-      if (length(labs)==1) {
-        minp <- 10^-maxlogp
-        if (minp < 0.5) {
-          labs <- log10(c(1,2,10/3,5))
-          labs <- labs[labs < maxlogp]
-        } else {
-          fc <- 10^-floor(log10(1-minp)) 
-          labs <- -log10(c(1,ceiling(minp*fc)/fc))
-        }
-      } else if (length(labs) <= 2)
-        labs <- outer(log10(c(1,2,5)),labs,"+")
-      else if (length(labs) <= 4)
-        labs <- outer(log10(c(1,10/3)),labs,"+")
-      if (max(bars) > maxlogp) #zero p-values
-        axis(2, at = c(labs, max(bars)), labels=c(10^-labs, 0), las=2)
-      else
-        axis(2, at = labs, labels=10^-labs, las=2)
-    } else
-      axis(2, las=2)
-    if (what %in% c("s","w")) {
-      sapply(seq_along(mids), function(i) { 
-        lines(c(mids[i]-0.5, mids[i]+0.5), rep(leaves[i,"ES"],2), lwd=3)
-         sapply(seq_len(max(0, (bars[i] - leaves[i,"ES"])/leaves[i,"sdS"])), function(k)
-          lines(c(mids[i]-0.5, mids[i]+0.5), rep(leaves[i,"ES"]+k*leaves[i,"sdS"],2))
-        )
-      })
-    }
-    abline(0,0)
+    if(plot) {
+      if (what == "p") {
+        labs <- seq(0,maxlogp, by = max(1,maxlogp %/% 5))
+        if (length(labs)==1) {
+          minp <- 10^-maxlogp
+          if (minp < 0.5) {
+            labs <- log10(c(1,2,10/3,5))
+            labs <- labs[labs < maxlogp]
+          } else {
+            fc <- 10^-floor(log10(1-minp)) 
+            labs <- -log10(c(1,ceiling(minp*fc)/fc))
+          }
+        } else if (length(labs) <= 2)
+          labs <- outer(log10(c(1,2,5)),labs,"+")
+        else if (length(labs) <= 4)
+          labs <- outer(log10(c(1,10/3)),labs,"+")
+        if (max(bars) > maxlogp) #zero p-values
+          axis(2, at = c(labs, max(bars)), labels=c(10^-labs, 0), las=2)
+        else
+          axis(2, at = labs, labels=10^-labs, las=2)
+      } else
+        axis(2, las=2)
+      if (what %in% c("s","w")) {
+        sapply(seq_along(mids), function(i) { 
+          lines(c(mids[i]-0.5, mids[i]+0.5), rep(leaves[i,"ES"],2), lwd=3)
+           sapply(seq_len(max(0, (bars[i] - leaves[i,"ES"])/leaves[i,"sdS"])), function(k)
+            lines(c(mids[i]-0.5, mids[i]+0.5), rep(leaves[i,"ES"]+k*leaves[i,"sdS"],2))
+          )
+        })
+      }
+      abline(0,0)
+    
+      if (legend)               
+        legend("topright", obj@legend$cov, fill = colors, bg="white")
   
-    if (legend)               
-      legend("topright", obj@legend$cov, fill = colors, bg="white")
-
-    #reset defaults 
-    layout(1)
-    par(mai=margins)
-        
-    if (!missing(pdf)) {
-      title(ttl)
+      #reset defaults 
+      layout(1)
+      par(mai=margins)
+          
+      if (!missing(pdf)) {
+        title(ttl)
+      }
     }
   }
 

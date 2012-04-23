@@ -1,3 +1,7 @@
+5.11.1
+- added plot argument to covariates()
+- repaired extract() to also work with objects made with cluster=FALSE
+
 5.9.3
 - Minor change to documentation of gt-barplot
 
