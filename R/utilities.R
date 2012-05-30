@@ -39,18 +39,8 @@
       levs <- levels(mframe[[fac]])
       k <- length(levs)
       if (is.ordered(mframe[[fac]])) {
-        if (k %% 2 == 1) { 
-          contr <- array(0, c(k, k-1), list(levs, paste(levs[-k], "<", levs[-1], sep="")))
-          contr[outer(1:k,1:(k-1), ">")] <- 1
-          contr[,1:((k-1)/2)] <- contr[,1:((k-1)/2)] -1
-        } else {
-          levsplus <- c(levs[1:(k/2)], "(mid)", levs[k/2+1:(k/2)])
-          contr <- array(0, c(k+1, k), list(levsplus, paste(levsplus[-(k+1)], "<", levsplus[-1], sep="")))
-          contr[outer(1:(k+1),1:k, ">")] <- 1
-          contr[,1:(k/2)] <- contr[,1:(k/2)] - 1
-          contr <- contr[-(1+k/2),]
-          contr[,k/2+c(0,1)] <- contr[,k/2+c(0,1)] / sqrt(2)
-        }
+        contr <- matrix(0,k,k)
+        contr[lower.tri(contr,diag=TRUE)] <- 1
       } else {
         contr <- diag(k)
         rownames(contr) <- colnames(contr) <- levs

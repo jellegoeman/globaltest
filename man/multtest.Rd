@@ -58,7 +58,7 @@ draw (object, alpha = 0.05, type = c("focuslevel","inheritance"),
         focus level set is at most \code{2^maxsize - 1}.}
     \item{alpha}{The alpha level of familywise error control for the significant subgraph.}
     \item{Shaffer}{If set to \code{TRUE}, it applys the Shaffer improvement. If \code{Shaffer} is \code{NULL} and \code{object} is a \code{\link{gt.object}} the procedure checks whether  \code{Shaffer=TRUE} is valid, and sets the value accordingly.}
-    \item{weights}{Optional weights vector for the leaves nodes. If it is missing but \code{test} is a \code{\link{gt.object}}, the result of \code{\link{weights}(object)} will be used. In all other cases \code{weights} is set to be uniform among all leaf nodes.}
+    \item{weights}{Optional weights vector for the leaf nodes. If it is missing but \code{test} is a \code{\link{gt.object}}, the result of \code{\link{weights}(object)} will be used. In all other cases \code{weights} is set to be uniform among all leaf nodes.}
     \item{homogeneous}{If set to \code{TRUE}, redistributes the alpha of rejected leaf node hypotheses homogeneously over the hypotheses under test, rather than to closest related hypotheses.}
     \item{type}{Argument for specifying which multiple testing correction method should be used. Only relevant if both the inheritance and the focuslevel procedures were
         performed on the same set of test results.}

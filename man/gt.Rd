@@ -1,8 +1,9 @@
 \name{gt}
 
 \alias{gt}
+\alias{globaltest}
 
-\title{Global Test (new implementation, 2009)}
+\title{Global Test}
 
 \description{Tests a low-dimensional null hypothesis against a potentially high-dimensional alternative in regression models (linear regression, logistic regression, poisson regression, Cox proportional hazards model).}
 

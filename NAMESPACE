@@ -1,5 +1,3 @@
-importFrom(multtest, mt.rawp2adjp)
-
 importFrom(graphics, hist, plot)
 
 importFrom(survival, Surv, coxph, coxph.fit, basehaz, coxph.control)
@@ -13,16 +11,15 @@ importFrom(AnnotationDbi, Term, Secondary, as.list)
 
 import(Biobase, methods)
 
-exportClasses(gt.result, gt.barplot, mlogit, gt.object, GOstructure)
+exportClasses(mlogit, gt.object)
 
 exportMethods("[", "[[", show, result, p.value, length, names, "names<-", 
-	sort, size, hist, z.score, scale, plot, fit, summary, residuals, 
-	fitted.values, coefficients, genesets, alias, "alias<-", model.matrix, 
+	sort, size, hist, z.score, summary, residuals, 
+	fitted.values, coefficients, alias, "alias<-", model.matrix, 
 	weights, p.adjust, subsets, extract, sterms)
 
-export(globaltest, gt, permutations, sampling, geneplot, sampleplot, 
-	regressionplot, checkerboard, gt.multtest, mlogit,
+export(gt, mlogit,
 	gtGO, combine, leafNodes, draw, gtKEGG, gtBroad, gtConcept,
 	comparative, focusLevel, inheritance, covariates, features, subjects, 
-	gt.options, findFocus, getFocus, makeGOstructure, 
+	gt.options, findFocus, 
 gtPS, gtKS, gtLI, bbase, btensor, reparamZ, reweighZ)

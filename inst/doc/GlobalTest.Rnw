@@ -253,6 +253,7 @@ Another consequence of the fact that the global test is not invariant to the par
 
 The usual coding of nominal factors with a reference category and dummy variables that describe the difference between each category and the reference is usually not appropriate for global test, as this parametrization (and therefore the test result) depends on the choice of the reference category, which is often arbitrary. More appropriate is to do a symmetric parametrization with a dummy for each category. This works even if multiple factors are considered, because the global test is not adversely affected by overparametrization. If \Rfunction{gt} was called with the argument \Rfunarg{x} set to \Robject{TRUE}, we can use \Rfunction{model.matrix} on the \Rclass{gt.object} to check the design matrix.
 <<factors>>=
+set.seed(1234)
 YY <- rnorm(6)
 FF <- factor(rep(letters[1:2], 3))
 GG <- factor(rep(letters[3:5], 2))
@@ -260,13 +261,42 @@ model.matrix(gt(YY ~ FF + GG, x = TRUE))$alternative
 @
 This choice of contrasts guarantees that the test result does not depend on the order of the levels of any factors.
 
-For ordered factors it is often appropriate to make contrasts between successive categories. For example if a factor has three ordered categories \Robject{a}, \Robject{b}, and \Robject{c}, one contrast \verb:a<b: codes the difference between categories \Robject{a} on the one hand and \Robject{b}, and \Robject{c} on the other, whereas \verb:b<c: codes the difference between categories \Robject{a} and \Robject{b} on the one hand and \Robject{c} on the other.
-<<ordered factors>>=
+For ordered factors it is often reasonable to make contrasts between adjacent categories.
+In a model without an intercept term the frequently used \emph{split coding} scheme allows the parameters $\beta_i$ to be interpreted as the increases in the transition from category $i-1$ to category $i$, which is intuitively appropriate for ordinal data. In our example this yields
+
+<<ordinal>>=
 GG <- ordered(GG)
 model.matrix(gt(YY ~ GG, x = TRUE))$alternative
 @
-This effectively takes the middle category to be the reference category, and assumes that the effects of categories further apart are more diverse than effects of categories closer to each other. In case of an even number of categories a latent category is created between the two middlemost categories, leading to a slightly more intricate contrasts matrix.
 
+If now an intercept term is included in \emph{null} (i.e. if it is not explicitly removed), this choice of contrasts is equivalent to taking an arbitrary category to be the reference category and, starting from that, assuming that the effects of categories further apart are more diverse than the effects of categories close-by. More explicitly, choosing the first, second, and third category as reference theoretically would result in the design matrices
+
+<<alternative contrasts>>=
+R1 <- matrix(c(0,1,1,0,1,1,0,0,1,0,0,1),6,2,dimnames=list(1:6,c("GGd","GGe")))
+R2 <- matrix(c(-1,0,0,-1,0,0,0,0,1,0,0,1),6,2,dimnames=list(1:6,c("GGc","GGe")))
+R3 <- matrix(c(-1,0,0,-1,0,0,-1,-1,0,-1,-1,0),6,2,dimnames=list(1:6,c("GGc","GGd")))
+@
+
+It can be shown that the global test statistic --- and hence the test result --- is invariant to the choice of the reference category. In the \Rfunction{gt} function we can check this easily with
+
+<<ordinal gt>>=
+gt(YY ~ GG)
+gt(YY, alternative=R1)
+@
+
+The same results are obtained for \Robject{R2} and \Robjetc{R3}, respectively.
+The choice of contrasts therefore guarantees that, in a model with an intercept term, the test result does not depend on the choice of the reference category. The difference in the number of covariates included in the alternative (3 vs. 2 in the above outputs) is due to the additional vector of ones in the split coding which, however, does not have any effect on the test result. (Strictly speaking, the effective number of covariates included in the alternative is the number given by the output minus the number of ordinal factors.)
+Note that otherwise, if the intercept term is removed from \Rfunarg{null}, the test result will depend on the choice of the reference category, which may not be desirable. The used implementation protects us from such situations and, most notably, leads to more interpretable results if an intercept is excluded from the null model. If a user nevertheless wants to test such alternatives that do depend on the choice of the reference category, he must explicitly specify a corresponding design matrix in \Rfunarg{alternative} (such as \Robject{R1}, \Robject{R2}, and \Robject{R3} from above). This, for example, gives
+
+<<ordinal gt no intercept>>=
+gt(YY, alternative=R1, null=~0)
+@
+
+In contrast, the variant that \Rfunction{gt} is based on leads to
+
+<<ordinal gt no intercept variant>>=
+gt(YY ~ GG, null=~0)
+@
 
 \subsection{Directing the test: weights} \label{weighting}
 

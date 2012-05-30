@@ -1,3 +1,9 @@
+5.11.2
+- fixed bug giving too small p-values in test in logistic model without intercept
+- removed all old version 4 stuff
+- changed the coding for ordered factors under the alternative to full split coding
+- changed example on ordinal factors in vignette
+
 5.11.1
 - added plot argument to covariates()
 - repaired extract() to also work with objects made with cluster=FALSE

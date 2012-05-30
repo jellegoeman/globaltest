@@ -20,6 +20,7 @@
 \alias{subsets,gt.object-method}
 \alias{model.matrix,gt.object-method}
 \alias{p.value,gt.object-method}
+\alias{z.score}
 \alias{z.score,gt.object-method}
 \alias{names,gt.object-method}
 \alias{names<-,gt.object-method}
