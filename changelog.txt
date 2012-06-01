@@ -1,6 +1,9 @@
+5.11.3
+- repaired bug in ordered factor coding
+- removed all old version 4 stuff
+
 5.11.2
 - fixed bug giving too small p-values in test in logistic model without intercept
-- removed all old version 4 stuff
 - changed the coding for ordered factors under the alternative to full split coding
 - changed example on ordinal factors in vignette
 

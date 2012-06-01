@@ -43,9 +43,9 @@
         contr[lower.tri(contr,diag=TRUE)] <- 1
       } else {
         contr <- diag(k)
-        rownames(contr) <- colnames(contr) <- levs
       }
-      contr  
+      rownames(contr) <- colnames(contr) <- levs                     
+      contr 
     })
     names(contrs) <- factors
                              
