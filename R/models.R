@@ -27,7 +27,7 @@
     } else {
       # otherwise random permutations
       random <- TRUE
-      permY <- replicate(perms, Y[sample(n)])
+      permY <- replicate(perms-1, Y[sample(n)])
     }
   }
 
@@ -314,7 +314,7 @@
       } else {
         # otherwise random permutations
         random <- TRUE
-        permY <- replicate(perms, Y[sample(n)])
+        permY <- replicate(perms-1, Y[sample(n)])
       }
       # adjust the alternative
       if (m > 0)
@@ -592,7 +592,7 @@
   if (perms > 0) {
     # unlike the glm and lm models, we make permutations of the index vector rather than Y itself
     # This is for also being able to permute tr(XXW)
-    piy <- match(unique(Y),Y)[match(Y, unique(Y))]  # sets indices of equal Y to be equal
+    piy <- seq_along(Y)
     # all permutations if possible
     if (npermutations(piy) <= perms) {
       random <- FALSE
@@ -600,7 +600,7 @@
     } else {
       # otherwise random permutations
       random <- TRUE
-      permIY <- replicate(perms, piy[sample(n)])
+      permIY <- replicate(perms-1, piy[sample(n)])
     }
     permY <- matrix(Y[permIY], nrow=length(Y))
   }
@@ -662,7 +662,7 @@
       } else {
         if(!missing(weights))
           X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-  
+
         XX <- crossprod(t(X))
         if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
         Q <- drop(crossprod(Y, XX) %*% Y)
@@ -682,7 +682,7 @@
         # mean and variance of S for z-score
         ES <- EQ + mean(permQ - permEQ)
         VarS <- var(permQ - permEQ)
-  
+        
         # give back
         return(c(p = p.value, S = Q/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov = p))
       }
@@ -860,7 +860,7 @@
     } else {         
       # otherwise random permutations
       random <- TRUE
-      permY <- replicate(perms, cY[sample(n)])
+      permY <- replicate(perms-1, cY[sample(n)])
     }
     permY <- apply(permY, 2, function(prm) {
       as.vector(sapply(1:G, function(i) { prm == i }) - fitted)

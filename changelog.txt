@@ -1,3 +1,7 @@
+5.11.4
+- repaired bug in permutation test for survival response
+- decreased the number of random permutations by 1.
+
 5.11.3
 - repaired bug in ordered factor coding
 - removed all old version 4 stuff
