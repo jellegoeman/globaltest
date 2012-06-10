@@ -1,3 +1,6 @@
+5.11.5
+- removed plot import in NAMESPACE
+
 5.11.4
 - repaired bug in permutation test for survival response
 - decreased the number of random permutations by 1.

@@ -474,7 +474,7 @@ draw <- function(object, alpha=0.05, type = c("focuslevel","inheritance"), names
     edgecolor <- ifelse(sigedge, "black", "#BBBBBB")
     eAttrs$color <- edgecolor
   }
-  
+
   # if no names, give the plot numbers in order
   # this requires plotting the graph twice
   if (!names) {

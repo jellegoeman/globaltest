@@ -1,4 +1,4 @@
-importFrom(graphics, hist, plot)
+importFrom(graphics, hist)
 
 importFrom(survival, Surv, coxph, coxph.fit, basehaz, coxph.control)
 
