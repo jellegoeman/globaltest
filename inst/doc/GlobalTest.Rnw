@@ -34,8 +34,10 @@ When using the \Rpackage{globaltest} package, please cite one or more of the fol
   \item \cite{Goeman2004} is the original paper describing the global test for linear and logistic regression, and its application to gene set testing.
   \item \cite{Goeman2005} extends the global test to survival data and explains how to deal with nuisance (null) covariates.
   \item \cite{Goeman2006} proves the local optimality of the global test and explores its general theoretical properties. This is the core paper of the global test methodology
-  \item \cite{Goeman2008} develops the Focus Level method for multiple testing correction in the Gene Ontology graph
-  \item \cite{Goeman2009} derives the asymptotic distribution of the global test for generalized linear models
+  \item \cite{Goeman2008} develops the Focus Level method for multiple testing correction in the Gene Ontology graph.
+  \item \cite{Goeman2009} derives the asymptotic distribution of the global test for generalized linear models.
+  \item \cite{Jelier2011} describes the weighted test based on concept profiles (Section \ref{concept}).
+  \item \cite{Goeman2012} describes the inheritance multiple testing procedure that is used in the \Rfunction{covariates} plot.
 \end{itemize}
 
 
@@ -284,7 +286,7 @@ gt(YY ~ GG)
 gt(YY, alternative=R1)
 @
 
-The same results are obtained for \Robject{R2} and \Robjetc{R3}, respectively.
+The same results are obtained for \Robject{R2} and \Robject{R3}, respectively.
 The choice of contrasts therefore guarantees that, in a model with an intercept term, the test result does not depend on the choice of the reference category. The difference in the number of covariates included in the alternative (3 vs. 2 in the above outputs) is due to the additional vector of ones in the split coding which, however, does not have any effect on the test result. (Strictly speaking, the effective number of covariates included in the alternative is the number given by the output minus the number of ordinal factors.)
 Note that otherwise, if the intercept term is removed from \Rfunarg{null}, the test result will depend on the choice of the reference category, which may not be desirable. The used implementation protects us from such situations and, most notably, leads to more interpretable results if an intercept is excluded from the null model. If a user nevertheless wants to test such alternatives that do depend on the choice of the reference category, he must explicitly specify a corresponding design matrix in \Rfunarg{alternative} (such as \Robject{R1}, \Robject{R2}, and \Robject{R3} from above). This, for example, gives
 
@@ -818,7 +820,7 @@ To test all gene sets from a certain category, use
 gtBroad(ALL.AML, Golub_Train, category="c1", collection=broad)
 @
 
-\section{Concept profiles}
+\section{Concept profiles} \label{concept}
 
 A drawback of the three gene set databases above is that they have hard criterion for membership: each gene either belongs to the set or it does not. In reality, however, association of genes with biological concepts is gradual. Some genes are more central to a certain biological process than others, and for some genes the association with a process is more certain or well-documented than for others. To take this into account, databases can be used that contain associations between genes and concepts, rather than simply gene sets. One of these is the Anni tool, available from \verb&http://www.biosemantics.org/anni&. A function to test concepts from Anni is given in the function \Rfunction{gtConcept}.
 

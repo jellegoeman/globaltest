@@ -1,3 +1,6 @@
+5.11.6
+- updated vignette
+
 5.11.5
 - removed plot import in NAMESPACE
 
