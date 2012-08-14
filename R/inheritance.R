@@ -161,7 +161,7 @@ inheritance <- function(test, sets, weights, ancestors, offspring, Shaffer, homo
       weights <- weights(temp)
     }
   } 
-                                     
+                                    
   # Get weights for inheritance: 2) get set weights
   if (is.null(weights)) {
     set.weights <- sapply(sets, length)
@@ -259,33 +259,6 @@ is.leaf.list<-function(structure,all.list) {
   ans
   }
   
-#################################################
-# Takes sets to ancestors mapping and converts it to a sets of parents (as well offspring to child)
-ancestors2parents <- function(ancestors) {
-  lapply(ancestors, function(anc) {
-    setdiff(anc, unique(unlist(ancestors[anc])))
-  })
-} #see the original function in focuslevel.R
-
-# Starts from a named list and "turns it around"
-# Returns a named list of length(all elements of the list)
-# Each element of the list gives the names of the original list elements
-# that contained that element
-turnListAround <- function(aList) {
-  newlist <- new.env(hash=TRUE)
-  objs <- names(aList)
-  if (is.null(objs)) objs <- seq_along(alist)
-  for (i in objs) {
-    for (j in aList[[i]]) {
-      newlist[[j]] <- c(newlist[[j]], i)
-    }
-  }
-  as.list(newlist)
-}
-      
-
-
-
 
 ######################################################################################################################
 ## here start the main function
@@ -304,6 +277,7 @@ turnListAround <- function(aList) {
                                         
   # find top and leaves
   top <- sapply(parents[nms], length) == 0
+  names(top) <- nms
   leaf <- sapply(children[nms], length) == 0
   names(leaf) <- nms
                           
@@ -360,13 +334,16 @@ turnListAround <- function(aList) {
           sumweights <- sum(weights[leaf & !rejected])
           shaffer[1:m] <- sumweights / (sumweights - sum(minweights))
           for (bt in bottom) {
-            mw <- unlist(lapply(children[[bt]], function(ch) {
-              min(weights[intersect(c(ch,offspring[[ch]]), nms[leaf])])
-            }))  
-            names(mw) <- children[[bt]]
-            smallest <- names(which.min(mw))
-            second <- min(mw[names(mw) != smallest])
-            shaffer[smallest] <- sumweights / (sumweights - sum(minweights) + mw[smallest] - second)
+            if (length(children[[bt]]) > 1) {
+              mw <- unlist(lapply(children[[bt]], function(ch) {
+                min(weights[intersect(c(ch,offspring[[ch]]), nms[leaf])])
+              }))  
+              names(mw) <- children[[bt]]
+              smallest <- names(which.min(mw))
+              second <- min(mw[names(mw) != smallest])
+              shaffer[smallest] <- sumweights / (sumweights - sum(minweights) + mw[smallest] - second)
+            } else
+              shaffer[children[[bt]]] <- Inf
           }
         } else {
           for (lp in names(leaf.parents)[rejected[names(leaf.parents)]]) {

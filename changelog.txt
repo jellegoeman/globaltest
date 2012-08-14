@@ -1,3 +1,9 @@
+5.11.7
+- Fixed bug with negative weights (Thanks to Hugo Varet for the bug report)
+- replaced turnListAround (internal) by a much faster version
+- allowed parents with only a single child in inheritance
+- changed as.character to deparse in name.response calculation in gt() to prevent bug in legend of features plot.
+
 5.11.6
 - updated vignette
 

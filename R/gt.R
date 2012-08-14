@@ -43,7 +43,7 @@ gt <- function(response, alternative, null, data, test.value,
     # should the survival package be loaded (second chance)?
     if ((length(response[[2]]) > 1) && deparse(response[[2]][1]) == "Surv()")
       require("survival") || stop("Surv input but survival package not available")
-    name.response <-  as.character(eval(response)[[2]])
+    name.response <-  deparse(eval(response)[[2]])
     response <- eval(attr(terms(response, data=data), "variables"), data, environment(response))[[attr(terms(response, data=data), "response")]]
   } else {
     name.response <- deparse(call$response)

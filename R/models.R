@@ -41,9 +41,10 @@
       if (p == 0) {
         return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
       } else {
-        if(!missing(weights))
-          X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-  
+        if(!missing(weights)) {
+          X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
+        }
+          
         if (p > n) {
           XX <- crossprod(t(X))
           if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
@@ -105,9 +106,10 @@
       if (p == 0) {
         return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
       } else {
-        if(!missing(weights))
-          X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-  
+        if(!missing(weights)) {
+          X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
+        }
+        
         if (p > n) {
   
           XX <- crossprod(t(X))
@@ -152,8 +154,8 @@
     if (!missing(subset))
       X <- X[,subset,drop=FALSE]
     p <- ncol(X)
-    if(!missing(weights))
-      X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+    if(!missing(weights)) 
+      X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
     X
   }
 
@@ -163,8 +165,8 @@
       X <- X[,subset,drop=FALSE]
     p <- ncol(X)
     if(!missing(weights))
-      X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-
+      X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
+    
     XX <- crossprod(t(X))
     if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
     if (mirror) {
@@ -194,8 +196,8 @@
         X <- X[,subset,drop=FALSE]
       p <- ncol(X)
       if(!missing(weights))
-        X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-
+        X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
+      
       if (p > n) {
 
         XX <- crossprod(t(X))
@@ -243,7 +245,7 @@
       X <- X[,subset,drop=FALSE]
     p <- ncol(X)
     if(!missing(weights))
-      X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+      X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
     if (transpose) 
       X <- t(X)
     sds <- sqrt(colSums(X*X))
@@ -334,8 +336,8 @@
           return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
         } else {
           if(!missing(weights))
-            X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-    
+            X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
+          
           XX <- crossprod(t(X))
           if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
                          
@@ -393,8 +395,8 @@
           return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
         } else {
           if(!missing(weights))
-            X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-    
+            X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
+          
           if (p > n) {
             XX <- crossprod(t(X))
             if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
@@ -433,7 +435,7 @@
         X <- X[,subset,drop=FALSE]
       p <- ncol(X)
       if(!missing(weights))
-        X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+        X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
       X
     }
   
@@ -443,8 +445,8 @@
         X <- X[,subset,drop=FALSE]
       p <- ncol(X)
       if(!missing(weights))
-        X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-  
+        X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
+      
       XX <- crossprod(t(X))
       if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
       if (mirror) {
@@ -474,8 +476,8 @@
           X <- X[,subset,drop=FALSE]
         p <- ncol(X)
         if(!missing(weights))
-          X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-  
+          X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
+        
         if (p > n) {
           XX <- crossprod(t(X))
           if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
@@ -519,7 +521,7 @@
         X <- X[,subset,drop=FALSE]
       p <- ncol(X)
       if(!missing(weights))
-        X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+        X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
       if (transpose) 
         X <- t(X)
       sds <- sqrt(colSums(X*X))
@@ -615,8 +617,8 @@
         return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
       } else {
         if(!missing(weights))
-          X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-  
+          X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
+        
         XX <- crossprod(t(X))
         if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
         Q <- crossprod(Y, XX) %*% Y
@@ -661,8 +663,8 @@
         return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
       } else {
         if(!missing(weights))
-          X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-
+          X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
+        
         XX <- crossprod(t(X))
         if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
         Q <- drop(crossprod(Y, XX) %*% Y)
@@ -695,7 +697,7 @@
       X <- X[,subset,drop=FALSE]
     p <- ncol(X)
     if(!missing(weights))
-      X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+      X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
     X
   }
 
@@ -706,8 +708,8 @@
       X <- X[,subset,drop=FALSE]
     p <- ncol(X)
     if(!missing(weights))
-      X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-
+      X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
+    
     XX <- crossprod(t(X))
     if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
     if (mirror) {
@@ -737,8 +739,8 @@
         X <- X[,subset,drop=FALSE]
       p <- ncol(X)
       if(!missing(weights))
-        X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
-
+        X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
+      
       XX <- crossprod(t(X))
       if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
       Q <- drop(crossprod(Y, XX) %*% Y)
@@ -780,7 +782,7 @@
       X <- X[,subset,drop=FALSE]
     p <- ncol(X)
     if(!missing(weights))
-      X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+      X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
     if (transpose) 
       X <- t(X)
     sds <- sqrt(colSums(X*X))
@@ -897,7 +899,7 @@
         return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
       } else {
         if(!missing(weights))
-          bX <- bX * matrix(rep(ifelse(weights>0, sqrt(weights), -sqrt(weights)),G), n*G, p*G, byrow = TRUE)
+          bX <- bX * matrix(rep(sign(weights)*sqrt(abs(weights)),G), n*G, p*G, byrow = TRUE)
   
         XX <- crossprod(t(bX))
         if (dir) 
@@ -953,7 +955,7 @@
         return(c(p = NA, S = NA, ES = NA, sdS = NA, ncov=0))
       } else {
         if(!missing(weights))
-          bX <- bX * matrix(rep(ifelse(weights>0, sqrt(weights), -sqrt(weights)),G), n*G, p*G, byrow = TRUE)
+          bX <- bX * matrix(rep(sign(weights)*sqrt(abs(weights)),G), n*G, p*G, byrow = TRUE)
           
         XX <- crossprod(t(bX))
         if (dir) 
@@ -986,7 +988,7 @@
       bX <- bX[,selector(subset),drop=FALSE]
     p <- ncol(bX)/G
     if(!missing(weights))
-      bX <- bX * matrix(rep(ifelse(weights>0, sqrt(weights), -sqrt(weights)),G), n*G, p*G, byrow = TRUE)
+      bX <- bX * matrix(rep(sign(weights)*sqrt(abs(weights)),G), n*G, p*G, byrow = TRUE)
     bX
   }
 
@@ -996,7 +998,7 @@
       bX <- bX[,selector(subset),drop=FALSE]
     p <- ncol(bX)/G
     if(!missing(weights))
-      bX <- bX * matrix(rep(ifelse(weights>0, sqrt(weights), -sqrt(weights)),G), n*G, p*G, byrow = TRUE)
+      bX <- bX * matrix(rep(sign(weights)*sqrt(abs(weights)),G), n*G, p*G, byrow = TRUE)
 
     XX <- crossprod(t(bX))
     if (dir) 
@@ -1035,7 +1037,7 @@
         bX <- bX[,selector(subset),drop=FALSE]
       p <- ncol(bX)/G
       if(!missing(weights))
-        bX <- bX * matrix(rep(ifelse(weights>0, sqrt(weights), -sqrt(weights)),G), n*G, p*G, byrow = TRUE)
+        bX <- bX * matrix(rep(sign(weights)*sqrt(abs(weights)),G), n*G, p*G, byrow = TRUE)
         
       XX <- crossprod(t(bX))
       if (dir) 
@@ -1074,7 +1076,7 @@
       X <- X[,subset,drop=FALSE]
     p <- ncol(X)
     if(!missing(weights))
-      X <- X * matrix(ifelse(weights>0, sqrt(weights), -sqrt(weights)), n, p, byrow = TRUE)
+      X <- X * matrix(sign(weights)*sqrt(abs(weights)), n, p, byrow = TRUE)
     if (transpose)
       uit <- matrix(0,n,n)
     else

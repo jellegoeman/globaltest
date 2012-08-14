@@ -366,7 +366,7 @@ intersectPatterns <- function(patterns, matchto) {
 # Returns a named list of length(all elements of the list)
 # Each element of the list gives the names of the original list elements
 # that contained that element
-turnListAround <- function(aList) {
+.turnListAround <- function(aList) { #old
   newlist <- new.env(hash=TRUE)
   objs <- names(aList)
   if (is.null(objs)) objs <- seq_along(alist)
@@ -378,7 +378,12 @@ turnListAround <- function(aList) {
   as.list(newlist)
 }
       
-
+turnListAround <- function(alist) {
+  alist2 <- unlist(alist)
+  alist1 <- rep(names(alist), sapply(alist, length))
+  res <- tapply(alist1, alist2, identity, simplify=FALSE)
+  res
+}
 
 # This function extracts the smallest possible number of atoms from 
 # sets, such that all sets can be built as unions of these atoms
