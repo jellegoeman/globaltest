@@ -3,8 +3,6 @@
 #==========================================================
 setClassUnion("matrixOrNULL", c("matrix", "NULL"))
 setClassUnion("listOrNULL", c("list", "NULL"))
-setClassUnion("data.frameOrNULL", c("data.frame", "NULL"))
-
 
 setClass("gt.object", 
   representation(
