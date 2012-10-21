@@ -6,7 +6,7 @@ covariates <- function(object,
             what = c("p-value", "statistic", "z-score", "weighted"), cluster = "average", 
             alpha = 0.05, sort = TRUE, zoom = FALSE, legend = TRUE, plot = TRUE, colors, alias, help.lines = FALSE,
             cex.labels = 0.6, pdf, trace) {
-                                              
+                                             
   if ((length(object) > 1) && missing(pdf))
     stop("length(object) > 1. Please reduce to a single test result or specify an output file.")
   if (missing(trace)) trace <- gt.options()$trace

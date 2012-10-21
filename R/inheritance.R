@@ -332,7 +332,10 @@ is.leaf.list<-function(structure,all.list) {
             min(weights[intersect(offspring[[bt]], nms[leaf])])
           }))
           sumweights <- sum(weights[leaf & !rejected])
-          shaffer[1:m] <- sumweights / (sumweights - sum(minweights))
+          if (sumweights > 0) 
+            shaffer[1:m] <- sumweights / (sumweights - sum(minweights))
+          else
+            shaffer[1:m] <- 1
           for (bt in bottom) {
             if (length(children[[bt]]) > 1) {
               mw <- unlist(lapply(children[[bt]], function(ch) {

@@ -73,8 +73,10 @@ gt <- function(response, alternative, null, data, test.value,
   if (model == "cox") {
     if (attr(response, "type") == "right")
       n <- length(response)/2
+    else if (attr(response, "type") == "counting")
+      n <- length(response)/3
     else
-      stop("only right-censored survival data supported")
+      stop("survival data of type", attr(response, "type"), "not supported")
   } else {
     n <- length(response)
   }

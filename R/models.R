@@ -622,7 +622,7 @@
         XX <- crossprod(t(X))
         if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
         Q <- crossprod(Y, XX) %*% Y
-  
+
         # adjust Q in case of tied survival times
         if (ties) {
           tiecorrect <- sum( sapply(1:length(dtimes), function(i) {
