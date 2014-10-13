@@ -1,5 +1,5 @@
 Package: globaltest
-Version: 5.20.0
+Version: 5.21.0
 Date: 2012-10-21
 Title: Testing groups of covariates/features for association with a
         response variable, with applications to gene set testing
