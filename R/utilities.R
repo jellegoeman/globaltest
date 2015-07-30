@@ -23,7 +23,6 @@
   if (gt.options()$transpose && is.matrix(alternative))
     alternative <- t(alternative)
   if (is(alternative, "ExpressionSet")) {
-    require("Biobase") || stop("ExpressionSet input but Biobase package not available")
     alternative <- t(exprs(alternative))
   }
   if (is(alternative, "formula")) {

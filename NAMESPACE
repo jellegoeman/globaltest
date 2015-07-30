@@ -1,13 +1,13 @@
 importFrom(graphics, hist)
 
-importFrom(survival, Surv, coxph, coxph.fit, basehaz, coxph.control)
-
 importFrom(stats, coefficients, fitted.values, residuals, weights, alias, 
 	model.matrix, p.adjust, p.adjust.methods)
 
 importFrom(annotate, lookUp)
 
-importFrom(AnnotationDbi, Term, Secondary, as.list)
+importFrom(AnnotationDbi, Term, Secondary, as.list, Ontology, mappedkeys, keys)
+
+importFrom(survival, Surv, coxph, coxph.fit, basehaz, coxph.control)
 
 import(Biobase, methods)
 
@@ -21,5 +21,4 @@ exportMethods("[", "[[", show, result, p.value, length, names, "names<-",
 export(gt, mlogit,
 	gtGO, combine, leafNodes, draw, gtKEGG, gtBroad, gtConcept,
 	comparative, focusLevel, inheritance, covariates, features, subjects, 
-	gt.options, findFocus, 
-gtPS, gtKS, gtLI, bbase, btensor, reparamZ, reweighZ)
+	gt.options, findFocus, gtPS, gtKS, gtLI, bbase, btensor, reparamZ, reweighZ)

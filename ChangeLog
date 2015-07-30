@@ -1,3 +1,8 @@
+5.23.1
+- change default trace option to TRUE in gt.options
+- fixed convergence criterion of .getC to avoid infinite runtime
+- removed many require() calls. Added dependency on survival package.
+
 5.13.1
 - Fixed bug with negative weights (Thanks to Hugo Varet for the bug report)
 - replaced turnListAround (internal) by a much faster version

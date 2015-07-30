@@ -5,14 +5,13 @@ citEntry(entry="Manual",
         with a clinical variable",
     author = personList(as.person("J. J. Goeman"),
         as.person("J. Oosting")),
-    year = substring(packageDescription("globaltest")$Date,1,4),
-    note = paste("R package version", packageDescription("globaltest")$version),
+    year = sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date),
+    note = paste("R package version", meta$Version),
     textVersion =
       paste("Jelle J. Goeman and Jan Oosting (",
-        substring(packageDescription("globaltest")$Date,1,4),
+        sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date),
         ") Globaltest ",
-        "R package, version ", packageDescription("globaltest")$Version,
-        ".", sep = "")
+        "R package, version ", meta$Version, ".", sep = "")
 )
 
 citEntry(entry="Article",

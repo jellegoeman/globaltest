@@ -2,7 +2,7 @@
 # setting, storing and viewing options
 ################################
 gt.opt.env <- new.env()
-gt.opt.env$trace <- interactive()
+gt.opt.env$trace <- TRUE
 gt.opt.env$trim <- FALSE
 gt.opt.env$transpose <- FALSE
 gt.opt.env$max.print <- Inf

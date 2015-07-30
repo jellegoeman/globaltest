@@ -348,7 +348,7 @@ setGeneric("p.adjust")
 setMethod("p.adjust", matchSignature(signature(p = "gt.object"), p.adjust),
   function(p, method = p.adjust.methods, n = length(p)) {
     method <- method[1]
-    method <- p.adjust.methods[grep(method, p.adjust.methods, ign=T)]
+    method <- p.adjust.methods[grep(method, p.adjust.methods, ignore.case=TRUE)]
     if(length(method)==(0))   # this is just to get a good error message
       method <- match.arg(method)
     if (is.null(p@extra))
@@ -448,22 +448,23 @@ draw <- function(object, alpha=0.05, type = c("focuslevel","inheritance"), names
   graph <- as.matrix(sapply(names(object), function(node) names(object) %in% parents[[node]]))
   rownames(graph) <- colnames(graph) <- names(object)
   if (sign.only) {
-    graph <- graph[significant, significant,drop=FALSE]
+    graph <- graph[significant, significant, drop=FALSE]
     if (length(significant)==0)
       stop("no significant nodes to plot.")
   }
   graph <- as(graph, "graphNEL")
   
-  nodes <- buildNodeList(graph)
-  edges <- buildEdgeList(graph)
+  nodes <- Rgraphviz::buildNodeList(graph)
+  edges <- Rgraphviz::buildEdgeList(graph)
   nAttrs <- list()
   eAttrs <- list()
 
   # color significant nodes
   if (!sign.only) {
-    signode <- sapply(nodes, name) %in% significant
+    signode <- sapply(nodes, Rgraphviz::name) %in% significant
     names(signode) <- names(nodes)
-    sigedge <- (sapply(edges, from) %in% significant) & (sapply(edges, to) %in% significant)
+    sigedge <- (sapply(edges, Rgraphviz::from) %in% significant) & 
+      (sapply(edges, Rgraphviz::to) %in% significant)
     names(sigedge) <- names(edges)
     nodecolor <- ifelse(signode, "black", "#BBBBBB")
     nAttrs$color <- nodecolor
@@ -478,9 +479,9 @@ draw <- function(object, alpha=0.05, type = c("focuslevel","inheritance"), names
   if (!names) {
     nAttrs$label <- 1:length(names(nodes))
     names(nAttrs$label) <- names(nodes)
-    pg <- agopen(graph, name="pg", nodeAttrs = nAttrs, edgeAttrs = eAttrs)
-    x <- getNodeXY(pg)$x
-    y <- getNodeXY(pg)$y
+    pg <- Rgraphviz::agopen(graph, name="pg", nodeAttrs = nAttrs, edgeAttrs = eAttrs)
+    x <- Rgraphviz::getNodeXY(pg)$x
+    y <- Rgraphviz::getNodeXY(pg)$y
     ordering <- sort.list(order(-y, x))
     nAttrs$label <- ordering
     names(nAttrs$label) <- names(nodes)
@@ -497,8 +498,8 @@ draw <- function(object, alpha=0.05, type = c("focuslevel","inheritance"), names
       if (is.null(p))
         break()
       pg <- plot(graph, attrs = list(node=list(shape="rectangle")), nodeAttrs = nAttrs, edgeAttrs = eAttrs)
-      x <- getNodeXY(pg)$x
-      y <- getNodeXY(pg)$y
+      x <- Rgraphviz::getNodeXY(pg)$x
+      y <- Rgraphviz::getNodeXY(pg)$y
       distance <- abs(p$x - x) + abs(p$y - y)
       idx <- which.min(distance)
       legend("topleft", legend = paste(nAttrs$label[idx], names(object)[idx], alias(object)[idx]), bg = "white", box.lty=0)

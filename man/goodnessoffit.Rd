@@ -16,14 +16,16 @@ Tests the goodness of fit of a regression model against a specified alternative 
 Three main functions are provided: \code{gtPS} uses Penalized Splines, \code{gtKS} uses Kernel Smoothers and \code{gtLI} uses Linear Interactions. The other functions are for external use in combination with \code{gt}.}
 
 \usage{
-gtPS(response, null, data, model = c("linear", "logistic", "cox", "poisson", "multinomial"), ...,
-      covs, bdeg = 3, nint= 10, pord = 2, interact = FALSE, robust = FALSE, 
+gtPS(response, null, data, 
+      model = c("linear", "logistic", "cox", "poisson", "multinomial"),
+      ..., covs, bdeg = 3, nint= 10, pord = 2, interact = FALSE, robust = FALSE, 
       termlabels = FALSE, returnZ = FALSE)
   
-gtKS(response, null, data, model = c("linear", "logistic", "cox", "poisson", "multinomial"), ..., 
-    covs, quant = .25, metric = c("euclidean", "pearson"), 
-    kernel=c("uniform", "exponential", "triangular", "neighbours", "gauss"),
-    robust = FALSE, scale = TRUE, termlabels = FALSE, returnZ = FALSE)
+gtKS(response, null, data, 
+      model = c("linear", "logistic", "cox", "poisson", "multinomial"),
+      ..., covs, quant = .25, metric = c("euclidean", "pearson"), 
+      kernel=c("uniform", "exponential", "triangular", "neighbours", "gauss"),
+      robust = FALSE, scale = TRUE, termlabels = FALSE, returnZ = FALSE)
 	
 gtLI(response, null, data, ..., covs, iorder=2, termlabels = FALSE, standardize = FALSE)
 

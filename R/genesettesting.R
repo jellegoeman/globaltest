@@ -6,7 +6,6 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
   # some input checking on response (unavoidable?)
   call <- match.call()
   if (is(exprs, "ExpressionSet")) {
-    require("Biobase") || stop("ExpressionSet input but Biobase package not available")
     data <- pData(exprs)
   } else {
     data <- eval(call$data)
@@ -15,8 +14,6 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
     data <- data.frame(data)
   formula.response <- (length(call$response) > 1) && (call$response[[1]] == "~")
   if (!formula.response) {
-    if (length(call$response) > 1 && deparse(call$response[1]) == "Surv()")
-      require("survival") || stop("Surv input but survival package not available")
     name.response <- deparse(call$response)
     response <- eval(call$response, data, parent.frame())
   }  
@@ -33,8 +30,6 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
     annotation <- substr(annotation, 1, nchar(annotation)-3)
   package <- paste(annotation, ".db", sep="")
   require(package, character.only=TRUE) || stop("package ", package, " is not available")
-  require(GO.db) || stop("package GO.db is not available")
-  require(annotate) || stop("package annotate is not available")
 
   # check whether "org" package is given
   if (substr(annotation,1,4) == "org.")
@@ -46,7 +41,7 @@ gtGO <- function(response, exprs, ..., id, annotation, probe2entrez, ontology = 
   # reduce the terms
   if (missing(id))
     id <- mappedkeys(GOOBJECT)
-  myGOTERM <- lookUp(id, "GO", "TERM")
+  myGOTERM <- lookUp(id, "GO", "TERM", load=TRUE)
 
   # get the right ontology/ies
   if (!missing(ontology)) {
@@ -131,7 +126,6 @@ gtKEGG <- function(response, exprs, ..., id, annotation, probe2entrez,
   # some input checking on response (unavoidable?)
   call <- match.call()
   if (is(exprs, "ExpressionSet")) {
-    require("Biobase") || stop("ExpressionSet input but Biobase package not available")
     data <- pData(exprs)
   } else {
     data <- eval(call$data)
@@ -140,8 +134,6 @@ gtKEGG <- function(response, exprs, ..., id, annotation, probe2entrez,
     data <- data.frame(data)
   formula.response <- (length(call$response) > 1) && (call$response[[1]] == "~")
   if (!formula.response) {
-    if (length(call$response) > 1 && deparse(call$response[1]) == "Surv()")
-      require("survival") || stop("Surv input but survival package not available")
     name.response <- deparse(call$response)
     response <- eval(call$response, data, parent.frame())
   }  
@@ -158,8 +150,6 @@ gtKEGG <- function(response, exprs, ..., id, annotation, probe2entrez,
     annotation <- substr(annotation, 1, nchar(annotation)-3)
   package <- paste(annotation, ".db", sep="")
   require(package, character.only=TRUE) || stop("package ", package, " is not available")
-  require(KEGG.db) || stop("package KEGG.db is not available")
-  require(annotate) || stop("package annotate is not available")
 
   # check whether "org" package is given
   if (substr(annotation,1,4) == "org.")
@@ -202,7 +192,7 @@ gtKEGG <- function(response, exprs, ..., id, annotation, probe2entrez,
     res <- gt(response, exprs, ..., subsets = sets) 
   
   # add names
-  alias(res) <- unlist(lookUp(names(res), "KEGG", "PATHID2NAME"))
+  alias(res) <- unlist(lookUp(names(res), "KEGG", "PATHID2NAME", load=TRUE))
   alias(res)[is.na(alias(res))] <- ""
 
   if (sort)
@@ -218,7 +208,6 @@ gtBroad <- function(response, exprs, ..., id, annotation, probe2entrez, collecti
   # some input checking on response (unavoidable?)
   call <- match.call()
   if (is(exprs, "ExpressionSet")) {
-    require("Biobase") || stop("ExpressionSet input but Biobase package not available")
     data <- pData(exprs)
   } else {
     data <- eval(call$data)
@@ -227,8 +216,6 @@ gtBroad <- function(response, exprs, ..., id, annotation, probe2entrez, collecti
     data <- data.frame(data)
   formula.response <- (length(call$response) > 1) && (call$response[[1]] == "~")
   if (!formula.response) {
-    if (length(call$response) > 1 && deparse(call$response[1]) == "Surv()")
-      require("survival") || stop("Surv input but survival package not available")
     name.response <- deparse(call$response)
     response <- eval(call$response, data, parent.frame())
   }  
@@ -245,15 +232,14 @@ gtBroad <- function(response, exprs, ..., id, annotation, probe2entrez, collecti
     annotation <- substr(annotation, 1, nchar(annotation)-3)
   package <- paste(annotation, ".db", sep="")
   require(package, character.only=TRUE) || stop("package ", package, " is not available")
-  require(GSEABase) || stop("package GSEABase is not available")
 
   # read the file
-  if (missing(collection) || ! is(collection, "GeneSetCollection"))
+  if (missing(collection) || !is(collection, "GeneSetCollection"))
     stop("Please specify a \"collection\", created with the getBroadSets function")
   
   # Get the right categories
   if (!missing(category)) {
-    pw.cat <- sapply(sapply(collection, collectionType), bcCategory)
+    pw.cat <- sapply(sapply(collection, GSEABase::collectionType), GSEABase::bcCategory)
     collection <- collection[pw.cat %in% category]
   }
   
@@ -263,8 +249,8 @@ gtBroad <- function(response, exprs, ..., id, annotation, probe2entrez, collecti
   }
 
   # Map symbol identifiers to anotation-specific identifiers
-  collection <- mapIdentifiers(collection, AnnotationIdentifier(annotation))
-  sets <- lapply(collection, geneIds)
+  collection <- GSEABase::mapIdentifiers(collection, GSEABase::AnnotationIdentifier(annotation))
+  sets <- lapply(collection, GSEABase::geneIds)
   names(sets) <- names(collection)
 
   # map to probe identifiers
@@ -312,7 +298,6 @@ gtConcept <- function(response, exprs, ..., annotation, probe2entrez,
   # some input checking on response (unavoidable?)
   call <- match.call()
   if (is(exprs, "eSet")) {
-    require("Biobase") || stop("ExpressionSet input but Biobase package not available")
     data <- pData(exprs)
   } else {
     data <- eval(call$data)
@@ -321,8 +306,6 @@ gtConcept <- function(response, exprs, ..., annotation, probe2entrez,
     data <- data.frame(data)
   formula.response <- (length(call$response) > 1) && (call$response[[1]] == "~")
   if (!formula.response) {
-    if (length(call$response) > 1 && deparse(call$response[1]) == "Surv()")
-      require("survival") || stop("Surv input but survival package not available")
     name.response <- deparse(call$response)
     response <- eval(call$response, data, parent.frame())
   }
@@ -339,7 +322,6 @@ gtConcept <- function(response, exprs, ..., annotation, probe2entrez,
     annotation <- substr(annotation, 1, nchar(annotation)-3)
   package <- paste(annotation, ".db", sep="")
   require(package, character.only=TRUE) || stop("package ", package, " is not available")
-  require(annotate) || stop("package annotate is not available")
 
   # read the big concept profiles matrix
   nconcepts <- length(scan(conceptmatrix, what="", sep="\t", nlines=1, quiet=TRUE))

@@ -49,7 +49,7 @@
 
 
 .getC <- function(lams, beta, eps = 1e-10) {
-                                       
+                                      
   lams <- sort(lams)
   ix <- 1
   d <- NULL
@@ -58,6 +58,7 @@
     return(NULL)
   }
   rest.c <- 1-c
+  max.c <- c
   d.base <- 1-beta/lams
   m <- length(lams)
 
@@ -70,7 +71,8 @@
       rest.c <- rest.c-c[ix+1]
     else
       rest.c <- rest.c*lams[1]/lams[m]
-    ready <- (rest.c<eps) || (c[ix+1] < 0)
+    max.c <- max(max.c, c[ix+1])
+    ready <- (c[ix+1]/max.c<eps) || (c[ix+1] < 0)
     ix <- ix+1
   }
   if (rest.c > 0)

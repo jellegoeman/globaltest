@@ -12,17 +12,12 @@ gt <- function(response, alternative, null, data, test.value,
   # data default
   if (missing(data)) {
     if ((!missing(alternative)) && (is(alternative, "ExpressionSet"))) {
-      require("Biobase") || stop("ExpressionSet input but Biobase package not available")
       data <- pData(alternative)
     } else
       data <- NULL
   }
   if (is.matrix(data))  
     data <- data.frame(data)
-
-  # should the survival package be loaded?
-  if (length(call$response) > 1 && deparse(call$response[1]) == "Surv()")
-    require("survival") || stop("Surv input but survival package not available")
 
   # evaluate response, which may be one of the colnames of data
   response <- eval(call$response, data, parent.frame())
@@ -40,9 +35,6 @@ gt <- function(response, alternative, null, data, test.value,
     else
       stop("argument \"alternative\" is missing, with no default")  
   if (is(response, "formula")) {
-    # should the survival package be loaded (second chance)?
-    if ((length(response[[2]]) > 1) && deparse(response[[2]][1]) == "Surv()")
-      require("survival") || stop("Surv input but survival package not available")
     name.response <-  deparse(eval(response)[[2]])
     response <- eval(attr(terms(response, data=data), "variables"), data, environment(response))[[attr(terms(response, data=data), "response")]]
   } else {
