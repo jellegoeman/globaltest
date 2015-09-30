@@ -1,3 +1,6 @@
+5.23.3
+- fixed a bug in the colours and color labels in the features plot in case of multinomial model (thanks to Lindsay Fitzgerald for the bug report)
+
 5.23.1
 - change default trace option to TRUE in gt.options
 - fixed convergence criterion of .getC to avoid infinite runtime

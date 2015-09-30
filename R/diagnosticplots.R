@@ -253,7 +253,7 @@ covariates <- function(object,
       if (max(positive) <= 2)  # multinomial model
         colors <- 3:2
       else
-        colors <- rainbow(max(positive), start=0,end=1/2)
+        colors <- rainbow(length(obj@legend$cov), start=0,end=1/2)
     if (all(positive %in% 0:1))  
       cols <- ifelse(positive, colors[1], colors[2])
     else
