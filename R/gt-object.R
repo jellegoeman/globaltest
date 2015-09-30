@@ -95,10 +95,11 @@ setMethod("extract", "gt.object", function(object, ...) {
     uit <- leafNodes(object, alpha=1)
   else
     uit <- object
-  cols <- factor(uit@functions$positive(unlist(subsets(uit))), levels=seq_along(uit@legend$cov))
   if (uit@model == "multinomial") {
+    cols <- factor(uit@functions$positive(unlist(subsets(uit))), levels=seq_along(uit@legend$cov))
     levels(cols) <- uit@legend$cov
   } else {
+    cols <- factor(uit@functions$positive(unlist(subsets(uit))))
     levels(cols) <- rev(uit@legend$cov)
   }
   names(uit) <- uit@functions$cov.names(unlist(subsets(uit)))
