@@ -25,7 +25,8 @@ gt(response, alternative, null, data, test.value,
       the alternative hypothesis. The covariates of the null model do
       not have to be supplied again here. May be given as a half
       \code{\link[stats:formula]{formula}} object (e.g. \code{~a+b}). In
-      that case the intercept is always suppressed. Alternatively, the
+      that case the intercept is always suppressed. When using the dot in a formula, make sure to           avoid the half formula (\code{~.}, but repeat the response on the left hand side.
+      Alternatively, the
       \code{alternative} argument may also be given as an
       \code{\link[Biobase:class.ExpressionSet]{ExpressionSet}} object,
       in which case \code{t(exprs(alternative))} is used for the

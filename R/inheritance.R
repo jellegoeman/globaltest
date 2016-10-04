@@ -18,6 +18,10 @@ inheritance <- function(test, sets, weights, ancestors, offspring, Shaffer, homo
   }
   if (is.null(names(sets)))
     stop("sets input has no names attribute.")
+  if (any(duplicated(sets))) {
+    sets <- sets[!duplicated(sets)]
+    warning('duplicated sets removed')
+  }
                                         
   # input checking 2: ancestors and offspring
   if (missing(ancestors) && is(test, "gt.object") && !is.null(test@structure$ancestors))

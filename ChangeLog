@@ -1,3 +1,9 @@
+5.27.1
+- Made gt return p-value=1 instead of a strange error if variance(response)=0 and model = linear (thanks to Renee Menezes for the bug report).
+- Check and remove duplicated sets in inheritance() (thanks to Erik van Zwet for the bug report)
+- repaired permutation test using too many permutations in logistic regression
+- coerce multinomial model to logistic in case of two levels
+
 5.23.3
 - fixed a bug in the colours and color labels in the features plot in case of multinomial model (thanks to Lindsay Fitzgerald for the bug report)
 

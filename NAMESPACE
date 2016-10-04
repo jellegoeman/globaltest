@@ -11,6 +11,20 @@ importFrom(survival, Surv, coxph, coxph.fit, basehaz, coxph.control)
 
 import(Biobase, methods)
 
+importFrom("grDevices", "dev.off", "gray", "rainbow", "rgb")
+
+importFrom("graphics", "abline", "arrows", "axis", "barplot", "layout",
+           "lines", "locator", "par", "plot", "strwidth", "text",
+           "title")
+
+importFrom("stats", "as.dendrogram", "as.dist", "as.formula", "coef",
+           "cor", "dist", "dnorm", "formula", "glm", "glm.control",
+           "hclust", "heatmap", "integrate", "is.leaf", "lm",
+           "model.frame", "model.offset", "pf", "pnorm", "quantile",
+           "reorder", "terms", "terms.formula", "var")
+
+importFrom("utils", "flush.console")
+
 exportClasses(mlogit, gt.object)
 
 exportMethods("[", "[[", show, result, p.value, length, names, "names<-", 

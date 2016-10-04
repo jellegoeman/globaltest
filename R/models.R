@@ -1,7 +1,7 @@
 ##############################################
 # Linear model (normal errors)
 ##############################################
-.lineartest <- function(response, Z, X, offset, dir, perms) {
+.lineartest <- function(response, Z, X, offset, dir, perms, fromGLM=FALSE) {
 
   # establish dimensions of the problem
   m <- ncol(Z)
@@ -9,7 +9,10 @@
 
   # fit the null model
   form <- formula(.makeFormula(m>0, !is.null(offset)))
-  Y <- residuals(lm(form))
+  if (fromGLM)
+    Y <- response
+  else
+    Y <- residuals(lm(form))
   sumYY <- sum(Y*Y)
 
   # adjust the alternative
@@ -21,7 +24,8 @@
 
   if (perms > 0) {
     # all permutations if possible
-    if (npermutations(Y) <= perms) {
+    allperms <- npermutations(Y) <= perms
+    if (allperms) {
       random <- FALSE
       permY <- allpermutations(Y)
     } else {
@@ -50,6 +54,7 @@
           if (dir) XX <- XX + dir * outer(rowSums(X), rowSums(X))
           norm.const <- sum(diag(XX)) / 100
           S <- sum(Y * (XX %*% Y)) / sum(Y*Y)
+          if (sumYY == 0) S <- 0
           lams <- eigen(XX, symmetric = TRUE, only.values=TRUE)$values
           lams[1:(n-m)] <- lams[1:(n-m)] - S
   
@@ -62,6 +67,7 @@
           norm.const <- sum(X * X) / 100
           xy <- crossprod(X, Y)
           S <- sum(xy * xy) / sumYY
+          if (sumYY == 0) S <- 0
           lams <- eigen(crossprod(X), symmetric = TRUE, only.values=TRUE)$values
           if (length(lams) < n) lams <- c(lams, numeric(n-length(lams)))
           lams[1:(n-m)] <- lams[1:(n-m)] - S
@@ -86,7 +92,7 @@
           ES <- 0
           VarS <- 0
         }
-                          
+                     
         # calculate the p-value
         if (calculateP)
           p.value <- .getP(lams)
@@ -141,7 +147,10 @@
           norm.const <- 1
   
         # calculate the p-value
-        p.value <- mean(S <= c(Inf,permS))
+        if (allperms)
+          p.value <- mean(S*(1-1e-14) <= permS)
+        else
+          p.value <- mean(S*(1-1e-14) <= c(Inf,permS))
   
         # give back
         return(c(p = p.value, S = S/norm.const, ES = ES/norm.const, sdS = sqrt(VarS)/norm.const, ncov = p))
@@ -283,8 +292,9 @@
 
   Y <- null.fit$y - fitted.values(null.fit)
   W <- null.fit$weights          
+
   if (max(abs(W-W[1]))<1e-15)
-    out <- .lineartest(Y, Z, X, offset, dir, perms)
+    out <- .lineartest(Y, Z, X, offset, dir, perms, fromGLM=TRUE)
   else {
     if ((perms > 0) && (!(max(abs(W-W[1]))<1e-15)))
       stop("Generalized linear model with covariates:\n\tPermutation testing is not possible.", call.=FALSE)

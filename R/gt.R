@@ -40,7 +40,7 @@ gt <- function(response, alternative, null, data, test.value,
   } else {
     name.response <- deparse(call$response)
   }
-   
+  
   # remove redundant levels from factor response
   # and coerce response to factor in case of levels input
   if (is.factor(response) || !is.null(levels))
@@ -61,6 +61,10 @@ gt <- function(response, alternative, null, data, test.value,
   if (model=="multinomial" && !is.factor(response))
       response <- factor(response)
   
+  # if multinomial, coerce to logistic if possible
+  if (model=="multinomial" && nlevels(response)==2)
+    model <- "logistic"
+  
   # find the sample size
   if (model == "cox") {
     if (attr(response, "type") == "right")
@@ -72,7 +76,7 @@ gt <- function(response, alternative, null, data, test.value,
   } else {
     n <- length(response)
   }
-                     
+                
   # remove terms from alternative that are also in null
   if (is(null, "formula") && is(alternative, "formula") && 
         identical(environment(null), environment(alternative))) {
