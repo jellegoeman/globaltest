@@ -11,6 +11,7 @@
 \alias{summary,gt.object-method}
 \alias{size,gt.object-method}
 \alias{[,gt.object-method}
+\alias{[,gt.object,ANY,ANY,ANY-method}
 \alias{[[,gt.object-method}
 \alias{length,gt.object-method}
 \alias{p.adjust,gt.object-method}

@@ -453,7 +453,7 @@ draw <- function(object, alpha=0.05, type = c("focuslevel","inheritance"), names
     if (length(significant)==0)
       stop("no significant nodes to plot.")
   }
-  graph <- as(graph, "graphNEL")
+  graph <- Rgraphviz::as(graph, "graphNEL")
   
   nodes <- Rgraphviz::buildNodeList(graph)
   edges <- Rgraphviz::buildEdgeList(graph)
@@ -486,9 +486,9 @@ draw <- function(object, alpha=0.05, type = c("focuslevel","inheritance"), names
     ordering <- sort.list(order(-y, x))
     nAttrs$label <- ordering
     names(nAttrs$label) <- names(nodes)
-    plot(graph, attrs = list(node=list(shape="rectangle")), nodeAttrs = nAttrs, edgeAttrs = eAttrs)
+    Rgraphviz::plot(graph, attrs = list(node=list(shape="rectangle")), nodeAttrs = nAttrs, edgeAttrs = eAttrs)
   } else
-    plot(graph, attrs = list(node=list(shape="rectangle")), nodeAttrs = nAttrs, edgeAttrs = eAttrs)
+    Rgraphviz::plot(graph, attrs = list(node=list(shape="rectangle")), nodeAttrs = nAttrs, edgeAttrs = eAttrs)
     
   # Make the plot interactive if asked
   if (interactive) {
@@ -498,7 +498,7 @@ draw <- function(object, alpha=0.05, type = c("focuslevel","inheritance"), names
       p <- locator(n = 1) 
       if (is.null(p))
         break()
-      pg <- plot(graph, attrs = list(node=list(shape="rectangle")), nodeAttrs = nAttrs, edgeAttrs = eAttrs)
+      pg <- Rgraphviz::plot(graph, attrs = list(node=list(shape="rectangle")), nodeAttrs = nAttrs, edgeAttrs = eAttrs)
       x <- Rgraphviz::getNodeXY(pg)$x
       y <- Rgraphviz::getNodeXY(pg)$y
       distance <- abs(p$x - x) + abs(p$y - y)
