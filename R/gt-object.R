@@ -408,7 +408,7 @@ setMethod("hist", "gt.object", function(x, ...)  {
 draw <- function(object, alpha=0.05, type = c("focuslevel","inheritance"), names=FALSE, sign.only = FALSE, interactive = FALSE) {
 
   # check availablity of packages
-  require("Rgraphviz") || stop("package \"Rgraphviz\" is not available.")
+  requireNamespace("Rgraphviz") || stop("package \"Rgraphviz\" is not available.")
 
   # find ancestors and offspring if missing
   if (is.null(object@structure$ancestors)) {     # Infer from sets
