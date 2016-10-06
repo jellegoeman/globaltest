@@ -453,7 +453,7 @@ draw <- function(object, alpha=0.05, type = c("focuslevel","inheritance"), names
     if (length(significant)==0)
       stop("no significant nodes to plot.")
   }
-  graph <- Rgraphviz::as(graph, "graphNEL")
+  graph <- as(graph, "graphNEL")
   
   nodes <- Rgraphviz::buildNodeList(graph)
   edges <- Rgraphviz::buildEdgeList(graph)
