@@ -99,7 +99,7 @@ setMethod("extract", "gt.object", function(object, ...) {
     cols <- factor(uit@functions$positive(unlist(subsets(uit))), levels=seq_along(uit@legend$cov))
     levels(cols) <- uit@legend$cov
   } else {
-    cols <- factor(uit@functions$positive(unlist(subsets(uit))))
+    cols <- factor(uit@functions$positive(unlist(subsets(uit))), levels=0:1)
     levels(cols) <- rev(uit@legend$cov)
   }
   names(uit) <- uit@functions$cov.names(unlist(subsets(uit)))

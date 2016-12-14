@@ -46,7 +46,7 @@ covariates <- function(object,
       weights <- obj@weights[[1]]
     if (is.null(obj@subsets)) {
       subset <- seq_len(size(obj))
-      obj@subsets[[1]] <- subset
+      obj@subsets <- list(subset)
     }
     else
       subset <- obj@subsets[[1]]
