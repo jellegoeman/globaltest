@@ -67,10 +67,8 @@ gt <- function(response, alternative, null, data, test.value,
   
   # find the sample size
   if (model == "cox") {
-    if (attr(response, "type") == "right")
-      n <- length(response)/2
-    else if (attr(response, "type") == "counting")
-      n <- length(response)/3
+    if (attr(response, "type") %in% c("right", "counting"))
+      n <- nrow(response)
     else
       stop("survival data of type", attr(response, "type"), "not supported")
   } else {

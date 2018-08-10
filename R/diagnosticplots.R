@@ -5,7 +5,7 @@
 covariates <- function(object, 
             what = c("p-value", "statistic", "z-score", "weighted"), cluster = "average", 
             alpha = 0.05, sort = TRUE, zoom = FALSE, legend = TRUE, plot = TRUE, colors, alias, help.lines = FALSE,
-            cex.labels = 0.6, pdf, trace) {
+            cex.labels = 0.6, ylim, pdf, trace) {
                                              
   if ((length(object) > 1) && missing(pdf))
     stop("length(object) > 1. Please reduce to a single test result or specify an output file.")
@@ -265,11 +265,15 @@ covariates <- function(object,
       s = "test statistic",
       w = "weighted test statistic"
     )
-    ylims <- switch(what, 
-      z=,p = range(bars),
-      w=,s = range(c(bars, leaves[,"ES"]))
-    )
-    if (ylims[1] > 0) ylims[1] <- 0
+    if (!missing(ylim)) { 
+      ylims <- ylim
+    } else {
+      ylims <- switch(what, 
+        z=,p = range(bars),
+        w=,s = range(c(bars, leaves[,"ES"]))
+      )
+      if (ylims[1] > 0) ylims[1] <- 0
+    }
     if (legend) {
       nbars <- length(bars)
       room <- (ylims[2] - max(bars[trunc(nbars*.6):nbars])) / diff(ylims)
@@ -287,12 +291,12 @@ covariates <- function(object,
     # construct appropriate axes
     if(plot) {
       if (what == "p") {
-        labs <- seq(0,maxlogp, by = max(1,maxlogp %/% 5))
+        labs <- seq(0,ylims[2], by = max(1,ylims[2] %/% 5))
         if (length(labs)==1) {
-          minp <- 10^-maxlogp
+          minp <- 10^-ylims[2]
           if (minp < 0.5) {
             labs <- log10(c(1,2,10/3,5))
-            labs <- labs[labs < maxlogp]
+            labs <- labs[labs < ylims[2]]
           } else {
             fc <- 10^-floor(log10(1-minp)) 
             labs <- -log10(c(1,ceiling(minp*fc)/fc))
@@ -301,7 +305,7 @@ covariates <- function(object,
           labs <- outer(log10(c(1,2,5)),labs,"+")
         else if (length(labs) <= 4)
           labs <- outer(log10(c(1,10/3)),labs,"+")
-        if (max(bars) > maxlogp) #zero p-values
+        if (max(bars) > ylims[2]) #zero p-values
           axis(2, at = c(labs, max(bars)), labels=c(10^-labs, 0), las=2)
         else
           axis(2, at = labs, labels=10^-labs, las=2)
@@ -360,7 +364,7 @@ features <- function(...) {
 subjects <- function(object,
             what = c("p-value", "statistic", "z-score", "weighted"), cluster = "average",
             sort=TRUE, mirror = TRUE, legend = TRUE, colors, alias, help.lines = FALSE, 
-            cex.labels = 0.6, pdf) {
+            cex.labels = 0.6, ylim, pdf) {
             
   if ((length(object) > 1) && missing(pdf))
     stop("length(object) > 1. Please reduce to a single test result or specify an output file.")
@@ -480,11 +484,15 @@ subjects <- function(object,
       s = "posterior effect",
       w = "weighted posterior effect"
     )
-    ylims <- switch(what, 
-      z=,p= range(bars),
-      s=,w= range(c(bars, rr[,"ER"]))
-    )
-    if (ylims[1] > 0) ylims[1] <- 0
+    if (!missing(ylim)) { 
+      ylims <- ylim
+    } else {
+      ylims <- switch(what, 
+        z=,p= range(bars),
+        s=,w= range(c(bars, rr[,"ER"]))
+      )
+      if (ylims[1] > 0) ylims[1] <- 0
+    }
     if (legend) {
       nbars <- length(bars)
       room <- (ylims[2] - max(bars[trunc(nbars*.6):nbars])) / diff(ylims)
@@ -500,8 +508,7 @@ subjects <- function(object,
     }    
     
     if (what == "p") {
-      maxlogp <- max(bars, na.rm=TRUE)
-      labs <- seq(0,maxlogp, by = max(1,maxlogp %/% 5))
+      labs <- seq(0,ylims[2], by = max(1,ylims[2] %/% 5))
       if (length(labs)==1)
         labs <- log10(c(1,2,10/3,5))
       else if (length(labs) <= 2)
