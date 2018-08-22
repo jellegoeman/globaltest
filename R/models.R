@@ -558,7 +558,7 @@
 ##############################################
 # Cox proportional hazards model
 ##############################################
-.coxtest <- function (response, Z, X, offset, dir, perms) {
+.coxtest <- function (response, Z, X, offset, dir, perms, strat) {
                                  
   # fit the model
   m <- ncol(Z)
@@ -568,21 +568,53 @@
   n <- length(expci)
 
   # check possibility of permutations
-  if ((perms > 0) && (m > 0))
-    stop("Cox model with covariates:\n\tPermutation testing is not possible.", call.=FALSE)
+  if ((perms > 0) && (m > 0) | (perms > 0) && !missing(strata))
+    stop("Cox model with covariates and/or strata:\n\tPermutation testing is not possible.", call.=FALSE)
 
-  # extract survival times
-  times <- as.vector(fit$y)[1:n]
-  d <- as.vector(fit$y)[(n+1):(2*n)]
-  dtimes <- unique(times[d == 1])
+  # extract survival times, strata and risksets
+  if (ncol(response) == 2) {
+    times <- as.vector(fit$y)[1:n]
+    d <- as.vector(fit$y)[(n + 1):(2 * n)]
+    if (!is.null(strat)) {
+      dtimes <- times[d == 1]
+      dstrat <- strat[d == 1]
+      unq <- which(!duplicated(cbind(dtimes,dstrat)))
+      dtimes <- dtimes[unq]
+      dstrat <- dstrat[unq]
+      atrisk <- outer(times, dtimes, ">=") * outer(strat, dstrat, "==")
+    } else {
+      dtimes <- unique(times[d == 1])
+      atrisk <- outer(times, dtimes, ">=")
+    }
+  } else {
+    times <- as.vector(fit$y)[(n + 1):(2 * n)]
+    start <- as.vector(fit$y)[1:n]
+    d <- as.vector(fit$y)[(2*n + 1):(3 * n)]
+    if (!is.null(strat)) {
+      dtimes <- times[d == 1]
+      dstrat <- strat[d == 1]
+      unq <- which(!duplicated(cbind(dtimes,dstrat)))
+      dtimes <- dtimes[unq]
+      dstrat <- dstrat[unq]
+      atrisk <- outer(times, dtimes, ">=") * outer(start, dtimes, "<") * outer(strat, dstrat, "==")
+    } else {
+      dtimes <- unique(times[d == 1])
+      atrisk <- outer(times, dtimes, ">=") * outer(start, dtimes, "<") 
+    }
+  }
+  
+  ## Construct matrixO
   nd <- length(dtimes)
+  if (!is.null(strat)) {
+    matrixO <- outer(times, dtimes, "==") * outer(strat, dstrat, "==") * matrix(d, n, nd)
+  } else {
+    matrixO <- outer(times, dtimes, "==") * matrix(d, n, nd)
+  }
 
   # any ties present?
-  matrixO <- outer(times, dtimes, "==") * matrix(d, n, nd)
   ties <- any(colSums(matrixO) > 1)
 
   # construct relevant matrices
-  atrisk <- outer(times, dtimes, ">=")
   hazinc <- as.vector(1 / (expci %*% atrisk))
   matrixP <- outer(expci, hazinc, "*") * atrisk
   matrixPO <- matrixP %*% t(matrixO)

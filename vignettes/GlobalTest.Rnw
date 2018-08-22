@@ -16,9 +16,10 @@
 
 \title{The Global Test \\ and the \Rpackage{globaltest} \texttt{R} package}
 
-\author{Jelle Goeman \and Jan Oosting \and Livio Finos \and Aldo Solari}
+\author{Jelle Goeman \and Jan Oosting \and Livio Finos \and Aldo Solari \and Dominic Edelmann}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 \maketitle \tableofcontents \newpage
 
@@ -200,6 +201,58 @@ If missing, the function will try to determine the model from the input. If the 
 
 Use \Rfunction{summary} to check which model was used.
 
+
+\subsection{Stratified Cox model and competing risks survival analysis} \label{models}
+
+When applying the \Rfunction{gt} for the Cox proportional hazards model, the user may also specify strata. For this purpose, the null hypothesis should be given as a \Rclass{formula} object. The strata can then be specified as in the package \Rpackage{survival}. We first simulate some survival data via
+
+
+<<survival data>>=
+time <- rexp(20,1/100)
+status <- rbinom(20,1,0.5)
+str <- rbinom(20,1,0.5)
+@
+
+To test the alternative \verb:Surv(time,status) ~ A + B + strata(str): against the null hypothesis \verb:Surv(time,status) ~ strata(str):, one can use the call
+
+<<>>=
+gt(Surv(time,status), ~A+B+strata(str), ~strata(str), data=X)
+@
+
+As already described above, one could also use the shorter call:
+<<>>=
+gt(Surv(time,status), ~A+B, ~strata(str), data=X)
+@
+
+
+All strata terms must be both part of alternative and the null hypothesis, e.g. we do not support the possibility of testing the alternative alternative \verb:Surv(time,status) ~ A + B + strata(C): against the null hypothesis \verb:Surv(time,status) ~ A + B:.
+
+In case that a strata term is only specified in the alternative, a warning is printed and the corresponding strata term is ignored.
+
+The \Rfunction{gt} function for the stratified Cox model can also be used to apply the global test for the cause-specific hazards model. Let us assume, that there are two different event types indicated by the values $1$ and $2$ in the status variable:
+<<>>=
+status <- status * (rbinom(20,1,0.5) + 1)
+@
+
+Using the \Rpackage{mstate} package, we first transform the variables into long format with event type-specific covariates:
+
+<<>>=
+library(mstate)
+survdat <- data.frame(X, "time.01" = time, "time.02" = time,
+                      "status.01" = ifelse(status == 1, 1, 0),
+                      "status.02" = ifelse(status == 2, 1, 0))
+survdat <- msprep(time = c(NA, "time.01","time.02"), 
+                  status = c(NA, 'status.01','status.02'),
+                  data = survdat, trans = trans.comprisk(2),
+                  keep=c("A","B"))
+survdat <- expand.covs(survdat, c("A","B"))
+@
+
+Now testing the alternative \verb:Surv(time,status) ~ A + B: against the null hypothesis \verb:Surv(time,status) ~ 1: in the cause-specific hazards model with event types $1$ and $2$ can e.g. be performed using
+
+<<>>=
+gt(Surv(time,status), ~A.1+B.1+A.2+B.2, ~strata(trans), data=survdat)
+@
 
 \subsection{Null distribution: asymptotic or permutations} \label{permhist}
 
