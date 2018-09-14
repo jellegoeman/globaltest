@@ -568,7 +568,7 @@
   n <- length(expci)
 
   # check possibility of permutations
-  if ((perms > 0) && (m > 0) | (perms > 0) && !missing(strat))
+  if ((perms > 0) && (m > 0) | (perms > 0) && !is.null(strat))
     stop("Cox model with covariates and/or strata:\n\tPermutation testing is not possible.", call.=FALSE)
 
   # extract survival times, strata and risksets
