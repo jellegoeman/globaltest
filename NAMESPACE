@@ -7,7 +7,7 @@ importFrom(annotate, lookUp)
 
 importFrom(AnnotationDbi, Term, Secondary, as.list, Ontology, mappedkeys, keys)
 
-importFrom(survival, Surv, coxph, coxph.fit, basehaz, coxph.control)
+importFrom(survival, Surv, coxph, coxph.fit, basehaz, coxph.control, untangle.specials)
 
 import(Biobase, methods)
 

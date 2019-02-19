@@ -75,14 +75,57 @@ gt <- function(response, alternative, null, data, test.value,
     n <- length(response)
   }
                 
+
+
+  
   # remove terms from alternative that are also in null
   if (is(null, "formula") && is(alternative, "formula") && 
-        identical(environment(null), environment(alternative))) {
+      identical(environment(null), environment(alternative))) {
     dup <- attr(terms(alternative, data=data), "term.labels") %in% attr(terms(null, data=data), "term.labels")
     if (all(dup)) stop("all covariates in alternative also in null")  
     if (any(dup)) 
       alternative <- formula(terms(alternative,data=data)[!dup])
   }
+  
+  
+  # print a warning, when strata appear in alternative that do not appear in null, remove them from alternative
+  if (is(alternative, "formula")) {
+    if (length(attr(terms(alternative, specials = "strata", data=data), "specials")$strata) > 0) {
+      altterms <- terms(alternative, specials = "strata", data=data)
+      strata <- untangle.specials(altterms, "strata", 1)
+      strata.nrs <- strata$terms
+      alternative <- formula(altterms[-strata.nrs])
+      warning("there are strata in alternative, which do no appear in null. strata only appearing in alternative are ignored")
+      if (length(attr(terms(alternative, data=data), "term.labels")) == 0)
+        stop("all covariates in alternative also in null")
+    }
+  }
+  
+  
+  # extract strata out of null  
+  if (is(null, "formula")) {
+    nullterms <- terms(null, specials = "strata", data=data)
+    if (length(attr(nullterms, "specials")$strata) > 0) {
+      if (model == "cox") {
+        strata <- untangle.specials(nullterms, "strata", 1)
+        strata.nrs <- strata$terms
+        strata.nrs2 <- attr(nullterms, "specials")$strata
+        if (missing(data)) 
+          strata <- strata(eval(attr(nullterms, "variables"), 
+                                environment(nullterms))[strata.nrs2], shortlabel = TRUE)
+        else
+          strata <- strata(eval(attr(nullterms, 
+                                        "variables"), data, environment(nullterms))[strata.nrs2], 
+                              shortlabel = TRUE)
+        null <- formula(nullterms[-strata.nrs])
+      } 
+      else 
+        stop("strata only implemented for Cox model")
+    }
+    else 
+      strata <- NULL
+  }
+  
 
   # get null and alternative
   null <- .getNull(null, data, n, model)
@@ -284,7 +327,7 @@ gt <- function(response, alternative, null, data, test.value,
     logistic = .glmtest(response, Z=null, X=alternative, offset=offset, family = "binomial", dir = directional, perms=permutations),
     poisson = .glmtest(response, Z=null, X=alternative, offset=offset, family = "poisson", dir = directional, perms=permutations),
     multinomial = .multinomialtest(response, Z=null, X=alternative, dir = directional, perms=permutations),
-    cox = .coxtest(response, Z=null, X=alternative, offset=offset, dir = directional, perms=permutations)
+    cox = .coxtest(response, Z=null, X=alternative, offset=offset, dir = directional, perms=permutations, strat=strata)
   )    
   test <- funs$test
                                                       
@@ -335,3 +378,5 @@ gt <- function(response, alternative, null, data, test.value,
   
   return(out)
 }
+
+

@@ -1,3 +1,7 @@
+5.37.1
+- Fixed Y~1 Y~0 mixup in vigentte
+- Added fnctionality for competing risks (by Dominic Edelmann)
+
 5.35.1
 - Patched due to change in length.Surv
 - Added ylim argument to covariates()
