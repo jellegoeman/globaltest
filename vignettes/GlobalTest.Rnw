@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{Global Test}
-%\VignetteDepends{globaltest, Rgraphviz, golubEsets, hu6800.db, vsn, lungExpression, GO.db, KEGG.db, Biobase, org.Hs.eg.db, annotate}
+%\VignetteDepends{globaltest, Rgraphviz, golubEsets, hu6800.db, vsn, lungExpression, GO.db, Biobase, org.Hs.eg.db, annotate, KEGGREST}
 %\VignetteKeywords{Hypothesis testing}
 %\VignettePackage{globaltest}
 
@@ -770,11 +770,11 @@ The most common approach to gene set testing is to test gene sets from public da
 
 \subsection{KEGG}
 
-The function \Rfunction{gtKEGG} can be used to test KEGG terms. To test a single KEGG id, e.g.\ cell cycle (KEGG id \verb"04110"), use
+The functions \Rfunction{gtKEGG} can be used to test KEGG terms. To test a single KEGG id, e.g.\ cell cycle (KEGG id \verb"04110"), use
 <<gtKEGG>>=
 gtKEGG(ALL.AML, Golub_Train, id = "04110")
 @
-The function automatically finds the right KEGG information from the \Rpackage{KEGG.db} package, and the right set of genes belonging to the KEGG id from the annotation package of the \Rpackage{hu6800} Affymetrix chip; the reference to this annotation package is contained in the \verb:Golub_Train: \Rclass{ExpressionSet} object. If \Rclass{ExpressionSet} objects are not used, the name of the annotation package can be supplied in the \Rfunarg{annotation} argument of \Rfunction{gtKEGG}.
+The function automatically finds the right KEGG information from the \Rpackage{KEGGREST} package, and the right set of genes belonging to the KEGG id from the annotation package of the \Rpackage{hu6800} Affymetrix chip; the reference to this annotation package is contained in the \verb:Golub_Train: \Rclass{ExpressionSet} object. If \Rclass{ExpressionSet} objects are not used, the name of the annotation package can be supplied in the \Rfunarg{annotation} argument of \Rfunction{gtKEGG}.
 
 Annotation packages are not always available for all microarray types. Therefore, a general Entrez-based annotation package is available for many organisms, e.g.\ \Rpackage{org.Hs.eg.db} for human. See \verb:www.bioconductor.org: for the names of the organism specific packages. This general entrez-based annotation package may be substituted for a specific probe annotation package if a mapping from probe(set) ids to Entrez is given (as a list or as a vector) in the \Rfunarg{probe2entrez} argument. For the Golub data we find such a mapping in the \Rpackage{hu6800.db} package.
 <<KEGG organism package>>=

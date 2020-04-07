@@ -192,7 +192,10 @@ gtKEGG <- function(response, exprs, ..., id, annotation, probe2entrez,
     res <- gt(response, exprs, ..., subsets = sets) 
   
   # add names
-  alias(res) <- unlist(lookUp(names(res), "KEGG", "PATHID2NAME", load=TRUE))
+  KEGGNAMES <- KEGGREST::keggList("pathway")
+  names(KEGGNAMES) <- gsub("path:map", "", names(KEGGNAMES))
+  
+  alias(res) <- KEGGNAMES[names(res)]
   alias(res)[is.na(alias(res))] <- ""
 
   if (sort)
@@ -200,6 +203,7 @@ gtKEGG <- function(response, exprs, ..., id, annotation, probe2entrez,
   
   res
 }
+
 
 gtBroad <- function(response, exprs, ..., id, annotation, probe2entrez, collection,
                   category = c("c1", "c2", "c3", "c4", "c5"), 

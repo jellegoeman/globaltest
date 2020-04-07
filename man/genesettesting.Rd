@@ -2,6 +2,7 @@
 
 \alias{gtGO}
 \alias{gtKEGG}
+\alias{gtKEGGREST}
 \alias{gtBroad}
 \alias{gtConcept}
 
@@ -17,7 +18,6 @@ gtGO (response, exprs, ..., id, annotation, probe2entrez,
            ontology = c("BP", "CC", "MF"), minsize=1, maxsize=Inf,
            multtest = c("Holm", "focuslevel", "BH", "BY"),
            focuslevel = 10, sort = TRUE)
-
 
 gtConcept (response, exprs, ..., annotation, probe2entrez,
            conceptmatrix, concept2name = "conceptID2name.txt",
