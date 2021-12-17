@@ -72,7 +72,7 @@
     else
       rest.c <- rest.c*lams[1]/lams[m]
     max.c <- max(max.c, c[ix+1])
-    ready <- (c[ix+1]/max.c<eps) || (c[ix+1] < 0)
+    ready <- (rest.c/max.c<eps) || (c[ix+1] < 0)
     ix <- ix+1
   }
   if (rest.c > 0)

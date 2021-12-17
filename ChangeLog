@@ -1,3 +1,6 @@
+5.49.1
+- Fixed bug in .generalizedF (Thanks to Dominic Edelmann and Fernando Castro Prado for pointing this out)
+
 5.41.1
 - Moved from KEGG.db to KEGGREST
 
